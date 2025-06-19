@@ -1,722 +1,1047 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>♟️ LLM Chess Arena</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/chessboard.css">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>♟️ LLM Chess Arena - Professional</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Styles -->
+    <style>
+        /* Include the professional CSS from artifacts above */
+        /* Professional Chess Arena Styles - Lichess Inspired */
+
+        /* CSS Custom Properties */
+        :root {
+          /* Lichess Color Palette */
+          --lichess-brown: #8b4513;
+          --lichess-brown-dark: #654321;
+          --lichess-brown-light: #b8860b;
+          --lichess-green: #759900;
+          --lichess-green-dark: #5e7700;
+          --lichess-blue: #3893e8;
+          --lichess-blue-dark: #2980b9;
+          --lichess-red: #e74c3c;
+          --lichess-orange: #f39c12;
+          --lichess-purple: #9b59b6;
+          
+          /* Board Colors */
+          --board-light: #f0d9b5;
+          --board-dark: #b58863;
+          --board-border: #8b7355;
+          --board-coords: #8b7355;
+          
+          /* UI Colors */
+          --bg-primary: #262421;
+          --bg-secondary: #2f2b28;
+          --bg-tertiary: #3c3936;
+          --text-primary: #ffffff;
+          --text-secondary: #d0d0d0;
+          --text-muted: #999999;
+          --border-color: #3c3936;
+          --hover-bg: #3c3936;
+          --active-bg: #4a4540;
+          
+          /* Semantic Colors */
+          --success: #27ae60;
+          --warning: #f39c12;
+          --error: #e74c3c;
+          --info: #3893e8;
+          
+          /* Typography */
+          --font-primary: 'Noto Sans', sans-serif;
+          --font-mono: 'Roboto Mono', monospace;
+          
+          /* Sizes */
+          --board-size: 512px;
+          --square-size: 64px;
+          --border-radius: 3px;
+          --border-radius-lg: 5px;
+          
+          /* Shadows */
+          --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+          --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+          --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
+          
+          /* Transitions */
+          --transition-fast: 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+          --transition-normal: 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        /* Reset and Base */
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+
+        body {
+          font-family: var(--font-primary);
+          background: var(--bg-primary);
+          color: var(--text-primary);
+          line-height: 1.5;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Header */
+        .header {
+          background: var(--bg-secondary);
+          border-bottom: 1px solid var(--border-color);
+          box-shadow: var(--shadow-sm);
+          position: sticky;
+          top: 0;
+          z-index: 100;
+        }
+
+        .header-content {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 0 16px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          height: 60px;
+        }
+
+        .logo {
+          font-size: 24px;
+          font-weight: 700;
+          color: var(--lichess-brown-light);
+          text-decoration: none;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .logo:hover {
+          color: var(--text-primary);
+        }
+
+        /* Navigation */
+        .nav {
+          display: flex;
+          gap: 4px;
+        }
+
+        .nav-btn {
+          background: transparent;
+          border: none;
+          color: var(--text-secondary);
+          padding: 8px 16px;
+          border-radius: var(--border-radius);
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          transition: all var(--transition-fast);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .nav-btn:hover {
+          background: var(--hover-bg);
+          color: var(--text-primary);
+        }
+
+        .nav-btn.active {
+          background: var(--lichess-brown);
+          color: white;
+        }
+
+        /* Main Content */
+        .main {
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 24px 16px;
+        }
+
+        .page {
+          display: none;
+        }
+
+        .page.active {
+          display: block;
+          animation: fadeIn 0.2s ease-out;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Buttons */
+        .btn {
+          background: var(--lichess-brown);
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: var(--border-radius);
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          transition: all var(--transition-fast);
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          text-decoration: none;
+          line-height: 1;
+        }
+
+        .btn:hover {
+          background: var(--lichess-brown-dark);
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary {
+          background: var(--lichess-blue);
+        }
+
+        .btn-primary:hover {
+          background: var(--lichess-blue-dark);
+        }
+
+        .btn-success {
+          background: var(--lichess-green);
+        }
+
+        .btn-success:hover {
+          background: var(--lichess-green-dark);
+        }
+
+        /* Professional Chessboard */
+        .chessboard-wrapper {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+          padding: 20px;
+          background: var(--bg-secondary);
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          border: 1px solid var(--border-color);
+        }
+
+        .chessboard-container {
+          position: relative;
+          display: inline-block;
+          border-radius: 6px;
+          overflow: hidden;
+          box-shadow: 
+            0 0 0 1px var(--board-border),
+            0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .chessboard {
+          width: var(--board-size);
+          height: var(--board-size);
+          display: grid;
+          grid-template-columns: repeat(8, 1fr);
+          grid-template-rows: repeat(8, 1fr);
+          position: relative;
+          background: var(--board-dark);
+          user-select: none;
+        }
+
+        .square {
+          width: var(--square-size);
+          height: var(--square-size);
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all var(--transition-fast);
+          overflow: hidden;
+        }
+
+        .square.light {
+          background-color: var(--board-light);
+        }
+
+        .square.dark {
+          background-color: var(--board-dark);
+        }
+
+        .square:hover {
+          box-shadow: inset 0 0 0 2px rgba(56, 147, 232, 0.6);
+          z-index: 10;
+        }
+
+        .piece {
+          font-size: 52px;
+          line-height: 1;
+          cursor: grab;
+          transition: all var(--transition-fast);
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+          z-index: 10;
+          position: relative;
+        }
+
+        .piece:hover {
+          transform: scale(1.05);
+          filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) brightness(1.1);
+          z-index: 25;
+        }
+
+        /* Cards */
+        .card {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: var(--border-radius-lg);
+          padding: 20px;
+          box-shadow: var(--shadow-sm);
+        }
+
+        .card:hover {
+          box-shadow: var(--shadow-md);
+        }
+
+        .game-layout {
+          display: grid;
+          grid-template-columns: 1fr auto 300px;
+          gap: 24px;
+          align-items: start;
+        }
+
+        .sidebar {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+          .header-content {
+            padding: 0 12px;
+          }
+          
+          .main {
+            padding: 16px 12px;
+          }
+          
+          .nav {
+            gap: 2px;
+          }
+          
+          .nav-btn {
+            padding: 6px 10px;
+            font-size: 12px;
+          }
+          
+          .nav-btn span {
+            display: none;
+          }
+          
+          .chessboard {
+            width: 320px;
+            height: 320px;
+            --square-size: 40px;
+          }
+          
+          .piece {
+            font-size: 30px;
+          }
+
+          .game-layout {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        /* Loading */
+        .loading-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(38, 36, 33, 0.9);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 2000;
+        }
+
+        .loading-spinner {
+          text-align: center;
+          color: var(--text-primary);
+        }
+
+        .spinner {
+          width: 40px;
+          height: 40px;
+          border: 4px solid var(--border-color);
+          border-top: 4px solid var(--lichess-brown);
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        /* Toast Notifications */
+        .toast-container {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 1100;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .toast {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: var(--border-radius-lg);
+          padding: 12px 16px;
+          box-shadow: var(--shadow-lg);
+          animation: toastSlideIn var(--transition-normal) ease-out;
+          max-width: 400px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .toast.success {
+          border-left: 4px solid var(--success);
+        }
+
+        .toast.error {
+          border-left: 4px solid var(--error);
+        }
+
+        .toast.warning {
+          border-left: 4px solid var(--warning);
+        }
+
+        .toast.info {
+          border-left: 4px solid var(--info);
+        }
+
+        @keyframes toastSlideIn {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Controls */
+        .board-controls {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          padding: 12px 16px;
+          background: var(--bg-tertiary);
+          border-radius: 6px;
+          border: 1px solid var(--border-color);
+        }
+
+        .control-btn {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          color: var(--text-secondary);
+          width: 36px;
+          height: 36px;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all var(--transition-fast);
+          font-size: 16px;
+        }
+
+        .control-btn:hover {
+          background: var(--hover-bg);
+          color: var(--text-primary);
+          border-color: var(--lichess-brown);
+        }
+
+        .d-flex { display: flex; }
+        .gap-16 { gap: 16px; }
+        .gap-24 { gap: 24px; }
+        .align-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .mb-16 { margin-bottom: 16px; }
+        .mb-24 { margin-bottom: 24px; }
+        .text-center { text-align: center; }
+
+        .form-group {
+          margin-bottom: 16px;
+        }
+
+        .form-label {
+          display: block;
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--text-secondary);
+          margin-bottom: 6px;
+        }
+
+        .form-control {
+          width: 100%;
+          background: var(--bg-tertiary);
+          border: 1px solid var(--border-color);
+          border-radius: var(--border-radius);
+          padding: 8px 12px;
+          color: var(--text-primary);
+          font-size: 14px;
+          transition: all var(--transition-fast);
+        }
+
+        .form-control:focus {
+          outline: none;
+          border-color: var(--lichess-blue);
+          box-shadow: 0 0 0 2px rgba(56, 147, 232, 0.2);
+        }
+    </style>
 </head>
 <body>
-    <div id="app">
-        <!-- Header -->
-        <header class="header">
-            <div class="container">
-                <div class="header-content">
-                    <h1 class="logo">♟️ LLM Chess Arena</h1>
-                    <nav class="nav">
-                        <button class="nav-btn active" data-page="dashboard">
-                            <i class="fas fa-home"></i> Dashboard
-                        </button>
-                        <button class="nav-btn" data-page="arena">
-                            <i class="fas fa-sword"></i> Arena
-                        </button>
-                        <button class="nav-btn" data-page="play">
-                            <i class="fas fa-gamepad"></i> Jogar vs LLM
-                        </button>
-                        <button class="nav-btn" data-page="analysis">
-                            <i class="fas fa-chart-line"></i> Análise
-                        </button>
-                        <button class="nav-btn" data-page="rankings">
-                            <i class="fas fa-trophy"></i> Rankings
-                        </button>
-                        <button class="nav-btn" data-page="settings">
-                            <i class="fas fa-cog"></i> Configurações
-                        </button>
-                    </nav>
-                </div>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <a href="#" class="logo">
+                <i class="fas fa-chess-king"></i>
+                LLM Chess Arena
+            </a>
+            <nav class="nav">
+                <button class="nav-btn active" data-page="dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </button>
+                <button class="nav-btn" data-page="arena">
+                    <i class="fas fa-sword"></i>
+                    <span>Arena</span>
+                </button>
+                <button class="nav-btn" data-page="play">
+                    <i class="fas fa-gamepad"></i>
+                    <span>Jogar</span>
+                </button>
+                <button class="nav-btn" data-page="analysis">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Análise</span>
+                </button>
+                <button class="nav-btn" data-page="rankings">
+                    <i class="fas fa-trophy"></i>
+                    <span>Rankings</span>
+                </button>
+                <button class="nav-btn" data-page="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Config</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page active">
+            <div class="text-center mb-24">
+                <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">
+                    <i class="fas fa-chart-bar" style="color: var(--lichess-brown-light);"></i>
+                    Dashboard Executivo
+                </h1>
+                <p style="color: var(--text-secondary); font-size: 16px;">
+                    Visão geral das estatísticas e performance dos modelos LLM
+                </p>
             </div>
-        </header>
 
-        <!-- Main Content -->
-        <main class="main">
-            <div class="container">
-                <!-- Dashboard Page -->
-                <div id="dashboard-page" class="page active">
-                    <div class="page-header">
-                        <h2>📈 Dashboard Geral</h2>
-                        <p>Visão geral das estatísticas e partidas recentes</p>
-                    </div>
-
-                    <!-- Metrics Cards -->
-                    <div class="metrics-grid">
-                        <div class="metric-card">
-                            <div class="metric-icon">🎮</div>
-                            <div class="metric-content">
-                                <h3 id="total-games">0</h3>
-                                <p>Total de Partidas</p>
-                            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 32px;">
+                <div class="card">
+                    <div class="d-flex align-center gap-16">
+                        <div style="width: 60px; height: 60px; background: var(--lichess-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                            <i class="fas fa-chess"></i>
                         </div>
-                        <div class="metric-card">
-                            <div class="metric-icon">🤖</div>
-                            <div class="metric-content">
-                                <h3 id="active-models">0</h3>
-                                <p>Modelos Ativos</p>
-                            </div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-icon">📊</div>
-                            <div class="metric-content">
-                                <h3 id="avg-moves">0</h3>
-                                <p>Lances por Partida</p>
-                            </div>
-                        </div>
-                        <div class="metric-card">
-                            <div class="metric-icon">🏆</div>
-                            <div class="metric-content">
-                                <h3 id="tournaments">0</h3>
-                                <p>Torneios Completos</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Charts Section -->
-                    <div class="charts-section">
-                        <div class="chart-container">
-                            <h3>📊 Resultados por Modelo</h3>
-                            <canvas id="results-chart"></canvas>
-                        </div>
-                        <div class="chart-container">
-                            <h3>🎯 Distribuição de Resultados</h3>
-                            <canvas id="winrate-chart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Recent Games -->
-                    <div class="recent-games">
-                        <h3>🕒 Partidas Recentes</h3>
-                        <div class="table-container">
-                            <table id="recent-games-table">
-                                <thead>
-                                    <tr>
-                                        <th>Brancas</th>
-                                        <th>Pretas</th>
-                                        <th>Resultado</th>
-                                        <th>Lances</th>
-                                        <th>Data</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
+                        <div>
+                            <div id="total-games" style="font-size: 28px; font-weight: 700; color: var(--lichess-brown-light);">248</div>
+                            <div style="color: var(--text-secondary); font-size: 14px;">Total de Partidas</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Arena Page -->
-                <div id="arena-page" class="page">
-                    <div class="page-header">
-                        <h2>⚔️ Arena de Batalha</h2>
-                        <p>Configure e inicie batalhas entre modelos LLM</p>
-                    </div>
-
-                    <div class="arena-layout">
-                        <div class="arena-config">
-                            <div class="config-section">
-                                <h3>🎮 Configuração da Batalha</h3>
-                                
-                                <div class="form-group">
-                                    <label>
-                                        <input type="checkbox" id="tournament-mode"> Modo Torneio
-                                    </label>
-                                </div>
-
-                                <div id="individual-battle" class="battle-config">
-                                    <div class="form-group">
-                                        <label for="white-model">Modelo das Brancas:</label>
-                                        <select id="white-model"></select>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="black-model">Modelo das Pretas:</label>
-                                        <select id="black-model"></select>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="opening">Abertura:</label>
-                                        <select id="opening">
-                                            <option value="e4">1. e4</option>
-                                            <option value="d4">1. d4</option>
-                                            <option value="c4">1. c4</option>
-                                            <option value="Nf3">1. Nf3</option>
-                                            <option value="b3">1. b3</option>
-                                            <option value="c3">1. c3</option>
-                                            <option value="e3">1. e3</option>
-                                            <option value="d3">1. d3</option>
-                                            <option value="g3">1. g3</option>
-                                            <option value="Nc3">1. Nc3</option>
-                                        </select>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="num-games">Número de partidas:</label>
-                                        <input type="range" id="num-games" min="1" max="20" value="5">
-                                        <span id="num-games-value">5</span>
-                                    </div>
-                                    
-                                    <button id="start-battle" class="btn btn-primary">
-                                        <i class="fas fa-play"></i> Iniciar Batalha
-                                    </button>
-                                </div>
-
-                                <div id="tournament-config" class="battle-config" style="display: none;">
-                                    <div class="form-group">
-                                        <label>Modelos Participantes:</label>
-                                        <div id="tournament-models" class="checkbox-group"></div>
-                                    </div>
-                                    
-                                    <div class="form-group">
-                                        <label for="games-per-pair">Partidas por confronto:</label>
-                                        <input type="range" id="games-per-pair" min="1" max="10" value="3">
-                                        <span id="games-per-pair-value">3</span>
-                                    </div>
-                                    
-                                    <button id="start-tournament" class="btn btn-primary">
-                                        <i class="fas fa-trophy"></i> Iniciar Torneio
-                                    </button>
-                                </div>
-                            </div>
+                <div class="card">
+                    <div class="d-flex align-center gap-16">
+                        <div style="width: 60px; height: 60px; background: var(--lichess-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                            <i class="fas fa-robot"></i>
                         </div>
-
-                        <div class="arena-display">
-                            <div class="battle-status">
-                                <h3>🎮 Status da Batalha</h3>
-                                <div id="battle-info" class="info-card">
-                                    <p>Nenhuma batalha em andamento</p>
-                                </div>
-                            </div>
-
-                            <div class="battle-board">
-                                <div id="arena-chessboard"></div>
-                            </div>
-
-                            <div class="battle-progress">
-                                <div class="progress-bar">
-                                    <div id="battle-progress-fill" class="progress-fill"></div>
-                                </div>
-                                <div id="battle-results" class="results-table"></div>
-                            </div>
+                        <div>
+                            <div id="active-models" style="font-size: 28px; font-weight: 700; color: var(--lichess-brown-light);">6</div>
+                            <div style="color: var(--text-secondary); font-size: 14px;">Modelos Ativos</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Play vs LLM Page -->
-                <div id="play-page" class="page">
-                    <div class="page-header">
-                        <h2>🎯 Jogar contra LLM</h2>
-                        <p>Desafie um modelo de IA em uma partida de xadrez</p>
-                    </div>
-
-                    <div class="play-layout">
-                        <div class="play-config">
-                            <div class="config-section">
-                                <h3>🎮 Configuração do Jogo</h3>
-                                
-                                <div class="form-group">
-                                    <label for="opponent-model">Oponente:</label>
-                                    <select id="opponent-model"></select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label>Sua cor:</label>
-                                    <div class="radio-group">
-                                        <label><input type="radio" name="player-color" value="white" checked> Brancas</label>
-                                        <label><input type="radio" name="player-color" value="black"> Pretas</label>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="difficulty">Dificuldade:</label>
-                                    <select id="difficulty">
-                                        <option value="beginner">Iniciante</option>
-                                        <option value="intermediate">Intermediário</option>
-                                        <option value="advanced" selected>Avançado</option>
-                                        <option value="master">Mestre</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="time-control">Controle de tempo:</label>
-                                    <select id="time-control">
-                                        <option value="unlimited">Sem limite</option>
-                                        <option value="5">5 min</option>
-                                        <option value="10" selected>10 min</option>
-                                        <option value="15">15 min</option>
-                                        <option value="30">30 min</option>
-                                    </select>
-                                </div>
-                                
-                                <button id="new-game" class="btn btn-primary">
-                                    <i class="fas fa-play"></i> Novo Jogo
-                                </button>
-                                
-                                <div class="game-controls" style="display: none;">
-                                    <button id="restart-game" class="btn btn-secondary">
-                                        <i class="fas fa-redo"></i> Reiniciar
-                                    </button>
-                                    <button id="save-game" class="btn btn-secondary">
-                                        <i class="fas fa-save"></i> Salvar
-                                    </button>
-                                    <button id="hint" class="btn btn-secondary">
-                                        <i class="fas fa-lightbulb"></i> Dica
-                                    </button>
-                                </div>
-                            </div>
+                <div class="card">
+                    <div class="d-flex align-center gap-16">
+                        <div style="width: 60px; height: 60px; background: var(--lichess-orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                            <i class="fas fa-chart-line"></i>
                         </div>
-
-                        <div class="play-display">
-                            <div class="game-info">
-                                <div id="game-status" class="status-card">
-                                    <p>Configure um novo jogo para começar</p>
-                                </div>
-                            </div>
-
-                            <div class="game-board">
-                                <div id="play-chessboard"></div>
-                            </div>
-
-                            <div class="move-input" style="display: none;">
-                                <h4>🎯 Seu Lance</h4>
-                                <div class="input-group">
-                                    <input type="text" id="move-input" placeholder="Digite seu lance (ex: e4, Nf3)">
-                                    <button id="make-move" class="btn btn-primary">
-                                        <i class="fas fa-arrow-right"></i> Jogar
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="move-history">
-                                <h4>📝 Histórico de Lances</h4>
-                                <div id="move-list" class="move-list"></div>
-                            </div>
+                        <div>
+                            <div id="avg-moves" style="font-size: 28px; font-weight: 700; color: var(--lichess-brown-light);">42</div>
+                            <div style="color: var(--text-secondary); font-size: 14px;">Lances por Partida</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Analysis Page -->
-                <div id="analysis-page" class="page">
-                    <div class="page-header">
-                        <h2>📊 Análise de Partidas</h2>
-                        <p>Analise partidas e compare modelos</p>
-                    </div>
-
-                    <div class="analysis-tabs">
-                        <button class="tab-btn active" data-tab="individual">🔍 Análise Individual</button>
-                        <button class="tab-btn" data-tab="comparative">📈 Análise Comparativa</button>
-                        <button class="tab-btn" data-tab="lichess">🌐 Integração Lichess</button>
-                    </div>
-
-                    <div class="tab-content">
-                        <div id="individual-tab" class="tab-panel active">
-                            <div class="analysis-layout">
-                                <div class="analysis-config">
-                                    <h3>🔍 Selecionar Partida</h3>
-                                    <div class="form-group">
-                                        <label for="game-select">Partida:</label>
-                                        <select id="game-select"></select>
-                                    </div>
-                                    <button id="analyze-game" class="btn btn-primary">
-                                        <i class="fas fa-search"></i> Analisar
-                                    </button>
-                                </div>
-
-                                <div class="analysis-display">
-                                    <div class="analysis-board">
-                                        <div id="analysis-chessboard"></div>
-                                        <div class="board-controls">
-                                            <button id="first-move" class="btn btn-sm">⏮️</button>
-                                            <button id="prev-move" class="btn btn-sm">◀️</button>
-                                            <button id="next-move" class="btn btn-sm">▶️</button>
-                                            <button id="last-move" class="btn btn-sm">⏭️</button>
-                                        </div>
-                                        <input type="range" id="move-slider" min="0" max="0" value="0">
-                                    </div>
-
-                                    <div class="analysis-results">
-                                        <h4>📊 Resultados da Análise</h4>
-                                        <div id="analysis-metrics" class="metrics-grid"></div>
-                                        <div id="evaluation-chart"></div>
-                                        <div id="best-worst-moves"></div>
-                                    </div>
-                                </div>
-                            </div>
+                <div class="card">
+                    <div class="d-flex align-center gap-16">
+                        <div style="width: 60px; height: 60px; background: var(--lichess-purple); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                            <i class="fas fa-trophy"></i>
                         </div>
-
-                        <div id="comparative-tab" class="tab-panel">
-                            <div class="comparison-layout">
-                                <div class="comparison-config">
-                                    <h3>📈 Comparar Modelos</h3>
-                                    <div class="form-group">
-                                        <label for="model1-select">Modelo 1:</label>
-                                        <select id="model1-select"></select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="model2-select">Modelo 2:</label>
-                                        <select id="model2-select"></select>
-                                    </div>
-                                    <button id="compare-models" class="btn btn-primary">
-                                        <i class="fas fa-balance-scale"></i> Comparar
-                                    </button>
-                                </div>
-
-                                <div class="comparison-results">
-                                    <div id="head-to-head" class="comparison-section"></div>
-                                    <div id="performance-metrics" class="comparison-section"></div>
-                                    <div id="performance-chart" class="comparison-section"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="lichess-tab" class="tab-panel">
-                            <div class="lichess-layout">
-                                <div class="lichess-config">
-                                    <h3>🌐 Configuração Lichess</h3>
-                                    <div class="form-group">
-                                        <label for="lichess-token">Token de API:</label>
-                                        <input type="password" id="lichess-token" placeholder="Seu token do Lichess">
-                                    </div>
-                                    <button id="test-lichess" class="btn btn-secondary">
-                                        <i class="fas fa-link"></i> Testar Conexão
-                                    </button>
-
-                                    <div class="form-group">
-                                        <label for="lichess-username">Nome de usuário:</label>
-                                        <input type="text" id="lichess-username" placeholder="Username do Lichess">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="max-import-games">Máximo de partidas:</label>
-                                        <input type="range" id="max-import-games" min="10" max="1000" value="100">
-                                        <span id="max-import-value">100</span>
-                                    </div>
-                                    <button id="import-games" class="btn btn-primary">
-                                        <i class="fas fa-download"></i> Importar Partidas
-                                    </button>
-
-                                    <button id="apply-rag" class="btn btn-success">
-                                        <i class="fas fa-brain"></i> Aplicar Melhoramentos RAG
-                                    </button>
-                                </div>
-
-                                <div class="lichess-results">
-                                    <div id="import-status" class="status-section"></div>
-                                    <div id="rag-improvements" class="improvements-section"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Rankings Page -->
-                <div id="rankings-page" class="page">
-                    <div class="page-header">
-                        <h2>🏆 Rankings e Estatísticas</h2>
-                        <p>Rankings ELO e estatísticas detalhadas dos modelos</p>
-                    </div>
-
-                    <div class="rankings-tabs">
-                        <button class="tab-btn active" data-tab="general">🏆 Ranking Geral</button>
-                        <button class="tab-btn" data-tab="detailed">📊 Estatísticas Detalhadas</button>
-                        <button class="tab-btn" data-tab="openings">🎯 Performance por Abertura</button>
-                    </div>
-
-                    <div class="tab-content">
-                        <div id="general-tab" class="tab-panel active">
-                            <div class="rankings-layout">
-                                <div class="rankings-table">
-                                    <h3>🏆 Ranking ELO</h3>
-                                    <div class="table-container">
-                                        <table id="elo-rankings-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Posição</th>
-                                                    <th>Modelo</th>
-                                                    <th>Rating ELO</th>
-                                                    <th>Partidas</th>
-                                                    <th>Taxa de Vitória</th>
-                                                    <th>Precisão Média</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody></tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <div class="elo-chart">
-                                    <h3>📈 Evolução do Rating ELO</h3>
-                                    <canvas id="elo-progression-chart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="detailed-tab" class="tab-panel">
-                            <div class="detailed-stats-layout">
-                                <div class="model-selector">
-                                    <h3>📊 Estatísticas Detalhadas</h3>
-                                    <div class="form-group">
-                                        <label for="stats-model-select">Selecione um modelo:</label>
-                                        <select id="stats-model-select"></select>
-                                    </div>
-                                </div>
-
-                                <div class="detailed-stats">
-                                    <div id="model-metrics" class="metrics-grid"></div>
-                                    <div id="color-performance" class="chart-container"></div>
-                                    <div id="recent-performance" class="chart-container"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="openings-tab" class="tab-panel">
-                            <div class="openings-layout">
-                                <div class="openings-table">
-                                    <h3>🎯 Performance por Abertura</h3>
-                                    <div class="table-container">
-                                        <table id="openings-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Abertura</th>
-                                                    <th>Partidas</th>
-                                                    <th>Taxa de Vitória</th>
-                                                    <th>Precisão Média</th>
-                                                    <th>Lances Médios</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody></tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <div class="openings-chart">
-                                    <h3>📊 Popularidade das Aberturas</h3>
-                                    <canvas id="openings-popularity-chart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Settings Page -->
-                <div id="settings-page" class="page">
-                    <div class="page-header">
-                        <h2>⚙️ Configurações</h2>
-                        <p>Configure modelos, APIs e preferências do sistema</p>
-                    </div>
-
-                    <div class="settings-tabs">
-                        <button class="tab-btn active" data-tab="models">🤖 Modelos</button>
-                        <button class="tab-btn" data-tab="apis">🌐 APIs</button>
-                        <button class="tab-btn" data-tab="game">🎮 Jogo</button>
-                        <button class="tab-btn" data-tab="data">💾 Dados</button>
-                    </div>
-
-                    <div class="tab-content">
-                        <div id="models-tab" class="tab-panel active">
-                            <div class="settings-section">
-                                <h3>🔑 Chaves de API</h3>
-                                <div class="form-group">
-                                    <label for="openai-key">OpenAI API Key:</label>
-                                    <input type="password" id="openai-key" placeholder="sk-...">
-                                </div>
-                                <div class="form-group">
-                                    <label for="google-key">Google API Key:</label>
-                                    <input type="password" id="google-key" placeholder="AIza...">
-                                </div>
-                                <div class="form-group">
-                                    <label for="deepseek-key">DeepSeek API Key:</label>
-                                    <input type="password" id="deepseek-key" placeholder="sk-...">
-                                </div>
-                                <div class="form-group">
-                                    <label for="groq-key">Groq API Key:</label>
-                                    <input type="password" id="groq-key" placeholder="gsk_...">
-                                </div>
-                                <button id="save-api-keys" class="btn btn-primary">
-                                    <i class="fas fa-save"></i> Salvar Chaves
-                                </button>
-                            </div>
-
-                            <div class="settings-section">
-                                <h3>🎛️ Parâmetros dos Modelos</h3>
-                                <div class="form-group">
-                                    <label for="temperature">Temperatura:</label>
-                                    <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.1">
-                                    <span id="temperature-value">0.1</span>
-                                </div>
-                                <div class="form-group">
-                                    <label for="max-tokens">Máximo de tokens:</label>
-                                    <input type="range" id="max-tokens" min="100" max="4000" step="100" value="1000">
-                                    <span id="max-tokens-value">1000</span>
-                                </div>
-                                <div class="form-group">
-                                    <label for="thinking-time">Tempo de reflexão (s):</label>
-                                    <input type="range" id="thinking-time" min="1" max="30" value="5">
-                                    <span id="thinking-time-value">5</span>
-                                </div>
-                            </div>
-
-                            <div class="settings-section">
-                                <h3>🧪 Teste dos Modelos</h3>
-                                <div class="form-group">
-                                    <label for="test-model-select">Modelo para teste:</label>
-                                    <select id="test-model-select"></select>
-                                </div>
-                                <button id="test-model" class="btn btn-secondary">
-                                    <i class="fas fa-vial"></i> Testar Modelo
-                                </button>
-                                <div id="test-results" class="test-results"></div>
-                            </div>
-                        </div>
-
-                        <div id="apis-tab" class="tab-panel">
-                            <div class="settings-section">
-                                <h3>♟️ Lichess API</h3>
-                                <div class="form-group">
-                                    <label for="settings-lichess-token">Token do Lichess:</label>
-                                    <input type="password" id="settings-lichess-token" placeholder="lip_...">
-                                </div>
-                                <button id="connect-lichess" class="btn btn-primary">
-                                    <i class="fas fa-link"></i> Conectar ao Lichess
-                                </button>
-                            </div>
-
-                            <div class="settings-section">
-                                <h3>🐟 Stockfish Engine</h3>
-                                <div class="form-group">
-                                    <label for="stockfish-path">Caminho do Stockfish:</label>
-                                    <input type="text" id="stockfish-path" value="/usr/local/bin/stockfish">
-                                </div>
-                                <div class="form-group">
-                                    <label for="stockfish-depth">Profundidade de análise:</label>
-                                    <input type="range" id="stockfish-depth" min="1" max="20" value="15">
-                                    <span id="stockfish-depth-value">15</span>
-                                </div>
-                                <button id="test-stockfish" class="btn btn-secondary">
-                                    <i class="fas fa-vial"></i> Testar Stockfish
-                                </button>
-                            </div>
-                        </div>
-
-                        <div id="game-tab" class="tab-panel">
-                            <div class="settings-section">
-                                <h3>🎯 Configurações Padrão</h3>
-                                <div class="form-group">
-                                    <label for="default-time-control">Controle de tempo padrão:</label>
-                                    <select id="default-time-control">
-                                        <option value="unlimited">Sem limite</option>
-                                        <option value="5">5 min</option>
-                                        <option value="10" selected>10 min</option>
-                                        <option value="15">15 min</option>
-                                        <option value="30">30 min</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label>
-                                        <input type="checkbox" id="auto-save-games" checked> Salvar partidas automaticamente
-                                    </label>
-                                </div>
-                                <div class="form-group">
-                                    <label>
-                                        <input type="checkbox" id="show-coordinates" checked> Mostrar coordenadas no tabuleiro
-                                    </label>
-                                </div>
-                                <div class="form-group">
-                                    <label>
-                                        <input type="checkbox" id="highlight-last-move" checked> Destacar último lance
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="settings-section">
-                                <h3>📊 Configurações de Análise</h3>
-                                <div class="form-group">
-                                    <label>
-                                        <input type="checkbox" id="auto-analysis"> Análise automática após partidas
-                                    </label>
-                                </div>
-                                <div class="form-group">
-                                    <label for="analysis-depth">Profundidade da análise automática:</label>
-                                    <input type="range" id="analysis-depth" min="5" max="20" value="12">
-                                    <span id="analysis-depth-value">12</span>
-                                </div>
-                                <div class="form-group">
-                                    <label>
-                                        <input type="checkbox" id="save-analysis" checked> Salvar resultados da análise
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div id="data-tab" class="tab-panel">
-                            <div class="settings-section">
-                                <h3>📊 Estatísticas do Banco de Dados</h3>
-                                <div id="db-stats" class="metrics-grid"></div>
-                            </div>
-
-                            <div class="settings-section">
-                                <h3>🗂️ Gerenciamento de Dados</h3>
-                                <button id="export-data" class="btn btn-primary">
-                                    <i class="fas fa-download"></i> Exportar Dados
-                                </button>
-                                <div class="form-group">
-                                    <label for="import-file">Importar Dados:</label>
-                                    <input type="file" id="import-file" accept=".json">
-                                </div>
-                                <button id="import-data" class="btn btn-secondary">
-                                    <i class="fas fa-upload"></i> Importar
-                                </button>
-                            </div>
-
-                            <div class="settings-section danger-zone">
-                                <h3>🗑️ Zona de Perigo</h3>
-                                <p class="warning">⚠️ Atenção: As operações abaixo são irreversíveis!</p>
-                                <button id="clear-old-games" class="btn btn-warning">
-                                    <i class="fas fa-trash"></i> Limpar Partidas Antigas (>30 dias)
-                                </button>
-                                <button id="reset-database" class="btn btn-danger">
-                                    <i class="fas fa-bomb"></i> Resetar Banco de Dados
-                                </button>
-                            </div>
+                        <div>
+                            <div id="tournaments" style="font-size: 28px; font-weight: 700; color: var(--lichess-brown-light);">12</div>
+                            <div style="color: var(--text-secondary); font-size: 14px;">Torneios Completos</div>
                         </div>
                     </div>
                 </div>
             </div>
-        </main>
 
-        <!-- Loading Overlay -->
-        <div id="loading-overlay" class="loading-overlay" style="display: none;">
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p id="loading-text">Carregando...</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+                <div class="card">
+                    <h3 style="margin-bottom: 16px; color: var(--text-primary);">Performance por Modelo</h3>
+                    <canvas id="results-chart" style="max-height: 300px;"></canvas>
+                </div>
+                <div class="card">
+                    <h3 style="margin-bottom: 16px; color: var(--text-primary);">Distribuição de Resultados</h3>
+                    <canvas id="winrate-chart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 16px; color: var(--text-primary);">
+                    <i class="fas fa-history"></i>
+                    Partidas Recentes
+                </h3>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <th style="padding: 12px; text-align: left; color: var(--text-secondary); font-size: 12px; text-transform: uppercase;">Brancas</th>
+                                <th style="padding: 12px; text-align: left; color: var(--text-secondary); font-size: 12px; text-transform: uppercase;">Pretas</th>
+                                <th style="padding: 12px; text-align: left; color: var(--text-secondary); font-size: 12px; text-transform: uppercase;">Resultado</th>
+                                <th style="padding: 12px; text-align: left; color: var(--text-secondary); font-size: 12px; text-transform: uppercase;">Lances</th>
+                                <th style="padding: 12px; text-align: left; color: var(--text-secondary); font-size: 12px; text-transform: uppercase;">Data</th>
+                                <th style="padding: 12px; text-align: left; color: var(--text-secondary); font-size: 12px; text-transform: uppercase;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-games-table">
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 12px; color: var(--text-primary);">GPT-4o</td>
+                                <td style="padding: 12px; color: var(--text-primary);">Gemini-Pro</td>
+                                <td style="padding: 12px;">
+                                    <span style="background: var(--success); color: white; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">1-0</span>
+                                </td>
+                                <td style="padding: 12px; color: var(--text-primary);">48</td>
+                                <td style="padding: 12px; color: var(--text-secondary);">Hoje, 14:32</td>
+                                <td style="padding: 12px;">
+                                    <button class="btn" style="padding: 4px 8px; font-size: 11px;">
+                                        <i class="fas fa-eye"></i> Ver
+                                    </button>
+                                </td>
+                            </tr>
+                            <!-- More rows would be dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <!-- Toast Notifications -->
-        <div id="toast-container" class="toast-container"></div>
+        <!-- Play Page -->
+        <div id="play-page" class="page">
+            <div class="text-center mb-24">
+                <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">
+                    <i class="fas fa-gamepad" style="color: var(--lichess-brown-light);"></i>
+                    Jogar contra IA
+                </h1>
+                <p style="color: var(--text-secondary); font-size: 16px;">
+                    Desafie um modelo de IA em uma partida de xadrez profissional
+                </p>
+            </div>
+
+            <div class="game-layout">
+                <!-- Game Configuration -->
+                <div class="sidebar">
+                    <div class="card">
+                        <h3 style="margin-bottom: 16px; color: var(--text-primary);">
+                            <i class="fas fa-cog"></i>
+                            Configurar Partida
+                        </h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Oponente IA</label>
+                            <select class="form-control">
+                                <option>GPT-4o (Mais Forte)</option>
+                                <option>GPT-4-Turbo (Equilibrado)</option>
+                                <option>Gemini-Pro (Criativo)</option>
+                                <option>Claude-3 (Estratégico)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Sua Cor</label>
+                            <div style="display: flex; gap: 8px;">
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); flex: 1;">
+                                    <input type="radio" name="color" value="white" checked>
+                                    <span style="font-size: 16px;">♔</span>
+                                    <span>Brancas</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); flex: 1;">
+                                    <input type="radio" name="color" value="black">
+                                    <span style="font-size: 16px;">♚</span>
+                                    <span>Pretas</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Dificuldade</label>
+                            <select class="form-control">
+                                <option>Iniciante</option>
+                                <option>Intermediário</option>
+                                <option selected>Avançado</option>
+                                <option>Mestre</option>
+                                <option>Grandmaster</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Controle de Tempo</label>
+                            <select class="form-control">
+                                <option>Sem limite</option>
+                                <option>Bullet (1+0)</option>
+                                <option selected>Blitz (5+3)</option>
+                                <option>Rapid (15+10)</option>
+                                <option>Classical (30+0)</option>
+                            </select>
+                        </div>
+
+                        <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+                            <i class="fas fa-play"></i>
+                            Iniciar Partida
+                        </button>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="margin-bottom: 16px; color: var(--text-primary);">
+                            <i class="fas fa-history"></i>
+                            Histórico de Lances
+                        </h3>
+                        <div id="move-history" style="max-height: 300px; overflow-y: auto; font-family: var(--font-mono); font-size: 13px;">
+                            <div style="color: var(--text-muted); text-align: center; padding: 20px;">
+                                Nenhuma partida em andamento
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game Board -->
+                <div class="chessboard-wrapper">
+                    <div class="game-status status-playing" style="width: 100%; margin-bottom: 16px;">
+                        <i class="fas fa-info-circle"></i>
+                        Configure uma nova partida para começar
+                    </div>
+                    
+                    <div class="chessboard-container">
+                        <div class="chessboard" id="play-board">
+                            <!-- 64 squares will be generated by JavaScript -->
+                            <!-- Example squares for demo -->
+                            <div class="square light" data-square="a8">
+                                <div class="piece">♜</div>
+                                <div class="coordinates coord-rank">8</div>
+                            </div>
+                            <div class="square dark" data-square="b8">
+                                <div class="piece">♞</div>
+                            </div>
+                            <!-- ... more squares would be generated ... -->
+                            <div class="square dark" data-square="a1">
+                                <div class="piece">♖</div>
+                            </div>
+                            <div class="square light" data-square="h1">
+                                <div class="piece">♖</div>
+                                <div class="coordinates coord-file">h</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="board-controls">
+                        <button class="control-btn" title="Primeiro lance">
+                            <i class="fas fa-step-backward"></i>
+                        </button>
+                        <button class="control-btn" title="Lance anterior">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="control-btn" title="Próximo lance">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                        <button class="control-btn" title="Último lance">
+                            <i class="fas fa-step-forward"></i>
+                        </button>
+                        <button class="control-btn" title="Virar tabuleiro">
+                            <i class="fas fa-refresh"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Game Info -->
+                <div class="sidebar">
+                    <div class="card">
+                        <h3 style="margin-bottom: 16px; color: var(--text-primary);">
+                            <i class="fas fa-info"></i>
+                            Status da Partida
+                        </h3>
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                            <div style="width: 40px; height: 40px; background: var(--bg-tertiary); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">Você</div>
+                                <div style="color: var(--text-secondary); font-size: 12px;">Brancas</div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin: 12px 0; color: var(--text-muted);">VS</div>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; background: var(--lichess-brown); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600;">GPT-4o</div>
+                                <div style="color: var(--text-secondary); font-size: 12px;">Pretas</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="margin-bottom: 16px; color: var(--text-primary);">
+                            <i class="fas fa-clock"></i>
+                            Tempo
+                        </h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; font-family: var(--font-mono);">5:00</div>
+                                <div style="color: var(--text-secondary); font-size: 12px;">Você</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: 700; font-family: var(--font-mono);">5:00</div>
+                                <div style="color: var(--text-secondary); font-size: 12px;">IA</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="margin-bottom: 16px; color: var(--text-primary);">
+                            <i class="fas fa-tools"></i>
+                            Controles
+                        </h3>
+                        <div style="display: flex; flex-direction: column; gap: 8px;">
+                            <button class="btn btn-secondary" style="justify-content: center;">
+                                <i class="fas fa-lightbulb"></i>
+                                Solicitar Dica
+                            </button>
+                            <button class="btn btn-secondary" style="justify-content: center;">
+                                <i class="fas fa-undo"></i>
+                                Desfazer Lance
+                            </button>
+                            <button class="btn" style="justify-content: center; background: var(--warning);">
+                                <i class="fas fa-handshake"></i>
+                                Oferecer Empate
+                            </button>
+                            <button class="btn" style="justify-content: center; background: var(--error);">
+                                <i class="fas fa-flag"></i>
+                                Resignar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p id="loading-text">Carregando...</p>
+        </div>
     </div>
+
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0-beta.6/chess.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-    <script src="js/chessboard.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/dashboard.js"></script>
-    <script src="js/arena.js"></script>
-    <script src="js/play.js"></script>
-    <script src="js/analysis.js"></script>
-    <script src="js/rankings.js"></script>
-    <script src="js/settings.js"></script>
-    <script src="js/app.js"></script>
+    
+    <script>
+        // Basic JavaScript for demo functionality
+        class ChessArena {
+            constructor() {
+                this.currentPage = 'dashboard';
+                this.init();
+            }
+
+            init() {
+                this.setupNavigation();
+                this.generateChessboard();
+                this.initializeCharts();
+            }
+
+            setupNavigation() {
+                const navButtons = document.querySelectorAll('.nav-btn');
+                navButtons.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const page = btn.dataset.page;
+                        this.showPage(page);
+                        
+                        navButtons.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    });
+                });
+            }
+
+            showPage(pageId) {
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.remove('active');
+                });
+                
+                const page = document.getElementById(`${pageId}-page`);
+                if (page) {
+                    page.classList.add('active');
+                    this.currentPage = pageId;
+                }
+            }
+
+            generateChessboard() {
+                const board = document.getElementById('play-board');
+                if (!board) return;
+
+                board.innerHTML = '';
+                
+                // Generate 8x8 grid
+                for (let rank = 8; rank >= 1; rank--) {
+                    for (let file = 0; file < 8; file++) {
+                        const square = document.createElement('div');
+                        const fileChar = String.fromCharCode(97 + file);
+                        const isLight = (rank + file) % 2 !== 0;
+                        
+                        square.className = `square ${isLight ? 'light' : 'dark'}`;
+                        square.dataset.square = `${fileChar}${rank}`;
+                        
+                        // Add coordinates
+                        if (file === 7) {
+                            const coord = document.createElement('div');
+                            coord.className = 'coordinates coord-rank';
+                            coord.textContent = rank;
+                            square.appendChild(coord);
+                        }
+                        if (rank === 1) {
+                            const coord = document.createElement('div');
+                            coord.className = 'coordinates coord-file';
+                            coord.textContent = fileChar;
+                            square.appendChild(coord);
+                        }
+                        
+                        board.appendChild(square);
+                    }
+                }
+
+                // Add initial pieces
+                this.setupInitialPosition();
+            }
+
+            setupInitialPosition() {
+                const pieces = {
+                    'a8': '♜', 'b8': '♞', 'c8': '♝', 'd8': '♛', 'e8': '♚', 'f8': '♝', 'g8': '♞', 'h8': '♜',
+                    'a7': '♟', 'b7': '♟', 'c7': '♟', 'd7': '♟', 'e7': '♟', 'f7': '♟', 'g7': '♟', 'h7': '♟',
+                    'a2': '♙', 'b2': '♙', 'c2': '♙', 'd2': '♙', 'e2': '♙', 'f2': '♙', 'g2': '♙', 'h2': '♙',
+                    'a1': '♖', 'b1': '♘', 'c1': '♗', 'd1': '♕', 'e1': '♔', 'f1': '♗', 'g1': '♘', 'h1': '♖'
+                };
+
+                Object.entries(pieces).forEach(([square, piece]) => {
+                    const squareEl = document.querySelector(`[data-square="${square}"]`);
+                    if (squareEl) {
+                        const pieceEl = document.createElement('div');
+                        pieceEl.className = 'piece';
+                        pieceEl.textContent = piece;
+                        squareEl.appendChild(pieceEl);
+                    }
+                });
+            }
+
+            initializeCharts() {
+                // Mock chart for demo
+                const ctx1 = document.getElementById('results-chart');
+                if (ctx1) {
+                    new Chart(ctx1, {
+                        type: 'bar',
+                        data: {
+                            labels: ['GPT-4o', 'Gemini-Pro', 'GPT-4-Turbo', 'Claude-3'],
+                            datasets: [{
+                                label: 'Vitórias',
+                                data: [12, 8, 10, 6],
+                                backgroundColor: '#759900'
+                            }, {
+                                label: 'Derrotas',
+                                data: [6, 10, 8, 12],
+                                backgroundColor: '#e74c3c'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false
+                        }
+                    });
+                }
+
+                const ctx2 = document.getElementById('winrate-chart');
+                if (ctx2) {
+                    new Chart(ctx2, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Vitórias Brancas', 'Vitórias Pretas', 'Empates'],
+                            datasets: [{
+                                data: [45, 35, 20],
+                                backgroundColor: ['#759900', '#e74c3c', '#6c757d']
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false
+                        }
+                    });
+                }
+            }
+
+            showToast(message, type = 'info') {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.innerHTML = `
+                    <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : 'info'}-circle"></i>
+                    <span>${message}</span>
+                `;
+                container.appendChild(toast);
+
+                setTimeout(() => toast.remove(), 5000);
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new ChessArena();
+        });
+    </script>
 </body>
 </html>
