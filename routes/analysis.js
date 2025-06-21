@@ -1,5 +1,8 @@
 const express = require("express");
 const router = express.Router();
+const fs = require("fs").promises;
+const path = require("path");
+const { Chess } = require("chess.js");
 
 // Mock database for storing analysis results
 let gameAnalyses = new Map();
@@ -69,6 +72,90 @@ function initializeMockData() {
 }
 
 initializeMockData();
+
+// Get detailed stats for all games
+router.get("/stats", async (req, res) => {
+  const gameDirectories = [
+    "Gemini-Pro vs GPT-4o",
+    "gpt-4 vs Deepseek",
+    "GPT-4o vs Gemini-Pro",
+  ];
+  const stats = {};
+
+  const initializePlayerStats = (player) => {
+    if (!stats[player]) {
+      stats[player] = { wins: 0, losses: 0, draws: 0, games: 0, score: 0 };
+    }
+  };
+
+  try {
+    for (const dir of gameDirectories) {
+      const dirPath = path.join(__dirname, "..", dir);
+      try {
+        const gameFiles = await fs.readdir(dirPath);
+        const pgnFiles = gameFiles.filter((f) => f.endsWith(".pgn"));
+
+        for (const pgnFile of pgnFiles) {
+          const filePath = path.join(dirPath, pgnFile);
+          const pgnData = await fs.readFile(filePath, "utf-8");
+
+          const chess = new Chess();
+          try {
+            chess.loadPgn(pgnData);
+          } catch (e) {
+            console.warn(
+              `Skipping ${pgnFile} in ${dir} due to invalid PGN: ${e.message}`
+            );
+            continue;
+          }
+
+          const headers = chess.header();
+          const whitePlayer = headers.White;
+          const blackPlayer = headers.Black;
+          const result = headers.Result;
+
+          if (!whitePlayer || !blackPlayer || !result) {
+            console.warn(
+              `Skipping ${pgnFile} in ${dir} due to missing headers.`
+            );
+            continue;
+          }
+
+          initializePlayerStats(whitePlayer);
+          initializePlayerStats(blackPlayer);
+
+          stats[whitePlayer].games++;
+          stats[blackPlayer].games++;
+
+          if (result === "1-0") {
+            stats[whitePlayer].wins++;
+            stats[whitePlayer].score += 1;
+            stats[blackPlayer].losses++;
+          } else if (result === "0-1") {
+            stats[blackPlayer].wins++;
+            stats[blackPlayer].score += 1;
+            stats[whitePlayer].losses++;
+          } else if (result === "1/2-1/2") {
+            stats[whitePlayer].draws++;
+            stats[whitePlayer].score += 0.5;
+            stats[blackPlayer].draws++;
+            stats[blackPlayer].score += 0.5;
+          }
+        }
+      } catch (error) {
+        if (error.code !== "ENOENT") {
+          console.error(`Error processing directory ${dir}:`, error);
+        } else {
+          console.warn(`Directory ${dir} not found, skipping.`);
+        }
+      }
+    }
+    res.json(stats);
+  } catch (error) {
+    console.error("Error analyzing PGN files:", error);
+    res.status(500).json({ error: "Failed to analyze PGN files" });
+  }
+});
 
 // Analyze specific game
 router.get("/game/:id", (req, res) => {
@@ -250,131 +337,17 @@ router.get("/elo", (req, res) => {
     "Mixtral-8x7B",
     "Deepseek-R1",
     "ChessGPT-Pro",
-    "TacticalMaster",
-    "StrategicAI",
-    "EndgameExpert",
   ];
+  let filteredEloHistory = eloHistory;
 
-  const rankings = models
-    .map((model, index) => ({
-      model,
-      elo: Math.floor(Math.random() * 500) + 1300 + (10 - index) * 30,
-      games_played: Math.floor(Math.random() * 150) + 30,
-      win_rate: Math.random() * 0.5 + 0.25,
-      avg_accuracy: Math.random() * 25 + 65,
-      recent_form: Array.from({ length: 10 }, () =>
-        Math.random() > 0.6 ? "W" : Math.random() > 0.3 ? "L" : "D"
-      ).join(""),
-      peak_elo: Math.floor(Math.random() * 600) + 1400,
-      current_streak: Math.floor(Math.random() * 8),
-      last_played: new Date(
-        Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000
-      ).toISOString(),
-    }))
-    .sort((a, b) => b.elo - a.elo);
-
-  res.json(rankings);
-});
-
-// Get ELO history
-router.get("/elo-history", (req, res) => {
-  const { model, days = 30 } = req.query;
-
-  let filteredHistory = eloHistory;
-
-  if (model) {
-    filteredHistory = eloHistory.filter((entry) => entry.model === model);
+  if (req.query.models) {
+    const selectedModels = req.query.models.split(",");
+    filteredEloHistory = eloHistory.filter((entry) =>
+      selectedModels.includes(entry.model)
+    );
   }
 
-  // Filter by days
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - parseInt(days));
-
-  filteredHistory = filteredHistory.filter(
-    (entry) => new Date(entry.date) >= cutoffDate
-  );
-
-  res.json(filteredHistory);
-});
-
-// Get detailed stats for a model
-router.get("/stats/:model", (req, res) => {
-  const model = req.params.model;
-
-  const stats = {
-    model,
-    total_games: Math.floor(Math.random() * 200) + 50,
-    wins: Math.floor(Math.random() * 80) + 20,
-    draws: Math.floor(Math.random() * 30) + 5,
-    losses: Math.floor(Math.random() * 90) + 25,
-    win_rate: Math.random() * 40 + 35,
-    avg_accuracy: Math.random() * 25 + 65,
-    current_elo: Math.floor(Math.random() * 500) + 1300,
-    peak_elo: Math.floor(Math.random() * 600) + 1400,
-    games_as_white: Math.floor(Math.random() * 100) + 25,
-    games_as_black: Math.floor(Math.random() * 100) + 25,
-    by_color: {
-      white: {
-        wins: Math.floor(Math.random() * 40) + 10,
-        draws: Math.floor(Math.random() * 15) + 2,
-        losses: Math.floor(Math.random() * 35) + 8,
-        accuracy: Math.random() * 25 + 65,
-      },
-      black: {
-        wins: Math.floor(Math.random() * 35) + 8,
-        draws: Math.floor(Math.random() * 15) + 2,
-        losses: Math.floor(Math.random() * 40) + 12,
-        accuracy: Math.random() * 25 + 60,
-      },
-    },
-    by_time_control: {
-      bullet: {
-        games: Math.floor(Math.random() * 30),
-        win_rate: Math.random() * 40 + 30,
-      },
-      blitz: {
-        games: Math.floor(Math.random() * 80) + 20,
-        win_rate: Math.random() * 40 + 35,
-      },
-      rapid: {
-        games: Math.floor(Math.random() * 50) + 10,
-        win_rate: Math.random() * 40 + 40,
-      },
-      classical: {
-        games: Math.floor(Math.random() * 20) + 5,
-        win_rate: Math.random() * 40 + 45,
-      },
-    },
-    opening_repertoire: {
-      as_white: [
-        { opening: "King's Pawn (1.e4)", frequency: Math.random() * 40 + 30 },
-        { opening: "Queen's Pawn (1.d4)", frequency: Math.random() * 30 + 25 },
-        { opening: "English (1.c4)", frequency: Math.random() * 20 + 15 },
-      ],
-      as_black: [
-        { opening: "Sicilian Defense", frequency: Math.random() * 30 + 20 },
-        { opening: "French Defense", frequency: Math.random() * 25 + 15 },
-        {
-          opening: "Queen's Gambit Declined",
-          frequency: Math.random() * 20 + 10,
-        },
-      ],
-    },
-    recent_trend: Array.from({ length: 20 }, () => Math.random() * 30 + 60),
-    tactical_stats: {
-      blunders_per_game: Math.random() * 2 + 0.5,
-      mistakes_per_game: Math.random() * 3 + 1,
-      brilliant_moves: Math.floor(Math.random() * 20) + 5,
-      best_tactical_rating: Math.floor(Math.random() * 400) + 1200,
-    },
-    endgame_performance: {
-      king_pawn_endgames: Math.random() * 40 + 50,
-      piece_endgames: Math.random() * 35 + 45,
-      complex_endgames: Math.random() * 30 + 40,
-    },
-  };
-
-  res.json(stats);
+  res.json(filteredEloHistory);
 });
 
 // Get opening statistics
@@ -382,167 +355,24 @@ router.get("/openings", (req, res) => {
   res.json(openingStats);
 });
 
-// Get opening stats by model
-router.get("/openings/:model", (req, res) => {
-  const model = req.params.model;
-
-  const modelOpeningStats = openingStats.map((opening) => ({
-    ...opening,
-    model_performance: {
-      games_played: Math.floor(Math.random() * 20) + 3,
-      win_rate: Math.random() * 0.5 + 0.25,
-      avg_accuracy: Math.random() * 25 + 65,
-      last_played: new Date(
-        Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000
-      ).toISOString(),
-    },
-  }));
-
-  res.json(modelOpeningStats);
-});
-
-// Get global statistics
-router.get("/global", (req, res) => {
-  const stats = {
-    totalGames: Math.floor(Math.random() * 1000) + 500,
-    activeModels: 8,
-    avgGameLength: Math.random() * 20 + 35,
-    tournamentsCompleted: Math.floor(Math.random() * 20) + 5,
-    totalMoves: Math.floor(Math.random() * 50000) + 20000,
-    avgAccuracy: Math.random() * 15 + 70,
-    mostActiveModel: "GPT-4o",
-    longestGame: Math.floor(Math.random() * 50) + 100,
-    shortestGame: Math.floor(Math.random() * 10) + 8,
-    popularOpenings: ["1.e4", "1.d4", "1.Nf3"],
-    gamesByTimeControl: {
-      bullet: Math.floor(Math.random() * 100) + 50,
-      blitz: Math.floor(Math.random() * 300) + 200,
-      rapid: Math.floor(Math.random() * 200) + 100,
-      classical: Math.floor(Math.random() * 100) + 30,
-    },
-    serverUptime: process.uptime(),
-    lastGamePlayed: new Date(
-      Date.now() - Math.random() * 60 * 60 * 1000
-    ).toISOString(),
-  };
-
-  res.json(stats);
-});
-
-// Get results by model
-router.get("/results-by-model", (req, res) => {
-  const models = [
-    "GPT-4o",
-    "GPT-4-Turbo",
-    "Gemini-1.5-Pro",
-    "Claude-3.5-Sonnet",
-    "Llama-3.1-70B",
-    "Mixtral-8x7B",
-    "Deepseek-R1",
-    "ChessGPT-Pro",
-  ];
-
-  const results = models.map((model) => ({
-    model,
-    wins: Math.floor(Math.random() * 50) + 20,
-    draws: Math.floor(Math.random() * 20) + 5,
-    losses: Math.floor(Math.random() * 45) + 15,
-    accuracy: Math.random() * 25 + 65,
-    elo: Math.floor(Math.random() * 400) + 1300,
-  }));
-
-  res.json(results);
-});
-
-// Get winrate data
-router.get("/winrate", (req, res) => {
-  const whiteWins = Math.floor(Math.random() * 200) + 150;
-  const blackWins = Math.floor(Math.random() * 180) + 130;
-  const draws = Math.floor(Math.random() * 100) + 50;
-
-  const total = whiteWins + blackWins + draws;
-
-  const data = [
-    {
-      result_type: "White Wins",
-      count: whiteWins,
-      percentage: ((whiteWins / total) * 100).toFixed(1),
-    },
-    {
-      result_type: "Black Wins",
-      count: blackWins,
-      percentage: ((blackWins / total) * 100).toFixed(1),
-    },
-    {
-      result_type: "Draws",
-      count: draws,
-      percentage: ((draws / total) * 100).toFixed(1),
-    },
-  ];
-
-  res.json(data);
-});
-
-// Get performance trends
-router.get("/trends", (req, res) => {
-  const { model, timeframe = "30d" } = req.query;
-
-  const days = timeframe === "7d" ? 7 : timeframe === "90d" ? 90 : 30;
-
+// Get model performance trends
+router.get("/trends/:model", (req, res) => {
+  const { model } = req.params;
   const trends = {
-    model: model || "all",
-    timeframe,
-    data: Array.from({ length: days }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (days - i - 1));
-
-      return {
-        date: date.toISOString().split("T")[0],
-        games: Math.floor(Math.random() * 20) + 5,
-        avg_accuracy: Math.random() * 20 + 65,
-        avg_elo: Math.floor(Math.random() * 100) + 1400,
-        wins: Math.floor(Math.random() * 15) + 2,
-        losses: Math.floor(Math.random() * 15) + 2,
-        draws: Math.floor(Math.random() * 5) + 1,
-      };
-    }),
+    performance_over_time: eloHistory.filter((e) => e.model === model),
+    opening_stats: openingStats.slice(0, 3), // Simplified
+    win_loss_draw: {
+      wins: Math.floor(Math.random() * 20),
+      losses: Math.floor(Math.random() * 20),
+      draws: Math.floor(Math.random() * 10),
+    },
+    accuracy_by_phase: {
+      opening: Math.random() * 20 + 75,
+      middlegame: Math.random() * 20 + 70,
+      endgame: Math.random() * 20 + 65,
+    },
   };
-
   res.json(trends);
-});
-
-// Export analysis data
-router.get("/export", (req, res) => {
-  const { format = "json", model } = req.query;
-
-  let exportData = {
-    exported_at: new Date().toISOString(),
-    total_analyses: gameAnalyses.size,
-    elo_history_points: eloHistory.length,
-    opening_stats: openingStats.length,
-  };
-
-  if (model) {
-    exportData.model = model;
-    exportData.model_specific_data = true;
-  }
-
-  exportData.analyses = Array.from(gameAnalyses.values());
-  exportData.elo_history = eloHistory;
-  exportData.opening_statistics = openingStats;
-
-  if (format === "csv") {
-    res.setHeader("Content-Type", "text/csv");
-    res.setHeader(
-      "Content-Disposition",
-      "attachment; filename=analysis_export.csv"
-    );
-    // Convert to CSV format (simplified)
-    const csv = "Analysis data would be converted to CSV format here";
-    res.send(csv);
-  } else {
-    res.json(exportData);
-  }
 });
 
 module.exports = router;

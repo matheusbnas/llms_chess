@@ -9,6 +9,8 @@ class LLMChessArena {
     this.chessboards = new Map();
     this.api = window.smartAPI;
     this.socket = this.setupSocket();
+    this.pgnGame = null;
+    this.currentPgnMove = 0;
 
     this.init();
   }
@@ -50,13 +52,10 @@ class LLMChessArena {
   setupEventListeners() {
     // Navigation
     document.querySelectorAll(".nav-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const page = btn
-          .getAttribute("onclick")
-          ?.match(/goToPage\('(\w+)'\)/)?.[1];
-        if (page) {
-          e.preventDefault();
-          this.showPage(page);
+      btn.addEventListener("click", () => {
+        const pageName = btn.dataset.page;
+        if (pageName) {
+          this.showPage(pageName);
         }
       });
     });
@@ -79,7 +78,15 @@ class LLMChessArena {
             break;
           case "4":
             e.preventDefault();
-            this.showPage("analysis");
+            this.showPage("lichess");
+            break;
+          case "5":
+            e.preventDefault();
+            this.showPage("rankings");
+            break;
+          case "6":
+            e.preventDefault();
+            this.showPage("settings");
             break;
         }
       }
@@ -89,9 +96,15 @@ class LLMChessArena {
   initializePages() {
     // Setup page-specific initializers
     this.pageInitializers = {
-      dashboard: () => this.initializeDashboard(),
-      arena: () => this.initializeArena(),
-      play: () => this.initializePlay(),
+      dashboard: { func: () => this.initializeDashboard(), initialized: false },
+      arena: { func: () => this.initializeArena(), initialized: false },
+      play: { func: () => this.initializePlay(), initialized: false },
+      rankings: { func: () => this.initializeRankings(), initialized: false },
+      settings: { func: () => this.initializeSettings(), initialized: false },
+      "model-management": {
+        func: () => this.initializeModelManagement(),
+        initialized: false,
+      },
       analysis: () => this.initializeAnalysis(),
     };
   }
@@ -130,27 +143,48 @@ class LLMChessArena {
     if (targetPage) {
       targetPage.classList.add("active");
 
-      // Update active nav button
-      const activeBtn = document.querySelector(`[onclick*="${pageName}"]`);
+      const activeBtn = document.querySelector(
+        `.nav-btn[data-page="${pageName}"]`
+      );
       if (activeBtn) {
         activeBtn.classList.add("active");
       }
 
-      // Initialize page if needed
-      if (
-        this.pageInitializers[pageName] &&
-        !this.pageInitializers[pageName].initialized
-      ) {
-        this.pageInitializers[pageName]();
-        this.pageInitializers[pageName].initialized = true;
-      }
-
-      // Call page event handlers
-      if (window.pageEventHandlers && window.pageEventHandlers[pageName]) {
-        window.pageEventHandlers[pageName].onShow?.();
-      }
-
       this.currentPage = pageName;
+      this.loadPageContent(pageName);
+    }
+  }
+
+  async loadPageContent(pageName) {
+    if (this.pageCache.has(pageName)) {
+      document.getElementById(`${pageName}-page`).innerHTML =
+        this.pageCache.get(pageName);
+      this.initializePage(pageName);
+      return;
+    }
+
+    try {
+      const response = await fetch(`/pages/${pageName}.html`);
+      if (!response.ok) {
+        throw new Error(`Failed to load page: ${pageName}`);
+      }
+      const content = await response.text();
+      this.pageCache.set(pageName, content);
+      document.getElementById(`${pageName}-page`).innerHTML = content;
+      this.initializePage(pageName);
+    } catch (error) {
+      console.error(`Error loading page ${pageName}:`, error);
+      document.getElementById(
+        `${pageName}-page`
+      ).innerHTML = `<p>Error loading page.</p>`;
+    }
+  }
+
+  initializePage(pageName) {
+    const initializer = this.pageInitializers[pageName];
+    if (initializer && !initializer.initialized) {
+      initializer.func();
+      initializer.initialized = true;
     }
   }
 
@@ -169,10 +203,10 @@ class LLMChessArena {
 
   initializeArena() {
     console.log("⚔️ Initializing Arena...");
-    if (!this.chessboards.has("arena")) {
+    if (!this.chessboards.has("arena-live")) {
       this.chessboards.set(
-        "arena",
-        new ProfessionalChessboard("arena-chessboard")
+        "arena-live",
+        new ProfessionalChessboard("live-chessboard")
       );
     }
     this.loadBattleHistory();
@@ -185,18 +219,33 @@ class LLMChessArena {
     if (startBattleBtn) {
       startBattleBtn.addEventListener("click", () => this.startArenaBattle());
     }
+
+    // PGN Viewer Logic
+    this.initializePgnViewer();
+
     this.pageInitializers.arena.initialized = true;
   }
 
   initializePlay() {
     console.log("🎮 Initializing Play...");
-    if (!this.chessboards.has("play")) {
-      const playBoard = new ProfessionalChessboard("play-chessboard");
-      playBoard.onMove = (move) => this.handlePlayerMove(move);
-      this.chessboards.set("play", playBoard);
+    if (!this.pageInitializers.play.initialized) {
+      const playManager = new PlayManager();
+      playManager.init();
+      this.pageInitializers.play.initialized = true;
     }
-    this.updateModelSelections(["opponent-model"]);
-    this.pageInitializers.play.initialized = true;
+  }
+
+  initializeRankings() {
+    console.log("🏆 Initializing Rankings...");
+    if (!this.pageInitializers.rankings.initialized) {
+      const rankings = new Rankings();
+      rankings.init();
+      this.pageInitializers.rankings.initialized = true;
+    }
+  }
+
+  initializeSettings() {
+    console.log("⚙️ Initializing Settings...");
   }
 
   initializeAnalysis() {
@@ -209,6 +258,12 @@ class LLMChessArena {
     }
     this.loadAnalysisData();
     this.pageInitializers.analysis.initialized = true;
+  }
+
+  initializeModelManagement() {
+    console.log("🤖 Initializing Model Management...");
+    // Placeholder for model management initialization
+    this.pageInitializers["model-management"].initialized = true;
   }
 
   // ==========================================
@@ -563,6 +618,190 @@ class LLMChessArena {
   loadBattleHistory() {
     // Load and display battle history
     console.log("Loading battle history...");
+  }
+
+  // ==========================================
+  // PGN VIEWER METHODS
+  // ==========================================
+
+  async initializePgnViewer() {
+    const matchupSelect = document.getElementById("pgn-matchup-select");
+    const gameSelect = document.getElementById("pgn-game-select");
+    const loadPgnBtn = document.getElementById("load-pgn-btn");
+
+    if (!matchupSelect || !gameSelect || !loadPgnBtn) return;
+
+    // Load matchups
+    try {
+      const matchups = await this.api.request("get", "/games/list-matchups");
+      matchupSelect.innerHTML =
+        '<option value="">Selecione um confronto</option>';
+      matchups.forEach((matchup) => {
+        const option = document.createElement("option");
+        option.value = matchup;
+        option.textContent = matchup;
+        matchupSelect.appendChild(option);
+      });
+    } catch (error) {
+      console.error("Failed to load matchups:", error);
+      matchupSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+    }
+
+    // Event Listeners
+    matchupSelect.addEventListener("change", async () => {
+      const selectedMatchup = matchupSelect.value;
+      gameSelect.innerHTML = '<option value="">Carregando partidas...</option>';
+      if (!selectedMatchup) {
+        gameSelect.innerHTML =
+          '<option value="">Selecione um confronto...</option>';
+        return;
+      }
+      try {
+        const games = await this.api.request(
+          "get",
+          `/games/list-games/${selectedMatchup}`
+        );
+        gameSelect.innerHTML =
+          '<option value="">Selecione uma partida</option>';
+        games.forEach((game) => {
+          const option = document.createElement("option");
+          option.value = game;
+          option.textContent = game;
+          gameSelect.appendChild(option);
+        });
+      } catch (error) {
+        console.error("Failed to load games:", error);
+        gameSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+      }
+    });
+
+    loadPgnBtn.addEventListener("click", () => {
+      const selectedMatchup = matchupSelect.value;
+      const selectedGame = gameSelect.value;
+      if (selectedMatchup && selectedGame) {
+        this.loadPgnGame(selectedMatchup, selectedGame);
+      } else {
+        this.showToast(
+          "Por favor, selecione um confronto e uma partida.",
+          "warning"
+        );
+      }
+    });
+
+    // PGN Controls
+    document
+      .getElementById("pgn-start-btn")
+      ?.addEventListener("click", () => this.goToPgnMove(0));
+    document
+      .getElementById("pgn-prev-btn")
+      ?.addEventListener("click", () =>
+        this.goToPgnMove(this.currentPgnMove - 1)
+      );
+    document
+      .getElementById("pgn-next-btn")
+      ?.addEventListener("click", () =>
+        this.goToPgnMove(this.currentPgnMove + 1)
+      );
+    document
+      .getElementById("pgn-end-btn")
+      ?.addEventListener("click", () =>
+        this.goToPgnMove(this.pgnGame.moves.length)
+      );
+    document
+      .getElementById("pgn-slider")
+      ?.addEventListener("input", (e) =>
+        this.goToPgnMove(parseInt(e.target.value))
+      );
+  }
+
+  async loadPgnGame(matchup, gameFile) {
+    this.showLoading("Carregando partida PGN...");
+    try {
+      const gameData = await this.api.request(
+        "get",
+        `/games/pgn-data/${matchup}/${gameFile}`
+      );
+      this.pgnGame = gameData;
+      this.currentPgnMove = 0;
+      this.updatePgnViewer();
+      document.getElementById("live-game-board").style.display = "block";
+      this.showToast("Partida PGN carregada.", "success");
+    } catch (error) {
+      console.error("Failed to load PGN data:", error);
+      this.showToast("Erro ao carregar dados da partida.", "error");
+    } finally {
+      this.hideLoading();
+    }
+  }
+
+  updatePgnViewer() {
+    if (!this.pgnGame) return;
+
+    const { headers, moves, fens } = this.pgnGame;
+    const totalMoves = moves.length;
+
+    // Update header
+    document.getElementById(
+      "live-game-title"
+    ).textContent = `${headers.White} vs ${headers.Black}`;
+    document.getElementById("white-player-name").textContent =
+      headers.White || "-";
+    document.getElementById("black-player-name").textContent =
+      headers.Black || "-";
+    document.getElementById(
+      "game-status-badge"
+    ).textContent = `PGN: ${headers.Result}`;
+    document.getElementById("game-status-badge").className = "badge badge-info";
+
+    // Update board
+    const board = this.chessboards.get("arena-live");
+    if (board) {
+      board.setPositionFromFen(fens[this.currentPgnMove]);
+    }
+
+    // Update move history
+    const historyElement = document.getElementById("live-move-history");
+    let html = "";
+    for (let i = 0; i < moves.length; i += 2) {
+      const moveNumber = Math.floor(i / 2) + 1;
+      const whiteMove = moves[i] ? moves[i].san : "";
+      const blackMove = moves[i + 1] ? moves[i + 1].san : "";
+
+      const isWhiteActive = this.currentPgnMove === i + 1;
+      const isBlackActive = this.currentPgnMove === i + 2;
+
+      html += `
+              <div style="padding: 2px 4px; border-bottom: 1px solid var(--border-color); font-size: 13px; display: flex;">
+                  <span style="color: var(--text-secondary); width: 30px; display: inline-block;">${moveNumber}.</span>
+                  <span class="${
+                    isWhiteActive ? "active-move" : ""
+                  }" style="margin-right: 12px; flex: 1; cursor: pointer;" onclick="app.goToPgnMove(${
+        i + 1
+      })">${whiteMove}</span>
+                  <span class="${
+                    isBlackActive ? "active-move" : ""
+                  }" style="flex: 1; cursor: pointer;" onclick="app.goToPgnMove(${
+        i + 2
+      })">${blackMove}</span>
+              </div>`;
+    }
+    historyElement.innerHTML = html;
+    historyElement.scrollTop = historyElement.scrollHeight;
+
+    // Update controls
+    document.getElementById(
+      "pgn-move-counter"
+    ).textContent = `${this.currentPgnMove} / ${totalMoves}`;
+    const slider = document.getElementById("pgn-slider");
+    slider.max = totalMoves;
+    slider.value = this.currentPgnMove;
+  }
+
+  goToPgnMove(moveNumber) {
+    if (!this.pgnGame) return;
+    const totalMoves = this.pgnGame.moves.length;
+    this.currentPgnMove = Math.max(0, Math.min(moveNumber, totalMoves));
+    this.updatePgnViewer();
   }
 
   // ==========================================

@@ -218,7 +218,9 @@ class ChessAPI extends APIManager {
     return this.get("/api/analysis/global");
   }
 
-
+  async getStats() {
+    return this.get("/api/analysis/stats");
+  }
 
   async getModelAnalysis(modelName) {
     return this.get(`/api/analysis/models/${modelName}`);
@@ -238,6 +240,19 @@ class ChessAPI extends APIManager {
 
   async compareModels(model1, model2, options = {}) {
     return this.post("/api/analysis/compare", { model1, model2, ...options });
+  }
+
+  // Game endpoints
+  async listMatchups() {
+    return this.get("/api/games/list-matchups");
+  }
+
+  async listGames(matchup) {
+    return this.get(`/api/games/list-games/${matchup}`);
+  }
+
+  async getPgnData(matchup, gameFile) {
+    return this.get(`/api/games/pgn-data/${matchup}/${gameFile}`);
   }
 
   // Lichess integration
@@ -537,9 +552,26 @@ class SmartAPI {
   async getGlobalStats() {
     return this.request("getGlobalStats");
   }
+  async getStats() {
+    return this.request("getStats");
+  }
   async getModelAnalysis(modelName) {
     return this.request("getModelAnalysis", modelName);
   }
+
+  // Game endpoints
+  async listMatchups() {
+    return this.request("listMatchups");
+  }
+
+  async listGames(matchup) {
+    return this.request("listGames", matchup);
+  }
+
+  async getPgnData(matchup, gameFile) {
+    return this.request("getPgnData", matchup, gameFile);
+  }
+
   async getEloRankings() {
     return this.request("getEloRankings");
   }

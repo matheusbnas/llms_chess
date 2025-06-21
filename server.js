@@ -8,12 +8,10 @@ const { Chess } = require("chess.js");
 const axios = require("axios");
 
 // Import routes
-const gamesRouter = require("./routes/games");
-const modelsRouter = require("./routes/models");
-const analysisRouter = require("./routes/analysis");
-const lichessRouter = require("./routes/lichess");
-const settingsRouter = require("./routes/settings");
-const dataRouter = require("./routes/data");
+const analysisRoutes = require("./routes/analysis");
+const lichessRoutes = require("./routes/lichess");
+const settingsRoutes = require("./routes/settings");
+const gamesRoutes = require("./routes/games");
 
 const app = express();
 const server = http.createServer(app);
@@ -28,20 +26,8 @@ const io = socketIo(server, {
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
 
-// Serve static files with proper MIME types
-app.use(
-  express.static("public", {
-    setHeaders: (res, path) => {
-      if (path.endsWith(".css")) {
-        res.setHeader("Content-Type", "text/css");
-      } else if (path.endsWith(".js")) {
-        res.setHeader("Content-Type", "application/javascript");
-      } else if (path.endsWith(".html")) {
-        res.setHeader("Content-Type", "text/html");
-      }
-    },
-  })
-);
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, "public")));
 
 // Serve pages directory
 app.use(
@@ -722,12 +708,10 @@ Give your response in the following order:
 const gameManager = new GameManager();
 
 // Routes
-app.use("/api/games", gamesRouter);
-app.use("/api/models", modelsRouter);
-app.use("/api/analysis", analysisRouter);
-app.use("/api/lichess", lichessRouter);
-app.use("/api/settings", settingsRouter);
-app.use("/api/data", dataRouter);
+app.use("/api/analysis", analysisRoutes);
+app.use("/api/lichess", lichessRoutes);
+app.use("/api/settings", settingsRoutes);
+app.use("/api/games", gamesRoutes);
 
 // Enhanced API endpoints
 app.post("/api/games/battle", async (req, res) => {
@@ -783,6 +767,78 @@ app.get("/api/games/stats", (req, res) => {
         Math.max(gameManager.gameStats.totalGames, 1)
     ),
   });
+});
+
+app.get("/api/games/list-matchups", async (req, res) => {
+  try {
+    const gamesDir = path.join(__dirname, "games");
+    const entries = await fs.readdir(gamesDir, { withFileTypes: true });
+    const directories = entries
+      .filter((dirent) => dirent.isDirectory())
+      .map((dirent) => dirent.name);
+    res.json(directories);
+  } catch (error) {
+    console.error("Error listing matchups:", error);
+    res.status(500).json({ error: "Failed to list game matchups." });
+  }
+});
+
+app.get("/api/games/list-games/:matchup", async (req, res) => {
+  try {
+    const matchup = req.params.matchup;
+    // Basic validation to prevent directory traversal
+    if (matchup.includes("..")) {
+      return res.status(400).json({ error: "Invalid matchup name" });
+    }
+    const matchupDir = path.join(__dirname, "games", matchup);
+    const files = await fs.readdir(matchupDir);
+    const pgnFiles = files.filter((file) => file.endsWith(".pgn"));
+    res.json(pgnFiles);
+  } catch (error) {
+    console.error("Error listing games:", error);
+    res.status(500).json({ error: "Failed to list games for the matchup." });
+  }
+});
+
+app.get("/api/games/pgn-data/:matchup/:file", async (req, res) => {
+  try {
+    const { matchup, file } = req.params;
+
+    // Basic validation to prevent directory traversal
+    if (matchup.includes("..") || file.includes("..")) {
+      return res.status(400).json({ error: "Invalid path" });
+    }
+    if (!file.endsWith(".pgn")) {
+      return res
+        .status(400)
+        .json({ error: "Invalid file type. Must be a PGN file." });
+    }
+
+    const pgnPath = path.join(__dirname, "games", matchup, file);
+    const pgnContent = await fs.readFile(pgnPath, "utf8");
+
+    const chess = new Chess();
+    chess.load_pgn(pgnContent);
+
+    const history = chess.history({ verbose: true });
+    const fens = ["rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"];
+    const tempGame = new Chess();
+    history.forEach((move) => {
+      tempGame.move(move);
+      fens.push(tempGame.fen());
+    });
+
+    res.json({
+      headers: chess.header(),
+      moves: history,
+      fens: fens,
+      pgn: pgnContent,
+      comments: chess.get_comments(),
+    });
+  } catch (error) {
+    console.error(`Error reading PGN file ${req.params.file}:`, error);
+    res.status(404).json({ error: "PGN data not found." });
+  }
 });
 
 // Human vs AI game endpoints
