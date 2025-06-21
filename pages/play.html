@@ -111,7 +111,7 @@
     <!-- Center - Game Board -->
     <div class="d-flex" style="flex-direction: column; align-items: center; gap: 16px;">
         <!-- Game Status -->
-        <div id="game-status" class="card" style="width: 100%; text-align: center; padding: 16px;">
+        <div id="game-status" class="game-status status-playing" style="width: 100%;">
             <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">
                 <i class="fas fa-info-circle"></i>
                 Configure uma nova partida para começar
@@ -122,8 +122,56 @@
         </div>
         
         <!-- Chess Board Container -->
-        <div id="play-chessboard-container" style="position: relative;">
-            <!-- Chessboard will be created here by JavaScript -->
+        <div id="play-chessboard-container" class="chessboard-container" style="position: relative;">
+            <!-- Coordenadas externas -->
+            <div class="coordinates-external coord-files-top">
+                <div class="coord-label">a</div>
+                <div class="coord-label">b</div>
+                <div class="coord-label">c</div>
+                <div class="coord-label">d</div>
+                <div class="coord-label">e</div>
+                <div class="coord-label">f</div>
+                <div class="coord-label">g</div>
+                <div class="coord-label">h</div>
+            </div>
+            
+            <div class="coordinates-external coord-ranks-left">
+                <div class="coord-label">8</div>
+                <div class="coord-label">7</div>
+                <div class="coord-label">6</div>
+                <div class="coord-label">5</div>
+                <div class="coord-label">4</div>
+                <div class="coord-label">3</div>
+                <div class="coord-label">2</div>
+                <div class="coord-label">1</div>
+            </div>
+            
+            <!-- Tabuleiro principal -->
+            <div class="chessboard" id="play-chessboard">
+                <!-- As 64 casas serão geradas por JavaScript -->
+            </div>
+            
+            <div class="coordinates-external coord-ranks-right">
+                <div class="coord-label">8</div>
+                <div class="coord-label">7</div>
+                <div class="coord-label">6</div>
+                <div class="coord-label">5</div>
+                <div class="coord-label">4</div>
+                <div class="coord-label">3</div>
+                <div class="coord-label">2</div>
+                <div class="coord-label">1</div>
+            </div>
+            
+            <div class="coordinates-external coord-files-bottom">
+                <div class="coord-label">a</div>
+                <div class="coord-label">b</div>
+                <div class="coord-label">c</div>
+                <div class="coord-label">d</div>
+                <div class="coord-label">e</div>
+                <div class="coord-label">f</div>
+                <div class="coord-label">g</div>
+                <div class="coord-label">h</div>
+            </div>
         </div>
 
         <!-- Board Controls -->
@@ -299,6 +347,266 @@
 
 <script>
 // Play page JavaScript
+class ProfessionalChessboard {
+    constructor(containerId) {
+        this.board = document.getElementById(containerId);
+        this.selectedSquare = null;
+        this.isFlipped = false;
+        this.gamePosition = this.getInitialPosition();
+        
+        this.initializeBoard();
+        this.setupInitialPosition();
+        this.addEventListeners();
+    }
+
+    getInitialPosition() {
+        return {
+            'a8': { piece: '♜', color: 'black' }, 'b8': { piece: '♞', color: 'black' }, 'c8': { piece: '♝', color: 'black' }, 'd8': { piece: '♛', color: 'black' },
+            'e8': { piece: '♚', color: 'black' }, 'f8': { piece: '♝', color: 'black' }, 'g8': { piece: '♞', color: 'black' }, 'h8': { piece: '♜', color: 'black' },
+            'a7': { piece: '♟', color: 'black' }, 'b7': { piece: '♟', color: 'black' }, 'c7': { piece: '♟', color: 'black' }, 'd7': { piece: '♟', color: 'black' },
+            'e7': { piece: '♟', color: 'black' }, 'f7': { piece: '♟', color: 'black' }, 'g7': { piece: '♟', color: 'black' }, 'h7': { piece: '♟', color: 'black' },
+            
+            'a2': { piece: '♙', color: 'white' }, 'b2': { piece: '♙', color: 'white' }, 'c2': { piece: '♙', color: 'white' }, 'd2': { piece: '♙', color: 'white' },
+            'e2': { piece: '♙', color: 'white' }, 'f2': { piece: '♙', color: 'white' }, 'g2': { piece: '♙', color: 'white' }, 'h2': { piece: '♙', color: 'white' },
+            'a1': { piece: '♖', color: 'white' }, 'b1': { piece: '♘', color: 'white' }, 'c1': { piece: '♗', color: 'white' }, 'd1': { piece: '♕', color: 'white' },
+            'e1': { piece: '♔', color: 'white' }, 'f1': { piece: '♗', color: 'white' }, 'g1': { piece: '♘', color: 'white' }, 'h1': { piece: '♖', color: 'white' }
+        };
+    }
+
+    initializeBoard() {
+        if (!this.board) return;
+        
+        this.board.innerHTML = '';
+        
+        for (let rank = 8; rank >= 1; rank--) {
+            for (let file = 0; file < 8; file++) {
+                const square = document.createElement('div');
+                const fileChar = String.fromCharCode(97 + file); // a-h
+                const squareId = `${fileChar}${rank}`;
+                
+                const isLight = (rank + file) % 2 !== 0;
+                square.className = `square ${isLight ? 'light' : 'dark'}`;
+                square.dataset.square = squareId;
+                
+                this.board.appendChild(square);
+            }
+        }
+    }
+
+    setupInitialPosition() {
+        // Limpar todas as casas primeiro
+        if (!this.board) return;
+        
+        document.querySelectorAll('.square').forEach(square => {
+            square.innerHTML = '';
+        });
+
+        // Adicionar peças na posição inicial
+        Object.entries(this.gamePosition).forEach(([square, pieceData]) => {
+            this.placePiece(square, pieceData.piece, pieceData.color);
+        });
+    }
+
+    placePiece(squareId, piece, color) {
+        const square = document.querySelector(`[data-square="${squareId}"]`);
+        if (!square) return;
+
+        const pieceElement = document.createElement('div');
+        pieceElement.className = `piece ${color}`;
+        pieceElement.textContent = piece;
+        pieceElement.dataset.piece = piece;
+        pieceElement.dataset.color = color;
+        pieceElement.draggable = true;
+        
+        square.appendChild(pieceElement);
+    }
+
+    addEventListeners() {
+        if (!this.board) return;
+        
+        this.board.addEventListener('click', (e) => {
+            const square = e.target.closest('.square');
+            if (!square) return;
+
+            this.handleSquareClick(square);
+        });
+
+        // Drag and drop
+        this.board.addEventListener('dragstart', (e) => {
+            if (e.target.classList.contains('piece')) {
+                e.target.classList.add('dragging');
+                this.selectedSquare = e.target.closest('.square');
+            }
+        });
+
+        this.board.addEventListener('dragend', (e) => {
+            if (e.target.classList.contains('piece')) {
+                e.target.classList.remove('dragging');
+            }
+        });
+
+        this.board.addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        this.board.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const targetSquare = e.target.closest('.square');
+            if (targetSquare && this.selectedSquare) {
+                this.attemptMove(this.selectedSquare, targetSquare);
+            }
+        });
+    }
+
+    handleSquareClick(square) {
+        // Se já há uma casa selecionada, tentar fazer o movimento
+        if (this.selectedSquare) {
+            if (square === this.selectedSquare) {
+                // Clicou na mesma casa - desselecionar
+                this.clearSelection();
+            } else {
+                // Tentar fazer o movimento
+                this.attemptMove(this.selectedSquare, square);
+            }
+        } else {
+            // Selecionar casa se tiver peça
+            const piece = square.querySelector('.piece');
+            if (piece) {
+                this.selectSquare(square);
+            }
+        }
+    }
+
+    selectSquare(square) {
+        this.clearSelection();
+        this.selectedSquare = square;
+        square.classList.add('selected');
+        
+        // Mostrar movimentos possíveis (exemplo simples)
+        this.showPossibleMoves(square);
+    }
+
+    showPossibleMoves(square) {
+        // Exemplo simples - apenas demonstração visual
+        const piece = square.querySelector('.piece');
+        if (!piece) return;
+
+        const squareId = square.dataset.square;
+        const file = squareId.charCodeAt(0) - 97; // a=0, b=1, etc.
+        const rank = parseInt(squareId[1]);
+
+        // Exemplo para peões
+        if (piece.dataset.piece === '♙' || piece.dataset.piece === '♟') {
+            const direction = piece.dataset.color === 'white' ? 1 : -1;
+            const targetRank = rank + direction;
+            
+            if (targetRank >= 1 && targetRank <= 8) {
+                const targetSquare = String.fromCharCode(97 + file) + targetRank;
+                const targetElement = document.querySelector(`[data-square="${targetSquare}"]`);
+                if (targetElement && !targetElement.querySelector('.piece')) {
+                    targetElement.classList.add('possible-move');
+                }
+            }
+        }
+    }
+
+    attemptMove(fromSquare, toSquare) {
+        const piece = fromSquare.querySelector('.piece');
+        if (!piece) {
+            this.clearSelection();
+            return;
+        }
+
+        // Verificar se há peça no destino
+        const targetPiece = toSquare.querySelector('.piece');
+        const isCapture = targetPiece !== null;
+
+        // Animação simples de movimento
+        piece.classList.add('moving');
+
+        setTimeout(() => {
+            // Remover peça capturada
+            if (isCapture) {
+                targetPiece.classList.add('captured');
+                setTimeout(() => targetPiece.remove(), 300);
+            }
+
+            // Mover peça
+            toSquare.appendChild(piece);
+            piece.classList.remove('moving');
+
+            // Atualizar posição interna
+            const pieceData = { 
+                piece: piece.dataset.piece, 
+                color: piece.dataset.color 
+            };
+            delete this.gamePosition[fromSquare.dataset.square];
+            this.gamePosition[toSquare.dataset.square] = pieceData;
+
+            this.clearSelection();
+            
+            // Notificar sobre o movimento
+            if (typeof this.onMove === 'function') {
+                this.onMove({
+                    from: fromSquare.dataset.square,
+                    to: toSquare.dataset.square,
+                    piece: piece.dataset.piece,
+                    color: piece.dataset.color,
+                    isCapture: isCapture
+                });
+            }
+        }, 250);
+    }
+
+    clearSelection() {
+        if (this.selectedSquare) {
+            this.selectedSquare.classList.remove('selected');
+            this.selectedSquare = null;
+        }
+
+        // Limpar indicadores de movimento possível
+        document.querySelectorAll('.possible-move, .possible-capture').forEach(square => {
+            square.classList.remove('possible-move', 'possible-capture');
+        });
+    }
+
+    flip() {
+        this.isFlipped = !this.isFlipped;
+        this.board.style.transform = this.isFlipped ? 'rotate(180deg)' : 'rotate(0deg)';
+        
+        // Rotacionar peças para manter orientação correta
+        document.querySelectorAll('.piece').forEach(piece => {
+            piece.style.transform = this.isFlipped ? 'rotate(180deg)' : 'rotate(0deg)';
+        });
+
+        // Inverter coordenadas se necessário
+        const coordsElements = document.querySelectorAll('.coordinates-external');
+        coordsElements.forEach(coord => {
+            coord.style.transform = this.isFlipped ? 'rotate(180deg)' : 'rotate(0deg)';
+        });
+    }
+
+    setPosition(fen) {
+        // Implementação simplificada para demonstração
+        console.log("Definindo posição FEN:", fen);
+        // Em uma implementação real, você analisaria a string FEN e atualizaria o tabuleiro
+    }
+
+    highlightMove(from, to) {
+        // Limpar destaques anteriores
+        document.querySelectorAll('.last-move').forEach(square => {
+            square.classList.remove('last-move');
+        });
+
+        // Adicionar novos destaques
+        const fromSquare = document.querySelector(`[data-square="${from}"]`);
+        const toSquare = document.querySelector(`[data-square="${to}"]`);
+
+        if (fromSquare) fromSquare.classList.add('last-move');
+        if (toSquare) toSquare.classList.add('last-move');
+    }
+}
+
 let currentGame = null;
 let chessboard = null;
 
@@ -308,15 +616,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initializePlayPage() {
     // Initialize empty chessboard
-    if (typeof ProfessionalChessboard !== 'undefined') {
-        chessboard = new ProfessionalChessboard('play-chessboard-container', {
-            size: 400,
-            interactive: false,
-            coordinates: true,
-            theme: 'brown',
-            onMove: handlePlayerMove
-        });
-    }
+    chessboard = new ProfessionalChessboard('play-chessboard');
+    
+    // Configurar callback de movimento
+    chessboard.onMove = handlePlayerMove;
 
     // Setup event listeners
     setupPlayPageEvents();
@@ -520,14 +823,13 @@ async function startNewGame() {
     }
 }
 
-function handlePlayerMove(fromSquare, toSquare, piece) {
-    if (!currentGame) return;
+function handlePlayerMove(move) {
+    if (!currentGame || !isPlayerTurn) return;
     
-    // Send move to server
-    const move = `${fromSquare}${toSquare}`;
+    console.log("Jogador moveu:", move);
     
     if (window.smartAPI) {
-        window.smartAPI.makeMove(currentGame.id, move)
+        window.smartAPI.makeMove(currentGame.id, move.from + move.to)
             .then(response => {
                 // Update move history
                 updateMoveHistory(response.history || []);
@@ -549,27 +851,19 @@ function handlePlayerMove(fromSquare, toSquare, piece) {
 function updateGameStatus(status, message) {
     const statusElement = document.getElementById('game-status');
     if (statusElement) {
-        const icons = {
-            'waiting': 'fas fa-info-circle',
-            'playing': 'fas fa-play',
-            'check': 'fas fa-exclamation-triangle',
-            'checkmate': 'fas fa-flag',
-            'draw': 'fas fa-handshake'
-        };
+        // Remover classes de status anteriores
+        statusElement.className = 'game-status';
         
-        const colors = {
-            'waiting': 'var(--text-secondary)',
-            'playing': 'var(--lichess-green)',
-            'check': 'var(--warning)',
-            'checkmate': 'var(--error)',
-            'draw': 'var(--info)'
-        };
+        // Adicionar nova classe de status
+        statusElement.classList.add(`status-${status}`);
         
+        // Atualizar texto
         statusElement.innerHTML = `
-            <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px; color: ${colors[status] || 'var(--text-primary)'};">
-                <i class="${icons[status] || 'fas fa-info-circle'}"></i>
-                ${message}
-            </div>
+            <i class="fas fa-${status === 'playing' ? 'play' : 
+                              status === 'check' ? 'exclamation-triangle' : 
+                              status === 'checkmate' ? 'flag' : 
+                              status === 'draw' ? 'handshake' : 'info-circle'}"></i>
+            ${message}
         `;
     }
 }
