@@ -107,6 +107,7 @@ class LLMChessArena {
       },
       analysis: () => this.initializeAnalysis(),
     };
+    this.pageCache = new Map();
   }
 
   async loadInitialData() {
@@ -152,6 +153,13 @@ class LLMChessArena {
 
       this.currentPage = pageName;
       this.loadPageContent(pageName);
+      
+      // Fix for chessboard rendering
+      setTimeout(() => {
+        if (DOMUtils && DOMUtils.ensureChessboardRendered) {
+          DOMUtils.ensureChessboardRendered();
+        }
+      }, 100);
     }
   }
 
@@ -164,7 +172,12 @@ class LLMChessArena {
     }
 
     try {
-      const response = await fetch(`/pages/${pageName}.html`);
+      const response = await fetch(`/pages/${pageName}.html`, {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
+        }
+      });
       if (!response.ok) {
         throw new Error(`Failed to load page: ${pageName}`);
       }
@@ -204,10 +217,19 @@ class LLMChessArena {
   initializeArena() {
     console.log("⚔️ Initializing Arena...");
     if (!this.chessboards.has("arena-live")) {
-      this.chessboards.set(
-        "arena-live",
-        new ProfessionalChessboard("live-chessboard")
-      );
+      try {
+        const boardElement = document.getElementById("live-chessboard");
+        if (boardElement) {
+          this.chessboards.set(
+            "arena-live",
+            new ProfessionalChessboard("live-chessboard")
+          );
+        } else {
+          console.warn("Live chessboard element not found");
+        }
+      } catch (error) {
+        console.error("Error initializing arena chessboard:", error);
+      }
     }
     this.loadBattleHistory();
     this.updateModelSelections([

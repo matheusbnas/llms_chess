@@ -208,6 +208,21 @@ const DOMUtils = {
     }
   },
 
+  // Fix for chessboard rendering
+  ensureChessboardRendered() {
+    const chessboards = document.querySelectorAll('.chessboard');
+    if (chessboards.length > 0) {
+      chessboards.forEach(board => {
+        if (board.offsetWidth === 0 || board.children.length === 0) {
+          // Force reflow
+          board.style.display = 'none';
+          setTimeout(() => {
+            board.style.display = 'grid';
+          }, 50);
+        }
+      });
+    }
+  },
   debounce(func, wait, immediate = false) {
     let timeout;
     return function executedFunction(...args) {
