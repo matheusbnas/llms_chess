@@ -214,14 +214,10 @@ class ChessAPI extends APIManager {
   }
 
   // Analysis endpoints
-  async getGlobalAnalysis() {
+  async getGlobalStats() {
     return this.get("/api/analysis/global");
   }
 
-  // Alias for getGlobalStats to match the function name used in main.js
-  async getGlobalAnalysis() {
-    return this.getGlobalStats();
-  }
 
   async getModelAnalysis(modelName) {
     return this.get(`/api/analysis/models/${modelName}`);
@@ -347,7 +343,7 @@ class FallbackAPI {
     throw new APIError("Server not available - using offline mode", 0);
   }
 
-  async getGlobalAnalysis() {
+  async getGlobalStats() {
     return {
       totalGames: 248,
       activeModels: 8,
@@ -537,8 +533,8 @@ class SmartAPI {
   async getAvailableModels() {
     return this.request("getAvailableModels");
   }
-  async getGlobalAnalysis() {
-    return this.request("getGlobalAnalysis");
+  async getGlobalStats() {
+    return this.request("getGlobalStats");
   }
   async getModelAnalysis(modelName) {
     return this.request("getModelAnalysis", modelName);
