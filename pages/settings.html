@@ -297,220 +297,66 @@
         <div class="card-header">
             <h3 class="card-title">
                 <i class="fas fa-key"></i>
-                Chaves de API
+                Gerenciar Chaves de API
             </h3>
-            <div class="d-flex gap-8">
-                <span class="badge badge-success">Seguro</span>
-            </div>
         </div>
         
         <div class="form-group">
-            <label class="form-label">OpenAI API Key</label>
-            <div class="d-flex gap-8">
-                <input type="password" class="form-control" placeholder="sk-..." value="sk-••••••••••••••••••••••••••••••">
-                <button class="btn btn-secondary">
-                    <i class="fas fa-eye"></i>
-                </button>
-            </div>
-            <small style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
-                Necessário para GPT-4o, GPT-4-Turbo e outros modelos OpenAI
-            </small>
+            <label for="openai-key" class="form-label">OpenAI API Key</label>
+            <input type="password" id="openai-key" class="form-control" placeholder="sk-...">
         </div>
         
         <div class="form-group">
-            <label class="form-label">Google AI API Key</label>
-            <div class="d-flex gap-8">
-                <input type="password" class="form-control" placeholder="AIza..." value="AIza••••••••••••••••••••••••••••••">
-                <button class="btn btn-secondary">
-                    <i class="fas fa-eye"></i>
-                </button>
-            </div>
-            <small style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
-                Necessário para Gemini-1.5-Pro e outros modelos Google
-            </small>
+            <label for="google-key" class="form-label">Google AI API Key</label>
+            <input type="password" id="google-key" class="form-control" placeholder="AIzaSy...">
         </div>
-        
-        <div class="form-group">
-            <label class="form-label">Anthropic API Key</label>
-            <div class="d-flex gap-8">
-                <input type="password" class="form-control" placeholder="sk-ant-..." value="sk-ant-••••••••••••••••••••••••••••••">
-                <button class="btn btn-secondary">
-                    <i class="fas fa-eye"></i>
-                </button>
-            </div>
-            <small style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
-                Necessário para Claude-3.5-Sonnet e outros modelos Anthropic
-            </small>
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label">DeepSeek API Key</label>
-            <div class="d-flex gap-8">
-                <input type="password" class="form-control" placeholder="sk-..." value="">
-                <button class="btn btn-secondary">
-                    <i class="fas fa-eye"></i>
-                </button>
-            </div>
-            <small style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
-                Necessário para DeepSeek-R1 e outros modelos DeepSeek
-            </small>
-        </div>
-        
-        <button class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 16px;">
-            <i class="fas fa-save"></i>
-            Salvar Chaves de API
-        </button>
-    </div>
 
-    <div class="card mb-24">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-chess-rook"></i>
-                Integração Lichess
-            </h3>
-        </div>
-        
         <div class="form-group">
-            <label class="form-label">Token da API Lichess</label>
-            <div class="d-flex gap-8">
-                <input type="password" class="form-control" placeholder="lip_..." value="">
-                <button class="btn btn-secondary">
-                    <i class="fas fa-eye"></i>
-                </button>
-            </div>
-            <small style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
-                Necessário para importar partidas e aplicar melhorias RAG
-            </small>
+            <label for="anthropic-key" class="form-label">Anthropic API Key</label>
+            <input type="password" id="anthropic-key" class="form-control" placeholder="sk-ant-...">
         </div>
-        
-        <div class="d-flex gap-16 mb-16">
-            <button class="btn btn-secondary">
-                <i class="fas fa-vial"></i>
-                Testar Conexão
-            </button>
-            <button class="btn btn-primary">
-                <i class="fas fa-download"></i>
-                Importar Partidas
-            </button>
+
+        <div class="form-group">
+            <label for="deepseek-key" class="form-label">Deepseek API Key</label>
+            <input type="password" id="deepseek-key" class="form-control" placeholder="sk-...">
         </div>
+
+        <button class="btn btn-primary" style="width: 100%; justify-content: center;">
+            <i class="fas fa-save"></i>
+            Salvar Chaves
+        </button>
     </div>
 </div>
 
 <!-- Advanced Settings Tab -->
 <div id="advanced-tab" class="tab-content">
-    <div class="card mb-24">
+    <div class="card">
         <div class="card-header">
             <h3 class="card-title">
-                <i class="fas fa-microchip"></i>
-                Configurações de Hardware
+                <i class="fas fa-cogs"></i>
+                Configurações Avançadas
             </h3>
         </div>
         
         <div class="form-group">
-            <label class="form-label">Número de Threads</label>
-            <select class="form-control">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="4" selected>4</option>
-                <option value="8">8</option>
-                <option value="16">16</option>
-                <option value="32">32</option>
-            </select>
-            <small style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
-                Número de threads para análise e processamento
-            </small>
+            <label for="server-url" class="form-label">URL do Servidor</label>
+            <input type="text" id="server-url" class="form-control" value="http://localhost:3000">
         </div>
-        
-        <div class="form-group">
-            <label class="form-label">Tamanho da Hash Table (MB)</label>
-            <select class="form-control">
-                <option value="16">16</option>
-                <option value="32">32</option>
-                <option value="64">64</option>
-                <option value="128">128</option>
-                <option value="256" selected>256</option>
-                <option value="512">512</option>
-                <option value="1024">1024</option>
-                <option value="2048">2048</option>
-            </select>
-            <small style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
-                Memória alocada para a tabela de transposição
-            </small>
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label">Política NUMA</label>
-            <select class="form-control">
-                <option value="auto" selected>Auto</option>
-                <option value="system">System</option>
-                <option value="hardware">Hardware</option>
-                <option value="none">None</option>
-            </select>
-            <small style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
-                Configuração de afinidade de processadores NUMA
-            </small>
-        </div>
-        
-        <div class="form-check mb-16">
-            <input type="checkbox" id="use-large-pages">
-            <label for="use-large-pages" class="form-check-label">Usar Large Pages (se disponível)</label>
-        </div>
-    </div>
 
-    <div class="card mb-24">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-database"></i>
-                Gerenciamento de Dados
-            </h3>
-        </div>
-        
-        <div class="d-flex gap-16 mb-16">
-            <button class="btn btn-secondary">
-                <i class="fas fa-download"></i>
-                Exportar Dados
-            </button>
-            <button class="btn btn-secondary">
-                <i class="fas fa-upload"></i>
-                Importar Dados
-            </button>
-        </div>
-        
         <div class="form-group">
-            <label class="form-label">Limpar Dados Antigos</label>
-            <select class="form-control">
-                <option value="never">Nunca</option>
-                <option value="30days" selected>Após 30 dias</option>
-                <option value="90days">Após 90 dias</option>
-                <option value="1year">Após 1 ano</option>
-            </select>
+            <label class="form-label">Cache</label>
+            <button class="btn btn-secondary">
+                <i class="fas fa-trash"></i>
+                Limpar Cache de Partidas
+            </button>
         </div>
-        
-        <div class="danger-zone" style="border: 1px solid var(--lichess-red); border-radius: var(--border-radius); padding: 16px; margin-top: 24px;">
-            <h4 style="color: var(--lichess-red); margin-bottom: 12px;">Zona de Perigo</h4>
-            
-            <div class="form-group">
-                <label class="form-label">Limpar Partidas Antigas</label>
-                <div class="d-flex gap-8 align-center">
-                    <input type="checkbox" id="confirm-clear-old">
-                    <label for="confirm-clear-old" class="form-check-label">Confirmo que desejo limpar partidas com mais de 30 dias</label>
-                </div>
-                <button class="btn btn-danger" style="margin-top: 8px;">
-                    <i class="fas fa-trash"></i>
-                    Limpar Partidas Antigas
-                </button>
-            </div>
-            
-            <div class="form-group" style="margin-top: 16px;">
-                <label class="form-label">Resetar Banco de Dados</label>
-                <div class="d-flex gap-8 align-center">
-                    <input type="text" class="form-control" placeholder="Digite 'CONFIRMAR' para prosseguir:">
-                </div>
-                <button class="btn btn-danger" style="margin-top: 8px;">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    Resetar Banco de Dados
-                </button>
-            </div>
+
+        <div class="form-group">
+            <label class="form-label">Resetar Configurações</label>
+            <button class="btn btn-danger">
+                <i class="fas fa-undo"></i>
+                Resetar para Padrão
+            </button>
         </div>
     </div>
 </div>

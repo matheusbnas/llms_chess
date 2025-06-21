@@ -7,9 +7,8 @@ class LLMChessArena {
   constructor() {
     this.currentPage = "dashboard";
     this.chessboards = new Map();
-    this.gameManager = new GameManager();
-    this.apiClient = new APIClient();
-    this.socketManager = new SocketManager();
+    this.api = window.smartAPI;
+    this.socket = this.setupSocket();
 
     this.init();
   }
@@ -20,12 +19,32 @@ class LLMChessArena {
     // Initialize components
     this.setupEventListeners();
     this.initializePages();
-    this.loadInitialData();
+    await this.loadInitialData();
 
     // Show initial page
     this.showPage("dashboard");
 
     console.log("✅ LLM Chess Arena initialized successfully");
+  }
+
+  setupSocket() {
+    const socket = io();
+
+    socket.on("connect", () => {
+      console.log("🔌 Connected to WebSocket server");
+      this.showToast("Conectado ao servidor", "success");
+    });
+
+    socket.on("disconnect", () => {
+      console.warn("🔌 Disconnected from WebSocket server");
+      this.showToast("Desconectado do servidor", "warning");
+    });
+
+    socket.on("game-update", (data) => this.handleGameUpdate(data));
+    socket.on("battle-update", (data) => this.updateBattleProgress(data));
+    socket.on("game-completed", (data) => this.handleGameCompletion(data));
+
+    return socket;
   }
 
   setupEventListeners() {
@@ -81,9 +100,9 @@ class LLMChessArena {
     try {
       // Load initial application data
       const [models, games, stats] = await Promise.all([
-        this.apiClient.getAvailableModels(),
-        this.apiClient.getRecentGames(),
-        this.apiClient.getStats(),
+        this.api.getAvailableModels(),
+        this.api.getRecentGames(),
+        this.api.getStats(),
       ]);
 
       this.models = models;
@@ -118,8 +137,12 @@ class LLMChessArena {
       }
 
       // Initialize page if needed
-      if (this.pageInitializers[pageName]) {
+      if (
+        this.pageInitializers[pageName] &&
+        !this.pageInitializers[pageName].initialized
+      ) {
         this.pageInitializers[pageName]();
+        this.pageInitializers[pageName].initialized = true;
       }
 
       // Call page event handlers
@@ -137,8 +160,11 @@ class LLMChessArena {
 
   initializeDashboard() {
     console.log("🏠 Initializing Dashboard...");
+    const dashboard = new Dashboard(this.api);
+    dashboard.init();
     this.updateDashboardStats();
     this.loadRecentGames();
+    this.pageInitializers.dashboard.initialized = true;
   }
 
   initializeArena() {
@@ -150,6 +176,16 @@ class LLMChessArena {
       );
     }
     this.loadBattleHistory();
+    this.updateModelSelections([
+      "quick-white-model",
+      "quick-black-model",
+      "human-opponent",
+    ]);
+    const startBattleBtn = document.getElementById("start-battle-btn");
+    if (startBattleBtn) {
+      startBattleBtn.addEventListener("click", () => this.startArenaBattle());
+    }
+    this.pageInitializers.arena.initialized = true;
   }
 
   initializePlay() {
@@ -159,7 +195,8 @@ class LLMChessArena {
       playBoard.onMove = (move) => this.handlePlayerMove(move);
       this.chessboards.set("play", playBoard);
     }
-    this.updateModelSelections();
+    this.updateModelSelections(["opponent-model"]);
+    this.pageInitializers.play.initialized = true;
   }
 
   initializeAnalysis() {
@@ -171,6 +208,7 @@ class LLMChessArena {
       );
     }
     this.loadAnalysisData();
+    this.pageInitializers.analysis.initialized = true;
   }
 
   // ==========================================
@@ -260,28 +298,30 @@ class LLMChessArena {
   // PLAY METHODS
   // ==========================================
 
-  updateModelSelections() {
+  updateModelSelections(selectIds) {
     if (!this.models) return;
 
-    const modelSelect = document.getElementById("opponent-model");
-    if (modelSelect) {
-      modelSelect.innerHTML = "";
-      Object.entries(this.models).forEach(([name, available]) => {
-        if (available) {
-          const option = document.createElement("option");
-          option.value = name;
-          option.textContent = name;
-          modelSelect.appendChild(option);
-        }
-      });
-    }
+    selectIds.forEach((id) => {
+      const modelSelect = document.getElementById(id);
+      if (modelSelect) {
+        modelSelect.innerHTML = "";
+        Object.entries(this.models).forEach(([name, config]) => {
+          if (config.active) {
+            const option = document.createElement("option");
+            option.value = name;
+            option.textContent = name;
+            modelSelect.appendChild(option);
+          }
+        });
+      }
+    });
   }
 
   async handlePlayerMove(move) {
     console.log("Player move:", move);
 
     try {
-      const response = await this.apiClient.makePlayerMove(move);
+      const response = await this.api.makePlayerMove(move);
       if (response.success) {
         this.updateMoveHistory(response.history);
 
@@ -291,7 +331,7 @@ class LLMChessArena {
 
           setTimeout(async () => {
             try {
-              const aiResponse = await this.apiClient.getAIMove();
+              const aiResponse = await this.api.getAIMove();
               this.handleAIMove(aiResponse);
             } catch (error) {
               console.error("AI move error:", error);
@@ -378,19 +418,123 @@ class LLMChessArena {
   // ARENA METHODS
   // ==========================================
 
+  async startArenaBattle() {
+    const whiteModel = document.getElementById("quick-white-model").value;
+    const blackModel = document.getElementById("quick-black-model").value;
+    const opening = document.getElementById("quick-opening").value;
+
+    if (!whiteModel || !blackModel) {
+      this.showToast("Por favor, selecione ambos os modelos.", "warning");
+      return;
+    }
+    if (whiteModel === blackModel) {
+      this.showToast("Os modelos devem ser diferentes.", "warning");
+      return;
+    }
+
+    try {
+      const battle = await this.startBattle({
+        whiteModel,
+        blackModel,
+        opening,
+        numGames: 1,
+      });
+      this.prepareLiveGameUI(battle);
+    } catch (error) {
+      console.error("Failed to start battle:", error);
+    }
+  }
+
+  prepareLiveGameUI(battle) {
+    const liveBoardDiv = document.getElementById("live-game-board");
+    if (liveBoardDiv) {
+      liveBoardDiv.style.display = "block";
+      document.getElementById(
+        "live-game-title"
+      ).textContent = `${battle.whiteModel} vs ${battle.blackModel}`;
+      document.getElementById("white-player-name").textContent =
+        battle.whiteModel;
+      document.getElementById("black-player-name").textContent =
+        battle.blackModel;
+
+      const statusBadge = document.getElementById("game-status-badge");
+      statusBadge.textContent = "Partida Ativa";
+      statusBadge.className = "badge badge-success";
+
+      const liveBoard = this.chessboards.get("arena-live");
+      if (liveBoard) {
+        liveBoard.setupInitialPosition();
+      }
+
+      document.getElementById("live-move-history").innerHTML =
+        '<div style="color: var(--text-muted); text-align: center;">Aguardando lances...</div>';
+      liveBoardDiv.scrollIntoView({ behavior: "smooth" });
+    }
+  }
+
+  handleGameUpdate(data) {
+    console.log("Game update received:", data);
+    const liveBoard = this.chessboards.get("arena-live");
+    if (liveBoard && this.currentPage === "arena") {
+      liveBoard.setPositionFromFen(data.fen);
+      document.getElementById(
+        "live-game-moves"
+      ).textContent = `Lance ${data.moveCount}`;
+      const turn = data.turn === "w" ? "brancas" : "pretas";
+      document.getElementById("live-game-turn").textContent = `Vez das ${turn}`;
+
+      this.updateLiveMoveHistory(data.history);
+    }
+  }
+
+  handleGameCompletion(data) {
+    console.log("Game completed:", data);
+    if (this.currentPage === "arena") {
+      this.showToast(`Partida finalizada: ${data.result}`, "info");
+      const statusBadge = document.getElementById("game-status-badge");
+      statusBadge.textContent = "Partida Finalizada";
+      statusBadge.className = "badge badge-secondary";
+    }
+  }
+
+  updateLiveMoveHistory(moves) {
+    const historyElement = document.getElementById("live-move-history");
+    if (!historyElement || !moves) return;
+
+    if (moves.length === 0) {
+      historyElement.innerHTML = `<div style="color: var(--text-muted); text-align: center;">Aguardando lances...</div>`;
+      return;
+    }
+
+    let html = "";
+    for (let i = 0; i < moves.length; i += 2) {
+      const moveNumber = Math.floor(i / 2) + 1;
+      const whiteMove = moves[i] || "";
+      const blackMove = moves[i + 1] || "";
+
+      html += `
+        <div style="padding: 2px 4px; border-bottom: 1px solid var(--border-color); font-size: 13px;">
+            <span style="color: var(--text-secondary); width: 20px; display: inline-block;">${moveNumber}.</span>
+            <span style="margin-right: 12px;">${whiteMove}</span>
+            <span>${blackMove}</span>
+        </div>`;
+    }
+
+    historyElement.innerHTML = html;
+    historyElement.scrollTop = historyElement.scrollHeight;
+  }
+
   async startBattle(config) {
     try {
       this.showLoading("Iniciando batalha...");
 
-      const battle = await this.apiClient.startBattle(config);
+      const { battle } = await this.api.startBattle(config);
 
       this.hideLoading();
       this.showToast("Batalha iniciada!", "success");
 
-      // Listen for battle updates
-      this.socketManager.onBattleUpdate = (update) => {
-        this.updateBattleProgress(update);
-      };
+      // Join battle room
+      this.socket.emit("join-battle", battle.id);
 
       return battle;
     } catch (error) {
@@ -502,9 +646,10 @@ class LLMChessArena {
 
   async viewGame(gameId) {
     try {
-      const game = await this.apiClient.getGame(gameId);
+      const game = await this.api.getGame(gameId);
       // Show game viewer modal or navigate to analysis page
       console.log("Viewing game:", game);
+      this.showToast(`Visualizando partida ${game.id}`, "info");
     } catch (error) {
       this.showToast("Erro ao carregar partida", "error");
     }
@@ -512,7 +657,7 @@ class LLMChessArena {
 
   async downloadPGN(gameId) {
     try {
-      const pgn = await this.apiClient.getPGN(gameId);
+      const pgn = await this.api.getPGN(gameId);
       this.downloadFile(`game-${gameId}.pgn`, pgn);
     } catch (error) {
       this.showToast("Erro ao baixar PGN", "error");
@@ -630,6 +775,48 @@ class ProfessionalChessboard {
     // Add pieces to initial position
     Object.entries(this.gamePosition).forEach(([square, pieceData]) => {
       this.placePiece(square, pieceData.piece, pieceData.color);
+    });
+  }
+
+  setPositionFromFen(fen) {
+    // Clear all squares first
+    document.querySelectorAll(`#${this.board.id} .square`).forEach((square) => {
+      square.innerHTML = "";
+    });
+
+    const fenParts = fen.split(" ");
+    const boardState = fenParts[0];
+    const ranks = boardState.split("/");
+
+    const pieceMap = {
+      r: "♜",
+      n: "♞",
+      b: "♝",
+      q: "♛",
+      k: "♚",
+      p: "♟",
+      R: "♖",
+      N: "♘",
+      B: "♗",
+      Q: "♕",
+      K: "♔",
+      P: "♙",
+    };
+
+    let rankIndex = 8;
+    ranks.forEach((rank) => {
+      let fileIndex = 0;
+      for (const char of rank) {
+        if (isNaN(char)) {
+          const squareId = String.fromCharCode(97 + fileIndex) + rankIndex;
+          const color = char === char.toUpperCase() ? "white" : "black";
+          this.placePiece(squareId, pieceMap[char], color);
+          fileIndex++;
+        } else {
+          fileIndex += parseInt(char);
+        }
+      }
+      rankIndex--;
     });
   }
 
@@ -878,145 +1065,6 @@ class ProfessionalChessboard {
 }
 
 // ==========================================
-// API CLIENT
-// ==========================================
-
-class APIClient {
-  constructor() {
-    this.baseURL = "/api";
-  }
-
-  async request(endpoint, options = {}) {
-    const response = await fetch(`${this.baseURL}${endpoint}`, {
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-      ...options,
-    });
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
-    }
-
-    return response.json();
-  }
-
-  async getAvailableModels() {
-    return this.request("/models/available");
-  }
-
-  async getRecentGames() {
-    return this.request("/games/recent");
-  }
-
-  async getStats() {
-    return this.request("/games/stats");
-  }
-
-  async startBattle(config) {
-    return this.request("/games/battle", {
-      method: "POST",
-      body: JSON.stringify(config),
-    });
-  }
-
-  async makePlayerMove(move) {
-    return this.request("/games/human/move", {
-      method: "POST",
-      body: JSON.stringify({ move }),
-    });
-  }
-
-  async getAIMove() {
-    return this.request("/games/ai/move");
-  }
-
-  async getGame(gameId) {
-    return this.request(`/games/${gameId}`);
-  }
-
-  async getPGN(gameId) {
-    const response = await fetch(`${this.baseURL}/games/${gameId}/pgn`);
-    return response.text();
-  }
-}
-
-// ==========================================
-// SOCKET MANAGER
-// ==========================================
-
-class SocketManager {
-  constructor() {
-    this.socket = null;
-    this.connect();
-  }
-
-  connect() {
-    this.socket = io();
-
-    this.socket.on("connect", () => {
-      console.log("🔌 Connected to server");
-    });
-
-    this.socket.on("game-update", (data) => {
-      if (this.onGameUpdate) {
-        this.onGameUpdate(data);
-      }
-    });
-
-    this.socket.on("battle-update", (data) => {
-      if (this.onBattleUpdate) {
-        this.onBattleUpdate(data);
-      }
-    });
-  }
-}
-
-// ==========================================
-// GAME MANAGER
-// ==========================================
-
-class GameManager {
-  constructor() {
-    this.currentGame = null;
-    this.gameHistory = [];
-  }
-
-  startNewGame(config) {
-    this.currentGame = {
-      id: `game_${Date.now()}`,
-      config,
-      startTime: new Date(),
-      moves: [],
-      status: "active",
-    };
-
-    return this.currentGame;
-  }
-
-  addMove(move) {
-    if (this.currentGame) {
-      this.currentGame.moves.push({
-        ...move,
-        timestamp: new Date(),
-      });
-    }
-  }
-
-  endGame(result) {
-    if (this.currentGame) {
-      this.currentGame.status = "finished";
-      this.currentGame.result = result;
-      this.currentGame.endTime = new Date();
-
-      this.gameHistory.push(this.currentGame);
-      this.currentGame = null;
-    }
-  }
-}
-
-// ==========================================
 // GLOBAL FUNCTIONS
 // ==========================================
 
@@ -1088,8 +1136,5 @@ if (typeof module !== "undefined" && module.exports) {
   module.exports = {
     LLMChessArena,
     ProfessionalChessboard,
-    APIClient,
-    SocketManager,
-    GameManager,
   };
 }

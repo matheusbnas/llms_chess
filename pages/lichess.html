@@ -1,0 +1,205 @@
+<!-- ♟️ Lichess Integration Page -->
+<div class="container" style="max-width: 960px; margin: 2rem auto;">
+
+    <!-- Page Header -->
+    <div class="text-center mb-32">
+        <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">
+            <i class="fas fa-chess-board" style="color: var(--lichess-purple);"></i>
+            Integração com Lichess
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 16px;">
+            Conecte sua conta Lichess para importar jogos e análises.
+        </p>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="d-grid" style="grid-template-columns: 1fr 2fr; gap: 24px; align-items: start;">
+        
+        <!-- Left Column: Settings and Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-cog"></i>
+                    Configuração
+                </h3>
+            </div>
+            
+            <div class="form-group">
+                <label for="lichess-token" class="form-label">Token de API do Lichess</label>
+                <input type="password" id="lichess-token" class="form-control" placeholder="Insira seu token de API">
+                <small class="form-text">Seu token é armazenado de forma segura e usado apenas para acessar sua conta Lichess.</small>
+            </div>
+            
+            <button id="connect-lichess-btn" class="btn btn-primary" style="width: 100%; justify-content: center;">
+                <i class="fas fa-link"></i>
+                Conectar e Salvar
+            </button>
+            <div id="lichess-status" class="text-center mt-16" style="color: var(--text-secondary);">
+                Status: Desconectado
+            </div>
+            
+            <hr style="margin: 24px 0; border-color: var(--border-color);">
+            
+            <div class="form-group">
+                <label for="lichess-username" class="form-label">Seu nome de usuário Lichess</label>
+                <input type="text" id="lichess-username" class="form-control" placeholder="ex: magnuscarlsen">
+            </div>
+            
+            <button id="import-lichess-games-btn" class="btn btn-success" style="width: 100%; justify-content: center;" disabled>
+                <i class="fas fa-download"></i>
+                Importar Meus Jogos
+            </button>
+        </div>
+
+        <!-- Right Column: Lichess Data -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-user-circle"></i>
+                    Perfil Lichess
+                </h3>
+            </div>
+            
+            <div id="lichess-profile-display" style="padding: 40px; text-align: center; color: var(--text-secondary);">
+                <i class="fas fa-plug" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                <p>Conecte-se para ver os dados do seu perfil Lichess.</p>
+            </div>
+
+            <div class="card-header" style="margin-top: 24px;">
+                <h3 class="card-title">
+                    <i class="fas fa-history"></i>
+                    Jogos Importados
+                </h3>
+            </div>
+
+            <div id="imported-games-list" style="max-height: 400px; overflow-y: auto;">
+                <div style="padding: 40px; text-align: center; color: var(--text-secondary);">
+                    <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                    <p>Nenhum jogo importado ainda.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Lichess Page Logic
+    document.addEventListener('DOMContentLoaded', () => {
+        const lichessPage = new LichessPage();
+        lichessPage.init();
+    });
+
+    class LichessPage {
+        constructor() {
+            this.tokenInput = document.getElementById('lichess-token');
+            this.usernameInput = document.getElementById('lichess-username');
+            this.connectBtn = document.getElementById('connect-lichess-btn');
+            this.importBtn = document.getElementById('import-lichess-games-btn');
+            this.statusDiv = document.getElementById('lichess-status');
+            this.profileDiv = document.getElementById('lichess-profile-display');
+            this.gamesListDiv = document.getElementById('imported-games-list');
+        }
+
+        init() {
+            this.connectBtn.addEventListener('click', () => this.connectLichess());
+            this.importBtn.addEventListener('click', () => this.importGames());
+            this.loadInitialState();
+        }
+
+        async loadInitialState() {
+            try {
+                // This should be an API call in a real app
+                const settings = await window.smartAPI.getSettings();
+                if (settings && settings.lichessToken) {
+                    this.tokenInput.value = '********'; // Mask token
+                    this.statusDiv.innerHTML = '<span style="color: var(--lichess-green);">Status: Conectado</span>';
+                    this.importBtn.disabled = false;
+                    this.usernameInput.value = settings.lichessUsername || '';
+                    if(settings.lichessUsername) {
+                        this.loadProfile(settings.lichessUsername);
+                    }
+                }
+            } catch (error) {
+                console.warn('Could not load Lichess settings', error);
+            }
+        }
+
+        async connectLichess() {
+            const token = this.tokenInput.value;
+            if (!token || token === '********') {
+                showToast('Por favor, insira um token de API do Lichess.', 'warning');
+                return;
+            }
+
+            showToast('Testando conexão...', 'info');
+            try {
+                // In a real app, this would save the token server-side and test it
+                const response = await window.smartAPI.testLichessConnection(token);
+                if (response.success) {
+                    showToast('Conexão com Lichess bem-sucedida!', 'success');
+                    this.statusDiv.innerHTML = '<span style="color: var(--lichess-green);">Status: Conectado</span>';
+                    this.importBtn.disabled = false;
+                } else {
+                    throw new Error(response.error || 'Token inválido');
+                }
+            } catch(error) {
+                showToast(`Erro na conexão: ${error.message}`, 'error');
+                this.statusDiv.innerHTML = '<span style="color: var(--lichess-red);">Status: Falha na conexão</span>';
+            }
+        }
+
+        async importGames() {
+            const username = this.usernameInput.value;
+            if (!username) {
+                showToast('Por favor, insira seu nome de usuário do Lichess.', 'warning');
+                return;
+            }
+
+            showToast(`Iniciando importação para ${username}...`, 'info');
+            try {
+                const response = await window.smartAPI.importLichessGames({ username });
+                showToast(`${response.count} jogos importados com sucesso!`, 'success');
+                // Refresh imported games list
+            } catch(error) {
+                showToast(`Erro ao importar jogos: ${error.message}`, 'error');
+            }
+        }
+        
+        async loadProfile(username) {
+            this.profileDiv.innerHTML = '<div class="loader"></div>';
+            try {
+                const profile = await window.smartAPI.getLichessUser(username);
+                this.renderProfile(profile);
+            } catch(error) {
+                this.profileDiv.innerHTML = `<p style="color: var(--lichess-red);">Não foi possível carregar o perfil de ${username}.</p>`;
+            }
+        }
+
+        renderProfile(profile) {
+            this.profileDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 20px; text-align: left;">
+                    <img src="${profile.avatar}" alt="Avatar" style="width: 80px; height: 80px; border-radius: 50%;">
+                    <div>
+                        <h3 style="margin: 0; font-size: 24px;">${profile.username}</h3>
+                        <p style="color: var(--text-secondary);">${profile.title || 'Jogador'}</p>
+                        <div class="d-flex gap-16" style="margin-top: 8px;">
+                            <span>Blitz: <strong>${profile.perfs.blitz.rating}</strong></span>
+                            <span>Rápido: <strong>${profile.perfs.rapid.rating}</strong></span>
+                            <span>Clássico: <strong>${profile.perfs.classical.rating}</strong></span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    
+    function showToast(message, type) {
+        if(window.arena) {
+            window.arena.showToast(message, type);
+        } else {
+            console.log(`TOAST (${type}): ${message}`);
+        }
+    }
+
+</script> 

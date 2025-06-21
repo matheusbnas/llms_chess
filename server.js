@@ -191,6 +191,10 @@ class GameManager {
     const inCheck = chess.inCheck() ? " (You are in check!)" : "";
 
     return `You are a Chess Grandmaster playing with the ${color} pieces${inCheck}.
+We are currently playing chess.
+
+I will give you the last move, the history of the game so far, the
+actual board position and you must analyze the position and find the best move.
 
 Current position (FEN): ${position}
 Move number: ${moveNumber}
@@ -206,10 +210,12 @@ Analyze the position and choose the best move. Consider:
 - Positional advantages (pawn structure, piece activity)
 - Endgame principles if applicable
 
-You must respond with ONLY the move in standard algebraic notation (SAN) from the legal moves list.
-Examples: e4, Nf3, O-O, Qxd5, Rd1+, Bxf7+
+# OUTPUT
+Do not use any special characters.
+Give your response in the following order:
 
-Your move:`;
+1. Your move, using the following format: My move: "Move" (in the SAN notation, in english).
+2. The explanation, in Portuguese, of why you chose the move, in no more than 3 sentences.`;
   }
 
   async callOpenAI(modelConfig, prompt) {
@@ -313,12 +319,22 @@ Your move:`;
   }
 
   extractMove(response, legalMoves) {
+    // Try to find the move in "My move: '...'"
+    const moveMatch = response.match(/My move: "([^"]+)"/);
+    if (moveMatch && moveMatch[1]) {
+      const parsedMove = moveMatch[1].trim();
+      if (legalMoves.includes(parsedMove)) {
+        return parsedMove;
+      }
+    }
+
+    // Fallback to previous extraction logic
     // Clean up the response
     const cleanResponse = response.replace(/[^\w\-+=\s]/g, "").trim();
 
     // Try exact match first
     for (const move of legalMoves) {
-      if (cleanResponse === move || cleanResponse.includes(move)) {
+      if (cleanResponse.includes(move)) {
         return move;
       }
     }
