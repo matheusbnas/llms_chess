@@ -219,6 +219,7 @@ class ChessAPI extends APIManager {
   }
 
 
+
   async getModelAnalysis(modelName) {
     return this.get(`/api/analysis/models/${modelName}`);
   }

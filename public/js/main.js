@@ -140,7 +140,7 @@ class ChessArena {
 
   async loadDashboardData() {
     try {
-      const metrics = await window.smartAPI.getGlobalAnalysis();
+      const metrics = await window.smartAPI.getGlobalStats();
       const games = await window.smartAPI.getRecentGames(10);
       this.updateMetrics(metrics);
       this.updateRecentGamesTable(games.slice(0, 10));
@@ -148,6 +148,7 @@ class ChessArena {
     } catch (error) {
       console.error("Failed to load dashboard data", error);
       this.showToast("Falha ao carregar dados do dashboard", "error");
+      console.error('Failed to load dashboard data:', error);
       console.error('Failed to load dashboard data:', error);
     }
   }
