@@ -1,0 +1,372 @@
+<!-- ♟️ Dashboard Page -->
+<div id="dashboard-page" class="page active">
+    <div class="text-center mb-32">
+        <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">
+            <i class="fas fa-chart-bar" style="color: var(--lichess-brown-light);"></i>
+            Dashboard Executivo
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 16px;">
+            Visão geral das estatísticas e performance dos modelos LLM
+        </p>
+    </div>
+
+    <!-- Key Metrics Grid -->
+    <div class="metrics-grid">
+        <div class="metric-card">
+            <div class="metric-icon" style="background: var(--lichess-blue);">
+                <i class="fas fa-chess"></i>
+            </div>
+            <div class="metric-content">
+                <div id="total-games" class="metric-value">248</div>
+                <div class="metric-label">Total de Partidas</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon" style="background: var(--lichess-green);">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="metric-content">
+                <div id="active-models" class="metric-value">8</div>
+                <div class="metric-label">Modelos Ativos</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon" style="background: var(--lichess-orange);">
+                <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="metric-content">
+                <div id="avg-moves" class="metric-value">42</div>
+                <div class="metric-label">Lances por Partida</div>
+            </div>
+        </div>
+
+        <div class="metric-card">
+            <div class="metric-icon" style="background: var(--lichess-purple);">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <div class="metric-content">
+                <div id="tournaments" class="metric-value">12</div>
+                <div class="metric-label">Torneios Completos</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-bar-chart"></i>
+                    Performance por Modelo
+                </h3>
+                <div class="d-flex gap-8">
+                    <button class="btn btn-sm btn-secondary">
+                        <i class="fas fa-download"></i>
+                        Exportar
+                    </button>
+                    <button class="btn btn-sm btn-secondary">
+                        <i class="fas fa-sync"></i>
+                        Atualizar
+                    </button>
+                </div>
+            </div>
+            <canvas id="results-chart" style="max-height: 300px;"></canvas>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-pie-chart"></i>
+                    Distribuição de Resultados
+                </h3>
+                <select class="form-control" style="width: auto; margin-left: auto;">
+                    <option>Últimos 30 dias</option>
+                    <option>Últimos 7 dias</option>
+                    <option>Todo período</option>
+                </select>
+            </div>
+            <canvas id="winrate-chart" style="max-height: 300px;"></canvas>
+        </div>
+    </div>
+
+    <!-- Performance Overview -->
+    <div class="card mb-32">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-tachometer-alt"></i>
+                Visão Geral de Performance
+            </h3>
+            <div class="d-flex gap-8">
+                <span class="badge badge-success">Live</span>
+                <span style="color: var(--text-muted); font-size: 12px;">
+                    Atualizado há 2 minutos
+                </span>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+            <div style="text-align: center; padding: 20px; background: var(--bg-tertiary); border-radius: var(--border-radius);">
+                <div style="font-size: 24px; font-weight: 700; color: var(--lichess-green); margin-bottom: 8px;">
+                    87.3%
+                </div>
+                <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">
+                    Precisão Média
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" style="width: 87%;"></div>
+                </div>
+            </div>
+
+            <div style="text-align: center; padding: 20px; background: var(--bg-tertiary); border-radius: var(--border-radius);">
+                <div style="font-size: 24px; font-weight: 700; color: var(--lichess-blue); margin-bottom: 8px;">
+                    2.4s
+                </div>
+                <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">
+                    Tempo Médio por Lance
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" style="width: 65%; background: var(--lichess-blue);"></div>
+                </div>
+            </div>
+
+            <div style="text-align: center; padding: 20px; background: var(--bg-tertiary); border-radius: var(--border-radius);">
+                <div style="font-size: 24px; font-weight: 700; color: var(--lichess-orange); margin-bottom: 8px;">
+                    1.2
+                </div>
+                <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">
+                    Blunders por Partida
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" style="width: 30%; background: var(--lichess-orange);"></div>
+                </div>
+            </div>
+
+            <div style="text-align: center; padding: 20px; background: var(--bg-tertiary); border-radius: var(--border-radius);">
+                <div style="font-size: 24px; font-weight: 700; color: var(--lichess-purple); margin-bottom: 8px;">
+                    1847
+                </div>
+                <div style="color: var(--text-secondary); font-size: 14px; margin-bottom: 8px;">
+                    ELO Médio
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" style="width: 75%; background: var(--lichess-purple);"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Games Table -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-history"></i>
+                Partidas Recentes
+            </h3>
+            <div class="d-flex gap-8">
+                <button class="btn btn-sm btn-secondary">
+                    <i class="fas fa-filter"></i>
+                    Filtrar
+                </button>
+                <button class="btn btn-sm btn-primary">
+                    <i class="fas fa-plus"></i>
+                    Nova Partida
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>
+                            <i class="fas fa-chess-king"></i>
+                            Brancas
+                        </th>
+                        <th>
+                            <i class="fas fa-chess-queen"></i>
+                            Pretas
+                        </th>
+                        <th>
+                            <i class="fas fa-trophy"></i>
+                            Resultado
+                        </th>
+                        <th>
+                            <i class="fas fa-list-ol"></i>
+                            Lances
+                        </th>
+                        <th>
+                            <i class="fas fa-clock"></i>
+                            Duração
+                        </th>
+                        <th>
+                            <i class="fas fa-calendar"></i>
+                            Data
+                        </th>
+                        <th>
+                            <i class="fas fa-cog"></i>
+                            Ações
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="recent-games-table">
+                    <tr>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 24px; height: 24px; background: var(--lichess-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <strong>GPT-4o</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 24px; height: 24px; background: var(--lichess-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                    <i class="fas fa-gem"></i>
+                                </div>
+                                <strong>Gemini-Pro</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status status-finished">1-0</span>
+                        </td>
+                        <td>
+                            <span style="font-family: var(--font-mono);">48</span>
+                        </td>
+                        <td style="color: var(--text-secondary);">
+                            <span style="font-family: var(--font-mono);">2m 14s</span>
+                        </td>
+                        <td style="color: var(--text-secondary);">
+                            Hoje, 14:32
+                        </td>
+                        <td>
+                            <div class="d-flex gap-4">
+                                <button class="btn btn-sm" onclick="arena && arena.viewGame('1')">
+                                    <i class="fas fa-eye"></i>
+                                    Ver
+                                </button>
+                                <button class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-download"></i>
+                                    PGN
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 24px; height: 24px; background: var(--lichess-brown); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                    <i class="fas fa-crown"></i>
+                                </div>
+                                <strong>Claude-3.5-Sonnet</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 24px; height: 24px; background: var(--lichess-orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <strong>GPT-4-Turbo</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status status-active">1/2-1/2</span>
+                        </td>
+                        <td>
+                            <span style="font-family: var(--font-mono);">67</span>
+                        </td>
+                        <td style="color: var(--text-secondary);">
+                            <span style="font-family: var(--font-mono);">3m 42s</span>
+                        </td>
+                        <td style="color: var(--text-secondary);">
+                            Hoje, 13:15
+                        </td>
+                        <td>
+                            <div class="d-flex gap-4">
+                                <button class="btn btn-sm" onclick="arena && arena.viewGame('2')">
+                                    <i class="fas fa-eye"></i>
+                                    Ver
+                                </button>
+                                <button class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-download"></i>
+                                    PGN
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 24px; height: 24px; background: var(--lichess-purple); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                    <i class="fas fa-atom"></i>
+                                </div>
+                                <strong>Deepseek-R1</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 24px; height: 24px; background: var(--lichess-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                    <i class="fas fa-horse"></i>
+                                </div>
+                                <strong>Llama-3.1-70B</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status status-finished">0-1</span>
+                        </td>
+                        <td>
+                            <span style="font-family: var(--font-mono);">35</span>
+                        </td>
+                        <td style="color: var(--text-secondary);">
+                            <span style="font-family: var(--font-mono);">1m 58s</span>
+                        </td>
+                        <td style="color: var(--text-secondary);">
+                            Ontem, 18:45
+                        </td>
+                        <td>
+                            <div class="d-flex gap-4">
+                                <button class="btn btn-sm" onclick="arena && arena.viewGame('3')">
+                                    <i class="fas fa-eye"></i>
+                                    Ver
+                                </button>
+                                <button class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-download"></i>
+                                    PGN
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="padding: 16px; border-top: 1px solid var(--border-color); background: var(--bg-tertiary); display: flex; justify-content: between; align-items: center;">
+            <span style="color: var(--text-secondary); font-size: 14px;">
+                Mostrando 3 de 248 partidas
+            </span>
+            <div class="d-flex gap-8">
+                <button class="btn btn-sm btn-secondary">
+                    <i class="fas fa-chevron-left"></i>
+                    Anterior
+                </button>
+                <button class="btn btn-sm btn-secondary">
+                    Próximo
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div style="position: fixed; bottom: 24px; right: 24px; z-index: var(--z-fixed);">
+        <div class="d-flex gap-12" style="flex-direction: column;">
+            <button class="btn btn-primary" style="width: 56px; height: 56px; border-radius: 50%; padding: 0; font-size: 20px;" title="Nova Batalha">
+                <i class="fas fa-swords"></i>
+            </button>
+            <button class="btn btn-success" style="width: 56px; height: 56px; border-radius: 50%; padding: 0; font-size: 20px;" title="Jogar contra IA">
+                <i class="fas fa-gamepad"></i>
+            </button>
+        </div>
+    </div>
+</div>

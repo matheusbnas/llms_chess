@@ -1,0 +1,956 @@
+<!-- ♟️ Analysis Page -->
+<div class="text-center mb-32">
+    <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">
+        <i class="fas fa-chart-line" style="color: var(--lichess-brown-light);"></i>
+        Análise Avançada
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 16px;">
+        Análise detalhada de partidas e performance dos modelos
+    </p>
+</div>
+
+<!-- Navigation Tabs -->
+<div class="tabs">
+    <button class="tab-btn active" data-tab="game-analysis">
+        <i class="fas fa-chess-board"></i>
+        Análise de Partida
+    </button>
+    <button class="tab-btn" data-tab="model-comparison">
+        <i class="fas fa-balance-scale"></i>
+        Comparação
+    </button>
+    <button class="tab-btn" data-tab="lichess-integration">
+        <i class="fas fa-download"></i>
+        Lichess
+    </button>
+    <button class="tab-btn" data-tab="detailed-stats">
+        <i class="fas fa-chart-pie"></i>
+        Estatísticas
+    </button>
+</div>
+
+<!-- Game Analysis Tab -->
+<div id="game-analysis-tab" class="tab-content active">
+    <div class="d-grid" style="grid-template-columns: 1fr 2fr; gap: 24px;">
+        <!-- Analysis Controls -->
+        <div class="d-flex" style="flex-direction: column; gap: 16px;">
+            <!-- Game Selection -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-search"></i>
+                        Buscar Partida
+                    </h3>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">ID da Partida</label>
+                    <input type="text" class="form-control" id="game-id-input" placeholder="Digite o ID da partida...">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Ou selecione uma partida</label>
+                    <select class="form-control" id="recent-games-select">
+                        <option value="">Selecione uma partida...</option>
+                        <option value="game_001">GPT-4o vs Gemini-Pro (Hoje, 14:32)</option>
+                        <option value="game_002">Claude-3.5 vs GPT-4-Turbo (Hoje, 13:15)</option>
+                        <option value="game_003">Deepseek vs Llama-3 (Ontem, 18:45)</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="analyzeSelectedGame()">
+                    <i class="fas fa-play"></i>
+                    Analisar Partida
+                </button>
+            </div>
+
+            <!-- Analysis Settings -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-cog"></i>
+                        Configurações
+                    </h3>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Engine de Análise</label>
+                    <select class="form-control" id="analysis-engine">
+                        <option value="stockfish-15" selected>Stockfish 15</option>
+                        <option value="stockfish-14">Stockfish 14</option>
+                        <option value="leela-zero">Leela Chess Zero</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Profundidade</label>
+                    <select class="form-control" id="analysis-depth">
+                        <option value="12">12</option>
+                        <option value="15">15</option>
+                        <option value="18" selected>18</option>
+                        <option value="22">22</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Tempo por Lance (segundos)</label>
+                    <input type="range" class="form-control" id="analysis-time" min="1" max="30" value="10" 
+                           oninput="document.getElementById('time-display').textContent = this.value + 's'">
+                    <div style="text-align: center; margin-top: 4px; font-size: 12px; color: var(--text-secondary);">
+                        <span id="time-display">10s</span>
+                    </div>
+                </div>
+                
+                <div class="form-check mb-16">
+                    <input type="checkbox" id="multi-pv" checked>
+                    <label for="multi-pv" class="form-check-label">Análise Multi-PV (3 melhores lances)</label>
+                </div>
+                
+                <div class="form-check mb-16">
+                    <input type="checkbox" id="classify-moves" checked>
+                    <label for="classify-moves" class="form-check-label">Classificar lances (Excelente, Bom, Duvidoso, etc.)</label>
+                </div>
+            </div>
+
+            <!-- Upload PGN -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-upload"></i>
+                        Upload PGN
+                    </h3>
+                </div>
+                
+                <div style="border: 2px dashed var(--border-color); border-radius: var(--border-radius); padding: 20px; text-align: center; margin-bottom: 12px;" 
+                     ondrop="handlePGNDrop(event)" ondragover="event.preventDefault()" ondragenter="event.preventDefault()">
+                    <i class="fas fa-file-upload" style="font-size: 24px; color: var(--text-muted); margin-bottom: 8px;"></i>
+                    <p style="color: var(--text-secondary); margin-bottom: 8px;">Arraste um arquivo PGN aqui</p>
+                    <p style="color: var(--text-muted); font-size: 12px;">ou</p>
+                    <input type="file" id="pgn-file-input" accept=".pgn" style="display: none;" onchange="handlePGNFile(event)">
+                    <button class="btn btn-secondary" onclick="document.getElementById('pgn-file-input').click()">
+                        <i class="fas fa-folder-open"></i>
+                        Selecionar Arquivo
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Results -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-chart-line"></i>
+                    Resultado da Análise
+                </h3>
+                <div class="d-flex gap-8">
+                    <span class="badge badge-secondary" id="analysis-status">Aguardando</span>
+                    <button class="btn btn-sm btn-secondary" onclick="exportAnalysis()">
+                        <i class="fas fa-download"></i>
+                        Exportar
+                    </button>
+                </div>
+            </div>
+            
+            <div id="analysis-result">
+                <div style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                    <i class="fas fa-search" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                    <p>Selecione uma partida para começar a análise</p>
+                    <p style="font-size: 14px;">A análise incluirá:</p>
+                    <ul style="text-align: left; display: inline-block; margin-top: 8px;">
+                        <li>Avaliação por lance</li>
+                        <li>Identificação de blunders e excelências</li>
+                        <li>Comparação com engine</li>
+                        <li>Gráfico de vantagem</li>
+                        <li>Relatório detalhado</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Model Comparison Tab -->
+<div id="model-comparison-tab" class="tab-content">
+    <div class="card mb-24">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-balance-scale"></i>
+                Comparação Detalhada de Modelos
+            </h3>
+        </div>
+        
+        <div class="d-grid" style="grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+            <div class="form-group">
+                <label class="form-label">Modelo 1</label>
+                <select class="form-control" id="comparison-model-1">
+                    <option value="GPT-4o" selected>GPT-4o</option>
+                    <option value="GPT-4-Turbo">GPT-4-Turbo</option>
+                    <option value="Gemini-1.5-Pro">Gemini-1.5-Pro</option>
+                    <option value="Claude-3.5-Sonnet">Claude-3.5-Sonnet</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Modelo 2</label>
+                <select class="form-control" id="comparison-model-2">
+                    <option value="GPT-4o">GPT-4o</option>
+                    <option value="GPT-4-Turbo">GPT-4-Turbo</option>
+                    <option value="Gemini-1.5-Pro" selected>Gemini-1.5-Pro</option>
+                    <option value="Claude-3.5-Sonnet">Claude-3.5-Sonnet</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="d-flex gap-16 mb-24">
+            <div class="form-group" style="flex: 1;">
+                <label class="form-label">Período de Análise</label>
+                <select class="form-control">
+                    <option value="7d">Últimos 7 dias</option>
+                    <option value="30d" selected>Últimos 30 dias</option>
+                    <option value="90d">Últimos 90 dias</option>
+                    <option value="all">Todo período</option>
+                </select>
+            </div>
+            <div style="display: flex; align-items: end;">
+                <button class="btn btn-primary" onclick="generateComparison()">
+                    <i class="fas fa-search"></i>
+                    Gerar Comparação
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comparison Results -->
+    <div id="comparison-results">
+        <div class="d-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+            <div class="card" style="background: var(--bg-tertiary); text-align: center; padding: 20px;">
+                <h4 style="margin-bottom: 16px; color: var(--text-primary);">Head-to-Head</h4>
+                <div style="font-size: 28px; font-weight: 700; margin-bottom: 8px; color: var(--lichess-green);">12-8-3</div>
+                <div style="color: var(--text-secondary); font-size: 14px;">Vitórias-Derrotas-Empates</div>
+                <div style="margin-top: 12px; font-size: 18px; color: var(--lichess-blue);">52.2%</div>
+                <div style="color: var(--text-secondary); font-size: 12px;">Win Rate GPT-4o</div>
+            </div>
+            
+            <div class="card" style="background: var(--bg-tertiary); text-align: center; padding: 20px;">
+                <h4 style="margin-bottom: 16px; color: var(--text-primary);">Precisão Média</h4>
+                <div style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">
+                    <span style="color: var(--lichess-green);">87.3%</span>
+                    <span style="color: var(--text-muted);"> vs </span>
+                    <span style="color: var(--lichess-blue);">85.1%</span>
+                </div>
+                <div style="color: var(--text-secondary); font-size: 14px;">GPT-4o vs Gemini-Pro</div>
+                <div style="margin-top: 12px;">
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 87%; background: var(--lichess-green);"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card" style="background: var(--bg-tertiary); text-align: center; padding: 20px;">
+                <h4 style="margin-bottom: 16px; color: var(--text-primary);">Tempo Médio</h4>
+                <div style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">
+                    <span style="color: var(--lichess-green);">2.1s</span>
+                    <span style="color: var(--text-muted);"> vs </span>
+                    <span style="color: var(--lichess-blue);">1.8s</span>
+                </div>
+                <div style="color: var(--text-secondary); font-size: 14px;">Por lance</div>
+                <div style="margin-top: 12px; color: var(--warning); font-size: 12px;">
+                    <i class="fas fa-info-circle"></i>
+                    GPT-4o mais lento mas mais preciso
+                </div>
+            </div>
+        </div>
+
+        <!-- Detailed Comparison Chart -->
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-chart-radar"></i>
+                    Comparação Detalhada
+                </h3>
+            </div>
+            <canvas id="comparison-radar-chart" style="max-height: 400px;"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Lichess Integration Tab -->
+<div id="lichess-integration-tab" class="tab-content">
+    <div class="card mb-24">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-download"></i>
+                Integração com Lichess.org
+            </h3>
+            <a href="https://lichess.org/account/oauth/token" target="_blank" class="btn btn-sm btn-secondary">
+                <i class="fas fa-external-link-alt"></i>
+                Obter Token
+            </a>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Token da API Lichess</label>
+            <input type="password" class="form-control" id="lichess-token" placeholder="lip_xxxxxxxxxxxxxxxxxx">
+            <small style="color: var(--text-secondary); font-size: 12px; margin-top: 4px;">
+                Token necessário para importar partidas e aplicar melhorias RAG
+            </small>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Usuário Lichess</label>
+            <input type="text" class="form-control" id="lichess-username" placeholder="Digite o nome de usuário...">
+        </div>
+
+        <div class="d-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div class="form-group">
+                <label class="form-label">Máximo de Partidas</label>
+                <select class="form-control" id="max-games">
+                    <option value="100">100</option>
+                    <option value="500">500</option>
+                    <option value="1000" selected>1000</option>
+                    <option value="2000">2000</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Controle de Tempo</label>
+                <select class="form-control" id="time-class">
+                    <option value="all" selected>Todos</option>
+                    <option value="bullet">Bullet</option>
+                    <option value="blitz">Blitz</option>
+                    <option value="rapid">Rapid</option>
+                    <option value="classical">Classical</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Profundidade RAG</label>
+                <select class="form-control" id="rag-depth">
+                    <option value="12">12</option>
+                    <option value="15" selected>15</option>
+                    <option value="18">18</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="d-flex gap-16 mb-24">
+            <button class="btn btn-secondary" onclick="testLichessConnection()">
+                <i class="fas fa-vial"></i>
+                Testar Conexão
+            </button>
+            <button class="btn btn-primary" onclick="importLichessGames()">
+                <i class="fas fa-download"></i>
+                Importar Partidas
+            </button>
+            <button class="btn btn-success" onclick="applyRAGImprovements()">
+                <i class="fas fa-brain"></i>
+                Aplicar Melhorias RAG
+            </button>
+        </div>
+    </div>
+
+    <!-- Import Status -->
+    <div id="lichess-status" class="card" style="display: none;">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-download"></i>
+                Status da Importação
+            </h3>
+            <button class="btn btn-sm btn-danger" onclick="cancelImport()">
+                <i class="fas fa-stop"></i>
+                Cancelar
+            </button>
+        </div>
+        
+        <div class="progress mb-16">
+            <div class="progress-bar" id="import-progress" style="width: 0%;"></div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; text-align: center; margin-bottom: 16px;">
+            <div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--lichess-green);" id="games-imported">0</div>
+                <div style="color: var(--text-secondary); font-size: 12px;">Partidas Importadas</div>
+            </div>
+            <div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--lichess-blue);" id="games-analyzed">0</div>
+                <div style="color: var(--text-secondary); font-size: 12px;">Partidas Analisadas</div>
+            </div>
+            <div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--lichess-orange);" id="errors-count">0</div>
+                <div style="color: var(--text-secondary); font-size: 12px;">Erros</div>
+            </div>
+        </div>
+        
+        <div id="import-log" style="background: var(--bg-tertiary); padding: 12px; border-radius: var(--border-radius); max-height: 200px; overflow-y: auto; font-family: var(--font-mono); font-size: 12px;">
+            <div style="color: var(--text-secondary);">Aguardando início da importação...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Stats Tab -->
+<div id="detailed-stats-tab" class="tab-content">
+    <!-- Performance Overview -->
+    <div class="d-grid" style="grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Evolução ELO</h3>
+            </div>
+            <canvas id="elo-evolution-chart" style="max-height: 300px;"></canvas>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Performance por Abertura</h3>
+            </div>
+            <canvas id="opening-performance-chart" style="max-height: 300px;"></canvas>
+        </div>
+    </div>
+
+    <!-- Game Phase Analysis -->
+    <div class="card mb-24">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-chess"></i>
+                Performance por Fase do Jogo
+            </h3>
+        </div>
+        
+        <div class="d-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+            <div style="text-align: center; padding: 20px; background: var(--bg-tertiary); border-radius: var(--border-radius);">
+                <div style="font-size: 32px; font-weight: 700; color: var(--lichess-green); margin-bottom: 8px;">89.2%</div>
+                <div style="color: var(--text-secondary); margin-bottom: 12px;">Abertura</div>
+                <div class="progress">
+                    <div class="progress-bar" style="width: 89%; background: var(--lichess-green);"></div>
+                </div>
+                <div style="color: var(--text-muted); font-size: 12px; margin-top: 8px;">Moves 1-10</div>
+            </div>
+            
+            <div style="text-align: center; padding: 20px; background: var(--bg-tertiary); border-radius: var(--border-radius);">
+                <div style="font-size: 32px; font-weight: 700; color: var(--lichess-orange); margin-bottom: 8px;">76.8%</div>
+                <div style="color: var(--text-secondary); margin-bottom: 12px;">Meio-jogo</div>
+                <div class="progress">
+                    <div class="progress-bar" style="width: 76%; background: var(--lichess-orange);"></div>
+                </div>
+                <div style="color: var(--text-muted); font-size: 12px; margin-top: 8px;">Moves 11-30</div>
+            </div>
+            
+            <div style="text-align: center; padding: 20px; background: var(--bg-tertiary); border-radius: var(--border-radius);">
+                <div style="font-size: 32px; font-weight: 700; color: var(--lichess-blue); margin-bottom: 8px;">82.4%</div>
+                <div style="color: var(--text-secondary); margin-bottom: 12px;">Final</div>
+                <div class="progress">
+                    <div class="progress-bar" style="width: 82%; background: var(--lichess-blue);"></div>
+                </div>
+                <div style="color: var(--text-muted); font-size: 12px; margin-top: 8px;">Moves 31+</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Statistics Table -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-table"></i>
+                Estatísticas Completas por Modelo
+            </h3>
+            <div class="d-flex gap-8">
+                <button class="btn btn-sm btn-secondary">
+                    <i class="fas fa-filter"></i>
+                    Filtrar
+                </button>
+                <button class="btn btn-sm btn-secondary">
+                    <i class="fas fa-download"></i>
+                    Exportar CSV
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Modelo</th>
+                        <th>Partidas</th>
+                        <th>V-E-D</th>
+                        <th>Win Rate</th>
+                        <th>ELO Atual</th>
+                        <th>Precisão</th>
+                        <th>Blunders/Game</th>
+                        <th>Tempo Médio</th>
+                        <th>Abertura Favorita</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 20px; height: 20px; background: var(--lichess-brown); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                    <i class="fas fa-crown"></i>
+                                </div>
+                                <strong>Claude-3.5-Sonnet</strong>
+                            </div>
+                        </td>
+                        <td><span style="font-family: var(--font-mono);">156</span></td>
+                        <td><span style="font-family: var(--font-mono);">106-15-35</span></td>
+                        <td><span style="color: var(--lichess-green); font-weight: 600;">67.9%</span></td>
+                        <td><span style="font-family: var(--font-mono); color: var(--lichess-blue);">1847</span></td>
+                        <td><span style="color: var(--lichess-green);">89.2%</span></td>
+                        <td><span style="color: var(--lichess-green);">0.6</span></td>
+                        <td><span style="font-family: var(--font-mono);">2.4s</span></td>
+                        <td><span style="font-size: 12px;">Queen's Gambit</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 20px; height: 20px; background: var(--lichess-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <strong>GPT-4o</strong>
+                            </div>
+                        </td>
+                        <td><span style="font-family: var(--font-mono);">142</span></td>
+                        <td><span style="font-family: var(--font-mono);">91-12-39</span></td>
+                        <td><span style="color: var(--lichess-green); font-weight: 600;">64.1%</span></td>
+                        <td><span style="font-family: var(--font-mono); color: var(--lichess-blue);">1823</span></td>
+                        <td><span style="color: var(--lichess-green);">87.3%</span></td>
+                        <td><span style="color: var(--lichess-green);">0.8</span></td>
+                        <td><span style="font-family: var(--font-mono);">2.1s</span></td>
+                        <td><span style="font-size: 12px;">King's Indian</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 20px; height: 20px; background: var(--lichess-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                    <i class="fas fa-gem"></i>
+                                </div>
+                                <strong>Gemini-1.5-Pro</strong>
+                            </div>
+                        </td>
+                        <td><span style="font-family: var(--font-mono);">128</span></td>
+                        <td><span style="font-family: var(--font-mono);">78-18-32</span></td>
+                        <td><span style="color: var(--lichess-green); font-weight: 600;">60.9%</span></td>
+                        <td><span style="font-family: var(--font-mono); color: var(--lichess-blue);">1798</span></td>
+                        <td><span style="color: var(--warning);">85.1%</span></td>
+                        <td><span style="color: var(--warning);">1.1</span></td>
+                        <td><span style="font-family: var(--font-mono);">1.8s</span></td>
+                        <td><span style="font-size: 12px;">Sicilian Defense</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Analysis page JavaScript
+let currentAnalysis = null;
+let analysisProgress = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeAnalysisPage();
+});
+
+function initializeAnalysisPage() {
+    // Initialize charts if available
+    if (typeof chartManager !== 'undefined') {
+        initializeAnalysisCharts();
+    }
+    
+    // Setup event listeners
+    setupAnalysisEvents();
+}
+
+function setupAnalysisEvents() {
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabId = this.dataset.tab;
+            switchAnalysisTab(tabId);
+        });
+    });
+}
+
+function switchAnalysisTab(tabId) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+    
+    // Update tab content
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    const targetTab = document.getElementById(`${tabId}-tab`);
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
+}
+
+function initializeAnalysisCharts() {
+    // Initialize comparison radar chart
+    const radarData = {
+        labels: ['Precisão', 'Velocidade', 'Tática', 'Estratégia', 'Final'],
+        datasets: [{
+            label: 'GPT-4o',
+            data: [87, 75, 85, 88, 82],
+            borderColor: '#759900',
+            backgroundColor: '#75990033'
+        }, {
+            label: 'Gemini-Pro',
+            data: [85, 90, 88, 84, 79],
+            borderColor: '#3893e8',
+            backgroundColor: '#3893e833'
+        }]
+    };
+    
+    if (chartManager.hasChart('comparison-radar-chart')) {
+        chartManager.updateChart('comparison-radar-chart', radarData);
+    } else {
+        chartManager.createAccuracyChart('comparison-radar-chart', radarData);
+    }
+    
+    // Initialize other charts
+    chartManager.createEloChart('elo-evolution-chart');
+    chartManager.createOpeningChart('opening-performance-chart');
+}
+
+async function analyzeSelectedGame() {
+    const gameId = document.getElementById('game-id-input')?.value || 
+                   document.getElementById('recent-games-select')?.value;
+    
+    if (!gameId) {
+        if (window.arena) {
+            window.arena.showToast('Selecione uma partida para analisar', 'warning');
+        }
+        return;
+    }
+    
+    try {
+        // Show loading
+        updateAnalysisStatus('running', 'Analisando...');
+        
+        // Get analysis settings
+        const settings = {
+            engine: document.getElementById('analysis-engine')?.value || 'stockfish-15',
+            depth: parseInt(document.getElementById('analysis-depth')?.value) || 18,
+            time: parseInt(document.getElementById('analysis-time')?.value) || 10,
+            multiPV: document.getElementById('multi-pv')?.checked || false,
+            classifyMoves: document.getElementById('classify-moves')?.checked || false
+        };
+        
+        // Start analysis
+        if (window.smartAPI) {
+            currentAnalysis = await window.smartAPI.analyzeGame(gameId, settings);
+            displayAnalysisResults(currentAnalysis);
+        }
+        
+        updateAnalysisStatus('completed', 'Análise concluída');
+        
+        if (window.arena) {
+            window.arena.showToast('Análise concluída com sucesso!', 'success');
+        }
+        
+    } catch (error) {
+        console.error('Analysis error:', error);
+        updateAnalysisStatus('error', 'Erro na análise');
+        
+        if (window.arena) {
+            window.arena.showToast('Erro durante a análise', 'error');
+        }
+    }
+}
+
+function updateAnalysisStatus(status, message) {
+    const statusBadge = document.getElementById('analysis-status');
+    if (statusBadge) {
+        const statusClasses = {
+            'waiting': 'badge-secondary',
+            'running': 'badge-warning',
+            'completed': 'badge-success',
+            'error': 'badge-error'
+        };
+        
+        statusBadge.className = `badge ${statusClasses[status] || 'badge-secondary'}`;
+        statusBadge.textContent = message;
+    }
+}
+
+function displayAnalysisResults(analysis) {
+    const resultContainer = document.getElementById('analysis-result');
+    if (!resultContainer || !analysis) return;
+    
+    // Create analysis result HTML
+    const html = `
+        <div style="margin-bottom: 20px;">
+            <h4 style="margin-bottom: 12px; color: var(--text-primary);">
+                <i class="fas fa-chart-bar"></i>
+                Resumo da Análise
+            </h4>
+            <div class="d-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                <div style="text-align: center; padding: 12px; background: var(--bg-tertiary); border-radius: var(--border-radius);">
+                    <div style="font-size: 20px; font-weight: 700; color: var(--lichess-green);">${analysis.accuracy || '87.3%'}</div>
+                    <div style="color: var(--text-secondary); font-size: 12px;">Precisão Geral</div>
+                </div>
+                <div style="text-align: center; padding: 12px; background: var(--bg-tertiary); border-radius: var(--border-radius);">
+                    <div style="font-size: 20px; font-weight: 700; color: var(--lichess-red);">${analysis.blunders || '2'}</div>
+                    <div style="color: var(--text-secondary); font-size: 12px;">Blunders</div>
+                </div>
+                <div style="text-align: center; padding: 12px; background: var(--bg-tertiary); border-radius: var(--border-radius);">
+                    <div style="font-size: 20px; font-weight: 700; color: var(--lichess-blue);">${analysis.excellent || '5'}</div>
+                    <div style="color: var(--text-secondary); font-size: 12px;">Excelentes</div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <h4 style="margin-bottom: 12px; color: var(--text-primary);">
+                <i class="fas fa-list"></i>
+                Lances Críticos
+            </h4>
+            <div style="background: var(--bg-tertiary); border-radius: var(--border-radius); padding: 12px; font-family: var(--font-mono); font-size: 13px;">
+                <div style="margin-bottom: 8px;">
+                    <span style="color: var(--lichess-red);">15...Nxe4?</span> 
+                    <span style="color: var(--text-secondary);">Blunder (-2.1)</span>
+                </div>
+                <div style="margin-bottom: 8px;">
+                    <span style="color: var(--lichess-green);">23.Rxd7!</span> 
+                    <span style="color: var(--text-secondary);">Excelente (+1.8)</span>
+                </div>
+                <div>
+                    <span style="color: var(--warning);">31...Qc2?!</span> 
+                    <span style="color: var(--text-secondary);">Duvidoso (-0.8)</span>
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <h4 style="margin-bottom: 12px; color: var(--text-primary);">
+                <i class="fas fa-download"></i>
+                Relatório Completo
+            </h4>
+            <button class="btn btn-primary" onclick="downloadAnalysisReport()">
+                <i class="fas fa-file-pdf"></i>
+                Download PDF
+            </button>
+        </div>
+    `;
+    
+    resultContainer.innerHTML = html;
+}
+
+async function generateComparison() {
+    const model1 = document.getElementById('comparison-model-1')?.value;
+    const model2 = document.getElementById('comparison-model-2')?.value;
+    
+    if (model1 === model2) {
+        if (window.arena) {
+            window.arena.showToast('Selecione modelos diferentes', 'warning');
+        }
+        return;
+    }
+    
+    try {
+        if (window.smartAPI) {
+            const comparison = await window.smartAPI.compareModels(model1, model2);
+            console.log('Comparison result:', comparison);
+        }
+        
+        // Update radar chart with comparison data
+        if (typeof chartManager !== 'undefined') {
+            initializeAnalysisCharts();
+        }
+        
+        if (window.arena) {
+            window.arena.showToast('Comparação gerada com sucesso!', 'success');
+        }
+        
+    } catch (error) {
+        console.error('Comparison error:', error);
+        if (window.arena) {
+            window.arena.showToast('Erro ao gerar comparação', 'error');
+        }
+    }
+}
+
+async function testLichessConnection() {
+    const token = document.getElementById('lichess-token')?.value;
+    
+    if (!token) {
+        if (window.arena) {
+            window.arena.showToast('Insira o token do Lichess', 'warning');
+        }
+        return;
+    }
+    
+    try {
+        if (window.smartAPI) {
+            await window.smartAPI.testLichessConnection(token);
+        }
+        
+        if (window.arena) {
+            window.arena.showToast('Conexão com Lichess bem-sucedida!', 'success');
+        }
+    } catch (error) {
+        console.error('Lichess connection error:', error);
+        if (window.arena) {
+            window.arena.showToast('Erro na conexão com Lichess', 'error');
+        }
+    }
+}
+
+async function importLichessGames() {
+    const token = document.getElementById('lichess-token')?.value;
+    const username = document.getElementById('lichess-username')?.value;
+    
+    if (!token || !username) {
+        if (window.arena) {
+            window.arena.showToast('Preencha token e usuário', 'warning');
+        }
+        return;
+    }
+    
+    // Show import status
+    const statusDiv = document.getElementById('lichess-status');
+    if (statusDiv) {
+        statusDiv.style.display = 'block';
+    }
+    
+    try {
+        const config = {
+            token,
+            username,
+            maxGames: parseInt(document.getElementById('max-games')?.value) || 1000,
+            timeClass: document.getElementById('time-class')?.value || 'all',
+            ragDepth: parseInt(document.getElementById('rag-depth')?.value) || 15
+        };
+        
+        if (window.smartAPI) {
+            await window.smartAPI.importLichessGames(config);
+        }
+        
+        // Simulate progress updates
+        simulateImportProgress();
+        
+    } catch (error) {
+        console.error('Import error:', error);
+        if (window.arena) {
+            window.arena.showToast('Erro na importação', 'error');
+        }
+    }
+}
+
+function simulateImportProgress() {
+    let progress = 0;
+    let imported = 0;
+    let analyzed = 0;
+    
+    const interval = setInterval(() => {
+        progress += Math.random() * 10;
+        imported += Math.floor(Math.random() * 5);
+        analyzed += Math.floor(Math.random() * 3);
+        
+        // Update progress bar
+        const progressBar = document.getElementById('import-progress');
+        if (progressBar) {
+            progressBar.style.width = `${Math.min(progress, 100)}%`;
+        }
+        
+        // Update counters
+        document.getElementById('games-imported').textContent = imported;
+        document.getElementById('games-analyzed').textContent = analyzed;
+        
+        // Update log
+        const log = document.getElementById('import-log');
+        if (log && Math.random() > 0.7) {
+            const messages = [
+                `Importadas ${imported} partidas...`,
+                `Analisando partida #${analyzed}...`,
+                `Aplicando melhorias RAG...`,
+                `Processando dados...`
+            ];
+            
+            const newMessage = document.createElement('div');
+            newMessage.textContent = `[${new Date().toLocaleTimeString()}] ${messages[Math.floor(Math.random() * messages.length)]}`;
+            newMessage.style.color = 'var(--lichess-green)';
+            log.appendChild(newMessage);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        if (progress >= 100) {
+            clearInterval(interval);
+            if (window.arena) {
+                window.arena.showToast('Importação concluída!', 'success');
+            }
+        }
+    }, 500);
+}
+
+function applyRAGImprovements() {
+    if (window.arena) {
+        window.arena.showToast('Aplicando melhorias RAG...', 'info');
+    }
+}
+
+function cancelImport() {
+    const statusDiv = document.getElementById('lichess-status');
+    if (statusDiv) {
+        statusDiv.style.display = 'none';
+    }
+}
+
+function handlePGNDrop(event) {
+    event.preventDefault();
+    const files = event.dataTransfer.files;
+    if (files.length > 0) {
+        handlePGNFile({ target: { files } });
+    }
+}
+
+function handlePGNFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (!file.name.toLowerCase().endsWith('.pgn')) {
+        if (window.arena) {
+            window.arena.showToast('Selecione um arquivo PGN válido', 'warning');
+        }
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const pgnContent = e.target.result;
+        processPGNContent(pgnContent);
+    };
+    reader.readAsText(file);
+}
+
+function processPGNContent(pgnContent) {
+    // Process PGN content
+    console.log('Processing PGN:', pgnContent.substring(0, 200) + '...');
+    
+    if (window.arena) {
+        window.arena.showToast('Arquivo PGN carregado com sucesso!', 'success');
+    }
+}
+
+function exportAnalysis() {
+    if (window.arena) {
+        window.arena.showToast('Exportando análise...', 'info');
+    }
+}
+
+function downloadAnalysisReport() {
+    if (window.arena) {
+        window.arena.showToast('Gerando relatório PDF...', 'info');
+    }
+}
+
+// Export functions for global access
+window.analyzeSelectedGame = analyzeSelectedGame;
+window.generateComparison = generateComparison;
+window.testLichessConnection = testLichessConnection;
+window.importLichessGames = importLichessGames;
+window.applyRAGImprovements = applyRAGImprovements;
+window.cancelImport = cancelImport;
+window.handlePGNDrop = handlePGNDrop;
+window.handlePGNFile = handlePGNFile;
+window.exportAnalysis = exportAnalysis;
+window.downloadAnalysisReport = downloadAnalysisReport;
+</script>
