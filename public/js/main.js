@@ -140,8 +140,8 @@ class ChessArena {
 
   async loadDashboardData() {
     try {
-      const metrics = await getMetrics();
-      const games = await getRecentGames();
+      const metrics = await window.smartAPI.getGlobalAnalysis();
+      const games = await window.smartAPI.getRecentGames();
       this.updateMetrics(metrics);
       this.updateRecentGamesTable(games.slice(0, 10));
       this.updateCharts(metrics.modelPerformance, metrics.winLossDraw);
