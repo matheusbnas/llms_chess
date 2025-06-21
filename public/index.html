@@ -1,89 +1,492 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>♟️ LLM Chess Arena - Professional</title>
+    <title>♟️ LLM Chess Arena - Professional Chess Platform</title>
     
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>♟️</text></svg>">
     
-    <!-- Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Styles -->
-    <link rel="stylesheet" href="css/variables.css">
-    <link rel="stylesheet" href="css/base.css">
-    <link rel="stylesheet" href="css/components.css">
-    <link rel="stylesheet" href="css/chessboard.css">
-    <link rel="stylesheet" href="css/responsive.css">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/css/main.css">
+    
+    <!-- Additional CSS files -->
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/enhanced_chessboard.css">
+    <link rel="stylesheet" href="/css/responsive.css">
+    
+    <!-- Meta tags for SEO -->
+    <meta name="description" content="Professional Chess Arena for LLM AI models. Watch AI battle AI in professional chess matches.">
+    <meta name="keywords" content="chess, AI, LLM, artificial intelligence, chess arena, professional chess">
+    <meta name="author" content="LLM Chess Arena">
+    
+    <!-- Open Graph tags -->
+    <meta property="og:title" content="LLM Chess Arena">
+    <meta property="og:description" content="Professional Chess Arena for LLM AI models">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="/images/og-image.png">
+    
+    <!-- Twitter Card tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="LLM Chess Arena">
+    <meta name="twitter:description" content="Professional Chess Arena for LLM AI models">
+    
+    <style>
+        /* Critical CSS for faster loading */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #262421;
+            color: #ffffff;
+            line-height: 1.5;
+        }
+        
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #262421;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .loading-logo {
+            font-size: 48px;
+            animation: pulse 2s infinite;
+        }
+        
+        .loading-text {
+            font-size: 18px;
+            color: #b8860b;
+            font-weight: 600;
+        }
+        
+        .loading-progress {
+            width: 200px;
+            height: 4px;
+            background: #3c3936;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .loading-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #8b4513, #b8860b);
+            width: 0%;
+            animation: loading 3s ease-out forwards;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        @keyframes loading {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+    </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-logo">♟️</div>
+        <div class="loading-text">LLM Chess Arena</div>
+        <div class="loading-progress">
+            <div class="loading-progress-bar"></div>
+        </div>
+        <div style="font-size: 14px; color: #999; margin-top: 10px;">
+            Carregando tabuleiro profissional...
+        </div>
+    </div>
+
     <!-- Header -->
-    <header class="header">
+    <div class="header">
         <div class="header-content">
-            <a href="#" class="logo">
-                <i class="fas fa-chess-king"></i>
-                LLM Chess Arena
+            <a href="/" class="logo">
+                ♟️ LLM Chess Arena
             </a>
             <nav class="nav">
-                <button class="nav-btn active" data-page="dashboard">
-                    <i class="fas fa-home"></i>
+                <button class="nav-btn active" onclick="goToPage('dashboard')">
+                    <i class="fas fa-chart-bar"></i>
                     <span>Dashboard</span>
                 </button>
-                <button class="nav-btn" data-page="arena">
+                <button class="nav-btn" onclick="goToPage('arena')">
                     <i class="fas fa-swords"></i>
                     <span>Arena</span>
                 </button>
-                <button class="nav-btn" data-page="play">
+                <button class="nav-btn" onclick="goToPage('play')">
                     <i class="fas fa-gamepad"></i>
                     <span>Jogar</span>
                 </button>
-                <button class="nav-btn" data-page="analysis">
+                <button class="nav-btn" onclick="goToPage('analysis')">
                     <i class="fas fa-chart-line"></i>
                     <span>Análise</span>
                 </button>
-                <button class="nav-btn" data-page="rankings">
-                    <i class="fas fa-trophy"></i>
+                <button class="nav-btn" onclick="goToPage('comparison')">
+                    <i class="fas fa-balance-scale"></i>
+                    <span>Comparar</span>
+                </button>
+                <button class="nav-btn" onclick="goToPage('lichess')">
+                    <i class="fas fa-chess-board"></i>
+                    <span>Lichess</span>
+                </button>
+                <button class="nav-btn" onclick="goToPage('rankings')">
+                    <i class="fas fa-crown"></i>
                     <span>Rankings</span>
                 </button>
-                <button class="nav-btn" data-page="settings">
+                <button class="nav-btn" onclick="goToPage('settings')">
                     <i class="fas fa-cog"></i>
                     <span>Config</span>
                 </button>
             </nav>
         </div>
-    </header>
+    </div>
 
     <!-- Main Content -->
-    <main class="main">
-        <!-- Content will be loaded dynamically -->
-        <div id="page-content"></div>
-    </main>
+    <div class="main">
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page active">
+            <!-- Dashboard content will be loaded here -->
+        </div>
 
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" class="loading-overlay" style="display: none;">
-        <div class="loading-spinner">
-            <div class="spinner"></div>
-            <p id="loading-text">Carregando...</p>
+        <!-- Arena Page -->
+        <div id="arena-page" class="page">
+            <!-- Arena content will be loaded here -->
+        </div>
+
+        <!-- Play Page -->
+        <div id="play-page" class="page">
+            <!-- Play content will be loaded here -->
+        </div>
+
+        <!-- Analysis Page -->
+        <div id="analysis-page" class="page">
+            <!-- Analysis content will be loaded here -->
+        </div>
+
+        <!-- Comparison Page -->
+        <div id="comparison-page" class="page">
+            <!-- Comparison content will be loaded here -->
+        </div>
+
+        <!-- Lichess Page -->
+        <div id="lichess-page" class="page">
+            <!-- Lichess content will be loaded here -->
+        </div>
+
+        <!-- Rankings Page -->
+        <div id="rankings-page" class="page">
+            <!-- Rankings content will be loaded here -->
+        </div>
+
+        <!-- Settings Page -->
+        <div id="settings-page" class="page">
+            <!-- Settings content will be loaded here -->
         </div>
     </div>
 
-    <!-- Toast Notifications -->
-    <div id="toast-container" class="toast-container"></div>
+    <!-- Game Result Modal -->
+    <div id="game-result-modal" class="modal-overlay" style="display: none;">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">
+                    <i class="fas fa-flag-checkered"></i>
+                    Fim de Partida
+                </h2>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 48px; margin-bottom: 16px;" id="result-icon">🏆</div>
+                    <h3 id="result-text">Partida Finalizada</h3>
+                    <p style="color: var(--text-secondary);" id="result-reason">Resultado da partida</p>
+                </div>
+                
+                <div class="d-grid" style="grid-template-columns: 1fr 1fr; gap: 16px; text-align: center;">
+                    <div>
+                        <div style="font-size: 20px; font-weight: 700;" id="final-moves">0</div>
+                        <div style="color: var(--text-secondary); font-size: 12px;">Lances</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 20px; font-weight: 700;" id="final-duration">0m 0s</div>
+                        <div style="color: var(--text-secondary); font-size: 12px;">Duração</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeGameResultModal()">Fechar</button>
+                <button class="btn btn-primary" onclick="startNewGame()">Nova Partida</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <!-- Toast Container (will be created dynamically) -->
+    
+    <!-- Socket.IO -->
+    <script src="/socket.io/socket.io.js"></script>
+    
+    <!-- Chess.js for move validation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0-beta.6/chess.min.js"></script>
+    
+    <!-- Chart.js for analytics -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     
-    <!-- Application Scripts -->
-    <script src="js/utils.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/chessboard.js"></script>
-    <script src="js/charts.js"></script>
-    <script src="js/main.js"></script>
+    <!-- Main Application Script -->
+    <script src="/js/app.js"></script>
+    
+    <!-- Page Content Loader -->
+    <script>
+        // Page content loader
+        class PageLoader {
+            constructor() {
+                this.loadedPages = new Set();
+                this.cache = new Map();
+            }
+
+            async loadPage(pageName) {
+                if (this.loadedPages.has(pageName)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/pages/${pageName}.html`);
+                    if (!response.ok) {
+                        throw new Error(`Failed to load page: ${pageName}`);
+                    }
+                    
+                    const content = await response.text();
+                    const pageElement = document.getElementById(`${pageName}-page`);
+                    
+                    if (pageElement) {
+                        pageElement.innerHTML = content;
+                        this.loadedPages.add(pageName);
+                        this.cache.set(pageName, content);
+                        
+                        // Execute any page-specific JavaScript
+                        this.executePageScripts(pageElement);
+                        
+                        console.log(`✅ Loaded page: ${pageName}`);
+                    }
+                } catch (error) {
+                    console.error(`❌ Error loading page ${pageName}:`, error);
+                    this.showErrorPage(pageName);
+                }
+            }
+
+            executePageScripts(pageElement) {
+                const scripts = pageElement.querySelectorAll('script');
+                scripts.forEach(script => {
+                    const newScript = document.createElement('script');
+                    if (script.src) {
+                        newScript.src = script.src;
+                    } else {
+                        newScript.textContent = script.textContent;
+                    }
+                    document.head.appendChild(newScript);
+                });
+            }
+
+            showErrorPage(pageName) {
+                const pageElement = document.getElementById(`${pageName}-page`);
+                if (pageElement) {
+                    pageElement.innerHTML = `
+                        <div class="text-center" style="padding: 60px 20px;">
+                            <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+                            <h2 style="color: var(--text-primary); margin-bottom: 16px;">
+                                Erro ao Carregar Página
+                            </h2>
+                            <p style="color: var(--text-secondary); margin-bottom: 24px;">
+                                Não foi possível carregar a página "${pageName}".
+                            </p>
+                            <button class="btn btn-primary" onclick="location.reload()">
+                                <i class="fas fa-refresh"></i>
+                                Recarregar Página
+                            </button>
+                        </div>
+                    `;
+                }
+            }
+
+            async preloadPages() {
+                // Preload critical pages
+                const criticalPages = ['dashboard', 'play'];
+                
+                for (const page of criticalPages) {
+                    await this.loadPage(page);
+                }
+
+                // Lazy load other pages
+                const otherPages = ['arena', 'analysis', 'comparison', 'lichess', 'rankings', 'settings'];
+                setTimeout(() => {
+                    otherPages.forEach(page => this.loadPage(page));
+                }, 2000);
+            }
+        }
+
+        // Global page loader instance
+        window.pageLoader = new PageLoader();
+
+        // Initialize loading screen and page loader
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Starting LLM Chess Arena...');
+            
+            // Hide loading screen after a delay
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.opacity = '0';
+                    loadingScreen.style.transition = 'opacity 0.5s ease-out';
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 500);
+                }
+            }, 3000);
+
+            // Load pages
+            try {
+                await window.pageLoader.preloadPages();
+                console.log('✅ Pages loaded successfully');
+            } catch (error) {
+                console.error('❌ Error loading pages:', error);
+            }
+        });
+
+        // Enhanced goToPage function
+        async function goToPage(pageName) {
+            // Load page if not already loaded
+            if (!window.pageLoader.loadedPages.has(pageName)) {
+                await window.pageLoader.loadPage(pageName);
+            }
+
+            // Use arena's showPage if available, otherwise fallback
+            if (window.arena) {
+                window.arena.showPage(pageName);
+            } else {
+                // Fallback page switching
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.remove('active');
+                });
+                
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+
+                const targetPage = document.getElementById(`${pageName}-page`);
+                if (targetPage) {
+                    targetPage.classList.add('active');
+                }
+
+                const activeBtn = document.querySelector(`[onclick*="${pageName}"]`);
+                if (activeBtn) {
+                    activeBtn.classList.add('active');
+                }
+            }
+        }
+
+        // Modal functions
+        function closeGameResultModal() {
+            const modal = document.getElementById('game-result-modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function showGameResultModal(result, moves, duration) {
+            const modal = document.getElementById('game-result-modal');
+            const resultIcon = document.getElementById('result-icon');
+            const resultText = document.getElementById('result-text');
+            const resultReason = document.getElementById('result-reason');
+            const finalMoves = document.getElementById('final-moves');
+            const finalDuration = document.getElementById('final-duration');
+
+            if (modal) {
+                // Update modal content
+                if (result === '1-0') {
+                    resultIcon.textContent = '🏆';
+                    resultText.textContent = 'Você venceu!';
+                    resultReason.textContent = 'Vitória das brancas';
+                } else if (result === '0-1') {
+                    resultIcon.textContent = '😔';
+                    resultText.textContent = 'Você perdeu!';
+                    resultReason.textContent = 'Vitória das pretas';
+                } else {
+                    resultIcon.textContent = '🤝';
+                    resultText.textContent = 'Empate!';
+                    resultReason.textContent = 'Partida empatada';
+                }
+
+                if (finalMoves) finalMoves.textContent = moves || '0';
+                if (finalDuration) finalDuration.textContent = duration || '0m 0s';
+
+                modal.style.display = 'flex';
+            }
+        }
+
+        // Error handling
+        window.addEventListener('error', function(e) {
+            console.error('❌ Global error:', e.error);
+            
+            // Show error toast if arena is available
+            if (window.arena) {
+                window.arena.showToast('Ocorreu um erro inesperado', 'error');
+            }
+        });
+
+        // Unhandled promise rejection handling
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('❌ Unhandled promise rejection:', e.reason);
+            e.preventDefault();
+            
+            if (window.arena) {
+                window.arena.showToast('Erro de conexão', 'error');
+            }
+        });
+
+        // Performance monitoring
+        window.addEventListener('load', function() {
+            if ('performance' in window) {
+                const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+                console.log(`⚡ Page loaded in ${loadTime}ms`);
+            }
+        });
+
+        // Service Worker registration (if available)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('✅ Service Worker registered:', registration);
+                })
+                .catch(error => {
+                    console.log('❌ Service Worker registration failed:', error);
+                });
+        }
+    </script>
+
+    <!-- Analytics (placeholder) -->
+    <script>
+        // Google Analytics or other analytics code would go here
+        console.log('📊 Analytics initialized');
+    </script>
 </body>
 </html>

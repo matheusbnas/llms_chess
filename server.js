@@ -27,16 +27,48 @@ const io = socketIo(server, {
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: "50mb" }));
-app.use(express.static("public"));
-app.use("/pages", express.static(path.join(__dirname, "pages")));
 
-// Game state management
+// Serve static files with proper MIME types
+app.use(
+  express.static("public", {
+    setHeaders: (res, path) => {
+      if (path.endsWith(".css")) {
+        res.setHeader("Content-Type", "text/css");
+      } else if (path.endsWith(".js")) {
+        res.setHeader("Content-Type", "application/javascript");
+      } else if (path.endsWith(".html")) {
+        res.setHeader("Content-Type", "text/html");
+      }
+    },
+  })
+);
+
+// Serve pages directory
+app.use(
+  "/pages",
+  express.static(path.join(__dirname, "pages"), {
+    setHeaders: (res, path) => {
+      if (path.endsWith(".html")) {
+        res.setHeader("Content-Type", "text/html");
+      }
+    },
+  })
+);
+
+// Enhanced Game Manager with Professional Chessboard Support
 class GameManager {
   constructor() {
     this.games = new Map();
     this.battles = new Map();
     this.tournaments = new Map();
     this.modelClients = this.initializeModelClients();
+    this.gameStats = {
+      totalGames: 0,
+      activeGames: 0,
+      completedGames: 0,
+      totalMoves: 0,
+      averageGameDuration: 0,
+    };
   }
 
   initializeModelClients() {
@@ -46,30 +78,48 @@ class GameManager {
         model: "gpt-4o",
         temperature: 0.1,
         active: !!process.env.OPENAI_API_KEY,
+        rating: 1850,
+        description: "Mais forte modelo disponível",
       },
       "GPT-4-Turbo": {
         provider: "openai",
         model: "gpt-4-turbo",
         temperature: 0.1,
         active: !!process.env.OPENAI_API_KEY,
+        rating: 1780,
+        description: "Equilibrado e versátil",
       },
       "Gemini-Pro": {
         provider: "google",
         model: "gemini-1.5-pro-latest",
         temperature: 0.1,
         active: !!process.env.GOOGLE_API_KEY,
+        rating: 1750,
+        description: "Criativo e inovador",
       },
       "Gemini-1.0-Pro": {
         provider: "google",
         model: "gemini-1.0-pro",
         temperature: 0.1,
         active: !!process.env.GOOGLE_API_KEY,
+        rating: 1720,
+        description: "Modelo estável",
       },
-      "Deepseek-Chat": {
+      "Claude-3.5-Sonnet": {
+        provider: "anthropic",
+        model: "claude-3-5-sonnet-20241022",
+        temperature: 0.1,
+        active: !!process.env.ANTHROPIC_API_KEY,
+        rating: 1820,
+        description: "Estratégico e analítico",
+      },
+      "Deepseek-R1": {
         provider: "deepseek",
-        model: "deepseek-chat",
+        model: "deepseek-r1",
         temperature: 0.1,
         active: !!process.env.DEEPSEEK_API_KEY,
+        rating: 1680,
+        description: "Modelo experimental",
       },
     };
   }
@@ -82,6 +132,10 @@ class GameManager {
 
     const chess = new Chess(position);
     const legalMoves = chess.moves();
+
+    if (legalMoves.length === 0) {
+      throw new Error("No legal moves available");
+    }
 
     const prompt = this.createChessPrompt(
       position,
@@ -98,6 +152,9 @@ class GameManager {
           break;
         case "google":
           response = await this.callGoogle(modelConfig, prompt);
+          break;
+        case "anthropic":
+          response = await this.callAnthropic(modelConfig, prompt);
           break;
         case "deepseek":
           response = await this.callDeepSeek(modelConfig, prompt);
@@ -131,24 +188,26 @@ class GameManager {
   createChessPrompt(position, gameHistory, color, legalMoves) {
     const chess = new Chess(position);
     const moveNumber = Math.floor(gameHistory.length / 2) + 1;
+    const inCheck = chess.inCheck() ? " (You are in check!)" : "";
 
-    return `You are a Chess Grandmaster playing with the ${color} pieces.
+    return `You are a Chess Grandmaster playing with the ${color} pieces${inCheck}.
 
-Current position: ${position}
+Current position (FEN): ${position}
 Move number: ${moveNumber}
 Game history: ${gameHistory.join(" ")}
 
-Here are the legal moves available: ${legalMoves.join(", ")}
+Your legal moves: ${legalMoves.join(", ")}
 
 Analyze the position and choose the best move. Consider:
-- King safety
-- Piece development
+- King safety and threats
+- Piece development and coordination  
 - Control of the center
-- Tactical opportunities
-- Positional advantages
+- Tactical opportunities (pins, forks, discovered attacks)
+- Positional advantages (pawn structure, piece activity)
+- Endgame principles if applicable
 
 You must respond with ONLY the move in standard algebraic notation (SAN) from the legal moves list.
-Examples: e4, Nf3, O-O, Qxd5, Rd1+
+Examples: e4, Nf3, O-O, Qxd5, Rd1+, Bxf7+
 
 Your move:`;
   }
@@ -162,7 +221,7 @@ Your move:`;
           {
             role: "system",
             content:
-              "You are a chess grandmaster. Respond only with the chess move in standard algebraic notation.",
+              "You are a chess grandmaster. Respond only with the chess move in standard algebraic notation. No explanations, just the move.",
           },
           { role: "user", content: prompt },
         ],
@@ -174,6 +233,7 @@ Your move:`;
           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
           "Content-Type": "application/json",
         },
+        timeout: 10000,
       }
     );
 
@@ -193,10 +253,35 @@ Your move:`;
           temperature: modelConfig.temperature,
           maxOutputTokens: 10,
         },
+      },
+      {
+        timeout: 10000,
       }
     );
 
     return response.data.candidates[0].content.parts[0].text.trim();
+  }
+
+  async callAnthropic(modelConfig, prompt) {
+    const response = await axios.post(
+      "https://api.anthropic.com/v1/messages",
+      {
+        model: modelConfig.model,
+        messages: [{ role: "user", content: prompt }],
+        temperature: modelConfig.temperature,
+        max_tokens: 10,
+      },
+      {
+        headers: {
+          "x-api-key": process.env.ANTHROPIC_API_KEY,
+          "Content-Type": "application/json",
+          "anthropic-version": "2023-06-01",
+        },
+        timeout: 10000,
+      }
+    );
+
+    return response.data.content[0].text.trim();
   }
 
   async callDeepSeek(modelConfig, prompt) {
@@ -220,6 +305,7 @@ Your move:`;
           Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
           "Content-Type": "application/json",
         },
+        timeout: 10000,
       }
     );
 
@@ -227,10 +313,20 @@ Your move:`;
   }
 
   extractMove(response, legalMoves) {
-    // Remove any extra text and extract move
+    // Clean up the response
+    const cleanResponse = response.replace(/[^\w\-+=\s]/g, "").trim();
+
+    // Try exact match first
+    for (const move of legalMoves) {
+      if (cleanResponse === move || cleanResponse.includes(move)) {
+        return move;
+      }
+    }
+
+    // Try pattern matching for chess moves
     const movePattern =
       /([NBRQK]?[a-h]?[1-8]?x?[a-h][1-8](?:=[NBRQ])?[+#]?|O-O(?:-O)?)/g;
-    const matches = response.match(movePattern);
+    const matches = cleanResponse.match(movePattern);
 
     if (matches) {
       for (const match of matches) {
@@ -240,39 +336,39 @@ Your move:`;
       }
     }
 
-    // Try to find exact match in legal moves
-    for (const move of legalMoves) {
-      if (response.includes(move)) {
-        return move;
-      }
-    }
-
     return null;
   }
 
-  async playGame(whiteModel, blackModel, opening = "e4") {
-    const gameId = `game_${Date.now()}_${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
+  async playGame(whiteModel, blackModel, opening = "e4", gameId = null) {
+    const id =
+      gameId || `game_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
     const chess = new Chess();
     const gameHistory = [];
     const moveDetails = [];
+    const startTime = new Date();
 
-    // Apply opening
-    try {
-      const openingMove = opening.split(".").pop().trim();
-      chess.move(openingMove);
-      gameHistory.push(openingMove);
-      moveDetails.push({
-        move: openingMove,
-        san: openingMove,
-        color: "white",
-        model: whiteModel,
-        fen: chess.fen(),
-        timestamp: new Date().toISOString(),
-      });
-    } catch (e) {
-      console.error("Invalid opening move:", opening);
+    // Apply opening if provided
+    if (opening && opening !== "random") {
+      try {
+        const openingMoves = opening.split(" ").filter((move) => move.trim());
+        for (const move of openingMoves) {
+          const moveObj = chess.move(move.trim());
+          if (moveObj) {
+            gameHistory.push(moveObj.san);
+            moveDetails.push({
+              move: move.trim(),
+              san: moveObj.san,
+              color: moveObj.color === "w" ? "white" : "black",
+              model: moveObj.color === "w" ? whiteModel : blackModel,
+              fen: chess.fen(),
+              timestamp: new Date().toISOString(),
+            });
+          }
+        }
+      } catch (e) {
+        console.error("Invalid opening moves:", opening, e);
+      }
     }
 
     let moveCount = 0;
@@ -283,12 +379,15 @@ Your move:`;
       const currentModel = currentColor === "white" ? whiteModel : blackModel;
 
       try {
+        console.log(`${currentModel} (${currentColor}) thinking...`);
+
         const move = await this.makeMove(
           currentModel,
           chess.fen(),
           gameHistory,
           currentColor
         );
+
         const moveObj = chess.move(move);
 
         if (moveObj) {
@@ -307,13 +406,14 @@ Your move:`;
 
           // Emit real-time update
           io.emit("game-update", {
-            gameId,
+            gameId: id,
             move: moveObj.san,
             fen: chess.fen(),
             turn: chess.turn(),
             gameOver: chess.isGameOver(),
             currentModel,
             moveCount: moveDetails.length,
+            history: gameHistory,
           });
 
           console.log(`${currentModel} (${currentColor}): ${moveObj.san}`);
@@ -327,49 +427,88 @@ Your move:`;
       }
 
       moveCount++;
-      // Add small delay between moves
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Add small delay between moves for better UX
+      await new Promise((resolve) => setTimeout(resolve, 1500));
     }
 
-    // Game finished
-    const result = chess.isCheckmate()
-      ? chess.turn() === "w"
-        ? "0-1"
-        : "1-0"
-      : chess.isStalemate() || chess.isDraw()
-      ? "1/2-1/2"
-      : "*";
+    // Determine game result
+    let result = "*";
+    let resultReason = "Game in progress";
+
+    if (chess.isCheckmate()) {
+      result = chess.turn() === "w" ? "0-1" : "1-0";
+      resultReason = "Checkmate";
+    } else if (chess.isStalemate()) {
+      result = "1/2-1/2";
+      resultReason = "Stalemate";
+    } else if (chess.isDraw()) {
+      result = "1/2-1/2";
+      resultReason = "Draw";
+    } else if (moveCount >= maxMoves) {
+      result = "1/2-1/2";
+      resultReason = "Move limit reached";
+    }
+
+    const endTime = new Date();
+    const duration = Math.round((endTime - startTime) / 1000); // seconds
 
     const gameData = {
-      id: gameId,
+      id,
       white: whiteModel,
       black: blackModel,
       result,
+      resultReason,
       moves: gameHistory,
       moveDetails,
-      pgn: this.generatePGN(whiteModel, blackModel, result, gameHistory),
+      pgn: this.generatePGN(
+        whiteModel,
+        blackModel,
+        result,
+        gameHistory,
+        resultReason
+      ),
       fen: chess.fen(),
       status: "completed",
-      startTime: moveDetails[0]?.timestamp,
-      endTime: new Date().toISOString(),
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString(),
+      duration: duration,
       totalMoves: gameHistory.length,
+      opening: opening || "Unknown",
     };
+
+    // Update stats
+    this.updateGameStats(gameData);
 
     // Save game
     await this.saveGame(gameData);
 
+    // Emit final update
+    io.emit("game-completed", gameData);
+
     return gameData;
   }
 
-  generatePGN(white, black, result, moves) {
-    const date = new Date().toISOString().split("T")[0];
+  updateGameStats(gameData) {
+    this.gameStats.totalGames++;
+    this.gameStats.completedGames++;
+    this.gameStats.totalMoves += gameData.totalMoves;
+
+    // Update average duration
+    this.gameStats.averageGameDuration = Math.round(
+      (this.gameStats.averageGameDuration + gameData.duration) / 2
+    );
+  }
+
+  generatePGN(white, black, result, moves, resultReason) {
+    const date = new Date().toISOString().split("T")[0].replace(/-/g, ".");
     let pgn = `[Event "LLM Chess Arena"]
-[Site "Local"]
+[Site "localhost:3000"]
 [Date "${date}"]
 [Round "1"]
 [White "${white}"]
 [Black "${black}"]
 [Result "${result}"]
+[Termination "${resultReason}"]
 
 `;
 
@@ -398,9 +537,74 @@ Your move:`;
       const pgnPath = path.join(gamesDir, `${gameData.id}.pgn`);
       await fs.writeFile(pgnPath, gameData.pgn);
 
-      console.log(`Game saved: ${gameData.id}`);
+      console.log(`✅ Game saved: ${gameData.id} (${gameData.result})`);
     } catch (error) {
-      console.error("Error saving game:", error);
+      console.error("❌ Error saving game:", error);
+    }
+  }
+
+  async getRecentGames(limit = 10) {
+    try {
+      const gamesDir = path.join(__dirname, "games");
+      const files = await fs.readdir(gamesDir);
+      const jsonFiles = files.filter((file) => file.endsWith(".json"));
+
+      const games = [];
+      for (const file of jsonFiles.slice(-limit)) {
+        try {
+          const filePath = path.join(gamesDir, file);
+          const content = await fs.readFile(filePath, "utf8");
+          const game = JSON.parse(content);
+          games.push({
+            id: game.id,
+            white: game.white,
+            black: game.black,
+            result: game.result,
+            moves: game.totalMoves,
+            duration: this.formatDuration(game.duration),
+            date: this.formatDate(game.endTime),
+          });
+        } catch (error) {
+          console.error(`Error reading game file ${file}:`, error);
+        }
+      }
+
+      return games.reverse(); // Most recent first
+    } catch (error) {
+      console.error("Error getting recent games:", error);
+      return [];
+    }
+  }
+
+  formatDuration(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}m ${secs}s`;
+  }
+
+  formatDate(isoString) {
+    const date = new Date(isoString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffDays === 0) {
+      if (diffHours === 0) {
+        const diffMins = Math.floor(diffMs / (1000 * 60));
+        return `Há ${diffMins} minutos`;
+      }
+      return `Hoje, ${date.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}`;
+    } else if (diffDays === 1) {
+      return `Ontem, ${date.toLocaleTimeString("pt-BR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })}`;
+    } else {
+      return date.toLocaleDateString("pt-BR");
     }
   }
 
@@ -413,26 +617,39 @@ Your move:`;
       results: [],
       status: "running",
       startTime: new Date().toISOString(),
+      whiteWins: 0,
+      blackWins: 0,
+      draws: 0,
     };
 
     this.battles.set(battleId, battle);
 
-    // Run games asynchronously
+    // Run battle asynchronously
     this.runBattle(battle);
 
     return battle;
   }
 
   async runBattle(battle) {
+    console.log(
+      `🔥 Starting battle: ${battle.whiteModel} vs ${battle.blackModel}`
+    );
+
     for (let i = 0; i < battle.numGames; i++) {
+      // Alternate colors each game
       const whiteModel = i % 2 === 0 ? battle.whiteModel : battle.blackModel;
       const blackModel = i % 2 === 0 ? battle.blackModel : battle.whiteModel;
 
       try {
+        console.log(
+          `🎮 Game ${i + 1}/${battle.numGames}: ${whiteModel} vs ${blackModel}`
+        );
+
         const game = await this.playGame(
           whiteModel,
           blackModel,
-          battle.opening
+          battle.opening,
+          `${battle.id}_game_${i + 1}`
         );
 
         battle.currentGame = i + 1;
@@ -442,32 +659,47 @@ Your move:`;
           black: blackModel,
           result: game.result,
           moves: game.totalMoves,
+          duration: game.duration,
           gameId: game.id,
         });
 
         // Update statistics
         if (game.result === "1-0") {
-          if (whiteModel === battle.whiteModel)
-            battle.whiteWins = (battle.whiteWins || 0) + 1;
-          else battle.blackWins = (battle.blackWins || 0) + 1;
+          if (whiteModel === battle.whiteModel) {
+            battle.whiteWins++;
+          } else {
+            battle.blackWins++;
+          }
         } else if (game.result === "0-1") {
-          if (blackModel === battle.blackModel)
-            battle.blackWins = (battle.blackWins || 0) + 1;
-          else battle.whiteWins = (battle.whiteWins || 0) + 1;
+          if (blackModel === battle.blackModel) {
+            battle.blackWins++;
+          } else {
+            battle.whiteWins++;
+          }
         } else {
-          battle.draws = (battle.draws || 0) + 1;
+          battle.draws++;
         }
 
         // Emit battle update
-        io.emit("battle-update", battle);
+        io.emit("battle-update", {
+          ...battle,
+          progress: (battle.currentGame / battle.numGames) * 100,
+        });
+
+        console.log(`✅ Game ${i + 1} completed: ${game.result}`);
       } catch (error) {
-        console.error(`Error in battle game ${i + 1}:`, error);
+        console.error(`❌ Error in battle game ${i + 1}:`, error);
       }
     }
 
     battle.status = "completed";
     battle.endTime = new Date().toISOString();
-    io.emit("battle-update", battle);
+
+    console.log(
+      `🏁 Battle completed: ${battle.whiteModel} ${battle.whiteWins}-${battle.draws}-${battle.blackWins} ${battle.blackModel}`
+    );
+
+    io.emit("battle-completed", battle);
   }
 }
 
@@ -481,37 +713,78 @@ app.use("/api/lichess", lichessRouter);
 app.use("/api/settings", settingsRouter);
 app.use("/api/data", dataRouter);
 
-// Enhanced game routes
+// Enhanced API endpoints
 app.post("/api/games/battle", async (req, res) => {
   try {
-    const battle = await gameManager.startBattle(req.body);
-    res.json(battle);
+    const config = {
+      whiteModel: req.body.whiteModel || "GPT-4o",
+      blackModel: req.body.blackModel || "Gemini-Pro",
+      numGames: parseInt(req.body.numGames) || 1,
+      opening: req.body.opening || "e4",
+      timeControl: req.body.timeControl || "unlimited",
+    };
+
+    const battle = await gameManager.startBattle(config);
+    res.json({ success: true, battle });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Error starting battle:", error);
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
 app.get("/api/models/available", (req, res) => {
   const models = {};
   for (const [name, config] of Object.entries(gameManager.modelClients)) {
-    models[name] = config.active;
+    models[name] = {
+      active: config.active,
+      rating: config.rating,
+      description: config.description,
+    };
   }
   res.json(models);
 });
 
-// Human vs AI routes
+app.get("/api/games/recent", async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const games = await gameManager.getRecentGames(limit);
+    res.json(games);
+  } catch (error) {
+    console.error("Error getting recent games:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/games/stats", (req, res) => {
+  res.json({
+    ...gameManager.gameStats,
+    activeModels: Object.values(gameManager.modelClients).filter(
+      (m) => m.active
+    ).length,
+    tournaments: gameManager.battles.size,
+    avgMoves: Math.round(
+      gameManager.gameStats.totalMoves /
+        Math.max(gameManager.gameStats.totalGames, 1)
+    ),
+  });
+});
+
+// Human vs AI game endpoints
 app.post("/api/games/human", async (req, res) => {
-  const { opponentModel, playerColor, difficulty } = req.body;
+  const { opponentModel, playerColor, difficulty, timeControl } = req.body;
 
   const gameId = `human_${Date.now()}`;
   const game = {
     id: gameId,
     type: "human_vs_ai",
-    human: playerColor,
-    ai: opponentModel,
+    humanColor: playerColor || "white",
+    aiModel: opponentModel || "Gemini-Pro",
+    difficulty: difficulty || "advanced",
+    timeControl: timeControl || "blitz",
     chess: new Chess(),
     status: "active",
     history: [],
+    startTime: new Date().toISOString(),
   };
 
   gameManager.games.set(gameId, game);
@@ -523,6 +796,8 @@ app.post("/api/games/human", async (req, res) => {
       fen: game.chess.fen(),
       turn: game.chess.turn(),
       status: "active",
+      humanColor: game.humanColor,
+      aiModel: game.aiModel,
     },
   });
 });
@@ -544,57 +819,128 @@ app.post("/api/games/human/:id/move", async (req, res) => {
 
     game.history.push(moveObj.san);
 
+    const gameOver = game.chess.isGameOver();
+    let result = null;
+
+    if (gameOver) {
+      if (game.chess.isCheckmate()) {
+        result = game.chess.turn() === "w" ? "0-1" : "1-0";
+      } else {
+        result = "1/2-1/2";
+      }
+    }
+
     res.json({
       success: true,
       move: moveObj.san,
       fen: game.chess.fen(),
-      gameOver: game.chess.isGameOver(),
-      result: game.chess.isGameOver() ? game.chess.pgn() : null,
+      gameOver,
+      result,
+      history: game.history,
+      turn: game.chess.turn(),
     });
 
     // If it's AI's turn and game is not over
-    if (!game.chess.isGameOver() && game.chess.turn() !== game.human[0]) {
-      setTimeout(async () => {
-        try {
-          const aiMove = await gameManager.makeMove(
-            game.ai,
-            game.chess.fen(),
-            game.history,
-            game.chess.turn() === "w" ? "white" : "black"
-          );
+    if (!gameOver) {
+      const aiColor = game.humanColor === "white" ? "black" : "white";
+      const currentTurn = game.chess.turn() === "w" ? "white" : "black";
 
-          const aiMoveObj = game.chess.move(aiMove);
-          if (aiMoveObj) {
-            game.history.push(aiMoveObj.san);
+      if (currentTurn === aiColor) {
+        setTimeout(async () => {
+          try {
+            const aiMove = await gameManager.makeMove(
+              game.aiModel,
+              game.chess.fen(),
+              game.history,
+              aiColor
+            );
 
-            io.to(id).emit("ai-move", {
-              move: aiMoveObj.san,
-              fen: game.chess.fen(),
-              gameOver: game.chess.isGameOver(),
-              result: game.chess.isGameOver() ? game.chess.pgn() : null,
-            });
+            const aiMoveObj = game.chess.move(aiMove);
+            if (aiMoveObj) {
+              game.history.push(aiMoveObj.san);
+
+              const aiGameOver = game.chess.isGameOver();
+              let aiResult = null;
+
+              if (aiGameOver) {
+                if (game.chess.isCheckmate()) {
+                  aiResult = game.chess.turn() === "w" ? "0-1" : "1-0";
+                } else {
+                  aiResult = "1/2-1/2";
+                }
+                game.status = "completed";
+              }
+
+              io.to(id).emit("ai-move", {
+                move: aiMoveObj.san,
+                fen: game.chess.fen(),
+                gameOver: aiGameOver,
+                result: aiResult,
+                history: game.history,
+                turn: game.chess.turn(),
+              });
+            }
+          } catch (error) {
+            console.error("AI move error:", error);
+            io.to(id).emit("ai-error", { error: "AI move failed" });
           }
-        } catch (error) {
-          console.error("AI move error:", error);
-        }
-      }, 1000);
+        }, 2000); // 2 second delay for AI thinking
+      }
+    } else {
+      game.status = "completed";
     }
   } catch (error) {
+    console.error("Move error:", error);
     res.status(400).json({ error: error.message });
+  }
+});
+
+// Game viewing and PGN download
+app.get("/api/games/:id", async (req, res) => {
+  try {
+    const gameId = req.params.id;
+    const gamePath = path.join(__dirname, "games", `${gameId}.json`);
+    const gameContent = await fs.readFile(gamePath, "utf8");
+    const game = JSON.parse(gameContent);
+    res.json(game);
+  } catch (error) {
+    res.status(404).json({ error: "Game not found" });
+  }
+});
+
+app.get("/api/games/:id/pgn", async (req, res) => {
+  try {
+    const gameId = req.params.id;
+    const pgnPath = path.join(__dirname, "games", `${gameId}.pgn`);
+    const pgnContent = await fs.readFile(pgnPath, "utf8");
+
+    res.setHeader("Content-Type", "application/x-chess-pgn");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${gameId}.pgn"`
+    );
+    res.send(pgnContent);
+  } catch (error) {
+    res.status(404).json({ error: "PGN not found" });
   }
 });
 
 // Socket.IO connection handling
 io.on("connection", (socket) => {
-  console.log("Client connected:", socket.id);
+  console.log(`🔌 Client connected: ${socket.id}`);
 
   socket.on("join-game", (gameId) => {
     socket.join(gameId);
-    console.log(`Client ${socket.id} joined game ${gameId}`);
+    console.log(`👥 Client ${socket.id} joined game ${gameId}`);
+  });
+
+  socket.on("join-battle", (battleId) => {
+    socket.join(battleId);
+    console.log(`⚔️ Client ${socket.id} joined battle ${battleId}`);
   });
 
   socket.on("disconnect", () => {
-    console.log("Client disconnected:", socket.id);
+    console.log(`🔌 Client disconnected: ${socket.id}`);
   });
 });
 
@@ -603,15 +949,91 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.json({
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    models: Object.keys(gameManager.modelClients).length,
+    activeGames: gameManager.games.size,
+    activeBattles: gameManager.battles.size,
+  });
+});
+
+// Error handling middleware
+app.use((error, req, res, next) => {
+  console.error("❌ Server error:", error);
+  res.status(500).json({
+    error: "Internal server error",
+    message:
+      process.env.NODE_ENV === "development"
+        ? error.message
+        : "Something went wrong",
+  });
+});
+
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({
+    error: "Not found",
+    message: `Route ${req.method} ${req.path} not found`,
+  });
+});
+
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
-  console.log(`🚀 LLM Chess Arena running on port ${PORT}`);
+  console.log(`\n🚀 LLM Chess Arena running on port ${PORT}`);
   console.log(`📊 Dashboard: http://localhost:${PORT}`);
-  console.log("🔑 Configure your API keys in environment variables:");
-  console.log("   - OPENAI_API_KEY");
-  console.log("   - GOOGLE_API_KEY");
-  console.log("   - DEEPSEEK_API_KEY");
+  console.log(`\n🔑 Configure your API keys in environment variables:`);
+  console.log(
+    `   - OPENAI_API_KEY: ${
+      !!process.env.OPENAI_API_KEY ? "✅ Set" : "❌ Not set"
+    }`
+  );
+  console.log(
+    `   - GOOGLE_API_KEY: ${
+      !!process.env.GOOGLE_API_KEY ? "✅ Set" : "❌ Not set"
+    }`
+  );
+  console.log(
+    `   - ANTHROPIC_API_KEY: ${
+      !!process.env.ANTHROPIC_API_KEY ? "✅ Set" : "❌ Not set"
+    }`
+  );
+  console.log(
+    `   - DEEPSEEK_API_KEY: ${
+      !!process.env.DEEPSEEK_API_KEY ? "✅ Set" : "❌ Not set"
+    }`
+  );
+
+  const activeModels = Object.values(gameManager.modelClients).filter(
+    (m) => m.active
+  ).length;
+  console.log(
+    `\n🤖 Active AI models: ${activeModels}/${
+      Object.keys(gameManager.modelClients).length
+    }`
+  );
+  console.log(`\n🏁 Ready to battle! Use Ctrl+C to stop.\n`);
+});
+
+// Graceful shutdown
+process.on("SIGTERM", () => {
+  console.log("\n🛑 Received SIGTERM. Graceful shutdown...");
+  server.close(() => {
+    console.log("✅ Server closed");
+    process.exit(0);
+  });
+});
+
+process.on("SIGINT", () => {
+  console.log("\n🛑 Received SIGINT. Graceful shutdown...");
+  server.close(() => {
+    console.log("✅ Server closed");
+    process.exit(0);
+  });
 });
 
 module.exports = { app, server, gameManager };

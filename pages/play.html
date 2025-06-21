@@ -1,4 +1,4 @@
-<!-- ♟️ Play Page -->
+<!-- ♟️ Play Page - Corrigida -->
 <div class="text-center mb-24">
     <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">
         <i class="fas fa-gamepad" style="color: var(--lichess-brown-light);"></i>
@@ -72,7 +72,7 @@
                 </select>
             </div>
 
-            <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;" data-action="start-human-game">
+            <button class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;" onclick="startNewHumanGame()">
                 <i class="fas fa-play"></i>
                 Iniciar Partida
             </button>
@@ -88,19 +88,19 @@
             </div>
             
             <div class="d-flex" style="flex-direction: column; gap: 8px;">
-                <button class="btn btn-secondary" style="justify-content: center;" disabled>
+                <button class="btn btn-secondary" style="justify-content: center;" onclick="requestHint()" id="hint-btn" disabled>
                     <i class="fas fa-lightbulb"></i>
                     Solicitar Dica
                 </button>
-                <button class="btn btn-secondary" style="justify-content: center;" disabled>
+                <button class="btn btn-secondary" style="justify-content: center;" onclick="undoMove()" id="undo-btn" disabled>
                     <i class="fas fa-undo"></i>
                     Desfazer Lance
                 </button>
-                <button class="btn btn-warning" style="justify-content: center;" disabled>
+                <button class="btn btn-warning" style="justify-content: center;" onclick="offerDraw()" id="draw-btn" disabled>
                     <i class="fas fa-handshake"></i>
                     Oferecer Empate
                 </button>
-                <button class="btn btn-danger" style="justify-content: center;" disabled>
+                <button class="btn btn-danger" style="justify-content: center;" onclick="resignGame()" id="resign-btn" disabled>
                     <i class="fas fa-flag"></i>
                     Resignar
                 </button>
@@ -121,74 +121,76 @@
             </div>
         </div>
         
-        <!-- Chess Board Container -->
-        <div id="play-chessboard-container" class="chessboard-container" style="position: relative;">
-            <!-- Coordenadas externas -->
-            <div class="coordinates-external coord-files-top">
-                <div class="coord-label">a</div>
-                <div class="coord-label">b</div>
-                <div class="coord-label">c</div>
-                <div class="coord-label">d</div>
-                <div class="coord-label">e</div>
-                <div class="coord-label">f</div>
-                <div class="coord-label">g</div>
-                <div class="coord-label">h</div>
-            </div>
-            
-            <div class="coordinates-external coord-ranks-left">
-                <div class="coord-label">8</div>
-                <div class="coord-label">7</div>
-                <div class="coord-label">6</div>
-                <div class="coord-label">5</div>
-                <div class="coord-label">4</div>
-                <div class="coord-label">3</div>
-                <div class="coord-label">2</div>
-                <div class="coord-label">1</div>
-            </div>
-            
-            <!-- Tabuleiro principal -->
-            <div class="chessboard" id="play-chessboard">
-                <!-- As 64 casas serão geradas por JavaScript -->
-            </div>
-            
-            <div class="coordinates-external coord-ranks-right">
-                <div class="coord-label">8</div>
-                <div class="coord-label">7</div>
-                <div class="coord-label">6</div>
-                <div class="coord-label">5</div>
-                <div class="coord-label">4</div>
-                <div class="coord-label">3</div>
-                <div class="coord-label">2</div>
-                <div class="coord-label">1</div>
-            </div>
-            
-            <div class="coordinates-external coord-files-bottom">
-                <div class="coord-label">a</div>
-                <div class="coord-label">b</div>
-                <div class="coord-label">c</div>
-                <div class="coord-label">d</div>
-                <div class="coord-label">e</div>
-                <div class="coord-label">f</div>
-                <div class="coord-label">g</div>
-                <div class="coord-label">h</div>
+        <!-- Chess Board Container - Integrado do professional_chessboard.html -->
+        <div class="chessboard-wrapper">
+            <div class="chessboard-container" id="play-chessboard-container">
+                <!-- Coordenadas externas -->
+                <div class="coordinates-external coord-files-top">
+                    <div class="coord-label">a</div>
+                    <div class="coord-label">b</div>
+                    <div class="coord-label">c</div>
+                    <div class="coord-label">d</div>
+                    <div class="coord-label">e</div>
+                    <div class="coord-label">f</div>
+                    <div class="coord-label">g</div>
+                    <div class="coord-label">h</div>
+                </div>
+                
+                <div class="coordinates-external coord-ranks-left">
+                    <div class="coord-label">8</div>
+                    <div class="coord-label">7</div>
+                    <div class="coord-label">6</div>
+                    <div class="coord-label">5</div>
+                    <div class="coord-label">4</div>
+                    <div class="coord-label">3</div>
+                    <div class="coord-label">2</div>
+                    <div class="coord-label">1</div>
+                </div>
+                
+                <!-- Tabuleiro principal -->
+                <div class="chessboard" id="play-chessboard">
+                    <!-- As 64 casas serão geradas por JavaScript -->
+                </div>
+                
+                <div class="coordinates-external coord-ranks-right">
+                    <div class="coord-label">8</div>
+                    <div class="coord-label">7</div>
+                    <div class="coord-label">6</div>
+                    <div class="coord-label">5</div>
+                    <div class="coord-label">4</div>
+                    <div class="coord-label">3</div>
+                    <div class="coord-label">2</div>
+                    <div class="coord-label">1</div>
+                </div>
+                
+                <div class="coordinates-external coord-files-bottom">
+                    <div class="coord-label">a</div>
+                    <div class="coord-label">b</div>
+                    <div class="coord-label">c</div>
+                    <div class="coord-label">d</div>
+                    <div class="coord-label">e</div>
+                    <div class="coord-label">f</div>
+                    <div class="coord-label">g</div>
+                    <div class="coord-label">h</div>
+                </div>
             </div>
         </div>
 
         <!-- Board Controls -->
         <div class="board-controls" id="board-controls" style="display: none;">
-            <button class="control-btn" title="Primeiro lance" data-move="first">
+            <button class="control-btn" title="Primeiro lance" onclick="goToMove('first')">
                 <i class="fas fa-step-backward"></i>
             </button>
-            <button class="control-btn" title="Lance anterior" data-move="previous">
+            <button class="control-btn" title="Lance anterior" onclick="goToMove('previous')">
                 <i class="fas fa-chevron-left"></i>
             </button>
-            <button class="control-btn" title="Próximo lance" data-move="next">
+            <button class="control-btn" title="Próximo lance" onclick="goToMove('next')">
                 <i class="fas fa-chevron-right"></i>
             </button>
-            <button class="control-btn" title="Último lance" data-move="last">
+            <button class="control-btn" title="Último lance" onclick="goToMove('last')">
                 <i class="fas fa-step-forward"></i>
             </button>
-            <button class="control-btn" title="Virar tabuleiro" data-action="flip">
+            <button class="control-btn" title="Virar tabuleiro" onclick="flipPlayBoard()">
                 <i class="fas fa-refresh"></i>
             </button>
         </div>
@@ -270,7 +272,7 @@
                     <i class="fas fa-history"></i>
                     Lances
                 </h3>
-                <button class="btn btn-sm btn-secondary">
+                <button class="btn btn-sm btn-secondary" onclick="exportGamePGN()">
                     <i class="fas fa-download"></i>
                     PGN
                 </button>
@@ -295,7 +297,7 @@
             
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
                 <div style="width: 20px; height: 80px; background: linear-gradient(to top, #2c2c2c 50%, #eeeeee 50%); border: 1px solid var(--border-color); border-radius: 3px; position: relative;">
-                    <div style="position: absolute; width: 100%; height: 3px; background: var(--lichess-blue); top: 50%; transform: translateY(-50%); border-radius: 1px;"></div>
+                    <div id="eval-indicator" style="position: absolute; width: 100%; height: 3px; background: var(--lichess-blue); top: 50%; transform: translateY(-50%); border-radius: 1px;"></div>
                 </div>
                 <div>
                     <div style="font-size: 18px; font-weight: 700; color: var(--text-primary);" id="evaluation">+0.0</div>
@@ -311,444 +313,112 @@
     </div>
 </div>
 
-<!-- Game Result Modal (Hidden by default) -->
-<div id="game-result-modal" class="modal-overlay" style="display: none;">
-    <div class="modal">
-        <div class="modal-header">
-            <h2 class="modal-title">
-                <i class="fas fa-flag-checkered"></i>
-                Fim de Partida
-            </h2>
-        </div>
-        <div class="modal-body">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <div style="font-size: 48px; margin-bottom: 16px;" id="result-icon">🏆</div>
-                <h3 id="result-text">Você venceu!</h3>
-                <p style="color: var(--text-secondary);" id="result-reason">Por xeque-mate</p>
-            </div>
-            
-            <div class="d-grid" style="grid-template-columns: 1fr 1fr; gap: 16px; text-align: center;">
-                <div>
-                    <div style="font-size: 20px; font-weight: 700;">42</div>
-                    <div style="color: var(--text-secondary); font-size: 12px;">Lances</div>
-                </div>
-                <div>
-                    <div style="font-size: 20px; font-weight: 700;">12m 34s</div>
-                    <div style="color: var(--text-secondary); font-size: 12px;">Duração</div>
-                </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeGameResultModal()">Fechar</button>
-            <button class="btn btn-primary" onclick="startNewGame()">Nova Partida</button>
-        </div>
-    </div>
-</div>
-
 <script>
-// Play page JavaScript
-class ProfessionalChessboard {
-    constructor(containerId) {
-        this.board = document.getElementById(containerId);
-        this.selectedSquare = null;
-        this.isFlipped = false;
-        this.gamePosition = this.getInitialPosition();
-        
-        this.initializeBoard();
-        this.setupInitialPosition();
-        this.addEventListeners();
-    }
+// Variáveis globais para o jogo
+let playChessboard = null;
+let currentHumanGame = null;
+let playerColor = 'white';
+let isPlayerTurn = false;
+let gameHistory = [];
 
-    getInitialPosition() {
-        return {
-            'a8': { piece: '♜', color: 'black' }, 'b8': { piece: '♞', color: 'black' }, 'c8': { piece: '♝', color: 'black' }, 'd8': { piece: '♛', color: 'black' },
-            'e8': { piece: '♚', color: 'black' }, 'f8': { piece: '♝', color: 'black' }, 'g8': { piece: '♞', color: 'black' }, 'h8': { piece: '♜', color: 'black' },
-            'a7': { piece: '♟', color: 'black' }, 'b7': { piece: '♟', color: 'black' }, 'c7': { piece: '♟', color: 'black' }, 'd7': { piece: '♟', color: 'black' },
-            'e7': { piece: '♟', color: 'black' }, 'f7': { piece: '♟', color: 'black' }, 'g7': { piece: '♟', color: 'black' }, 'h7': { piece: '♟', color: 'black' },
-            
-            'a2': { piece: '♙', color: 'white' }, 'b2': { piece: '♙', color: 'white' }, 'c2': { piece: '♙', color: 'white' }, 'd2': { piece: '♙', color: 'white' },
-            'e2': { piece: '♙', color: 'white' }, 'f2': { piece: '♙', color: 'white' }, 'g2': { piece: '♙', color: 'white' }, 'h2': { piece: '♙', color: 'white' },
-            'a1': { piece: '♖', color: 'white' }, 'b1': { piece: '♘', color: 'white' }, 'c1': { piece: '♗', color: 'white' }, 'd1': { piece: '♕', color: 'white' },
-            'e1': { piece: '♔', color: 'white' }, 'f1': { piece: '♗', color: 'white' }, 'g1': { piece: '♘', color: 'white' }, 'h1': { piece: '♖', color: 'white' }
-        };
-    }
-
-    initializeBoard() {
-        if (!this.board) return;
-        
-        this.board.innerHTML = '';
-        
-        for (let rank = 8; rank >= 1; rank--) {
-            for (let file = 0; file < 8; file++) {
-                const square = document.createElement('div');
-                const fileChar = String.fromCharCode(97 + file); // a-h
-                const squareId = `${fileChar}${rank}`;
-                
-                const isLight = (rank + file) % 2 !== 0;
-                square.className = `square ${isLight ? 'light' : 'dark'}`;
-                square.dataset.square = squareId;
-                
-                this.board.appendChild(square);
-            }
-        }
-    }
-
-    setupInitialPosition() {
-        // Limpar todas as casas primeiro
-        if (!this.board) return;
-        
-        document.querySelectorAll('.square').forEach(square => {
-            square.innerHTML = '';
-        });
-
-        // Adicionar peças na posição inicial
-        Object.entries(this.gamePosition).forEach(([square, pieceData]) => {
-            this.placePiece(square, pieceData.piece, pieceData.color);
-        });
-    }
-
-    placePiece(squareId, piece, color) {
-        const square = document.querySelector(`[data-square="${squareId}"]`);
-        if (!square) return;
-
-        const pieceElement = document.createElement('div');
-        pieceElement.className = `piece ${color}`;
-        pieceElement.textContent = piece;
-        pieceElement.dataset.piece = piece;
-        pieceElement.dataset.color = color;
-        pieceElement.draggable = true;
-        
-        square.appendChild(pieceElement);
-    }
-
-    addEventListeners() {
-        if (!this.board) return;
-        
-        this.board.addEventListener('click', (e) => {
-            const square = e.target.closest('.square');
-            if (!square) return;
-
-            this.handleSquareClick(square);
-        });
-
-        // Drag and drop
-        this.board.addEventListener('dragstart', (e) => {
-            if (e.target.classList.contains('piece')) {
-                e.target.classList.add('dragging');
-                this.selectedSquare = e.target.closest('.square');
-            }
-        });
-
-        this.board.addEventListener('dragend', (e) => {
-            if (e.target.classList.contains('piece')) {
-                e.target.classList.remove('dragging');
-            }
-        });
-
-        this.board.addEventListener('dragover', (e) => {
-            e.preventDefault();
-        });
-
-        this.board.addEventListener('drop', (e) => {
-            e.preventDefault();
-            const targetSquare = e.target.closest('.square');
-            if (targetSquare && this.selectedSquare) {
-                this.attemptMove(this.selectedSquare, targetSquare);
-            }
-        });
-    }
-
-    handleSquareClick(square) {
-        // Se já há uma casa selecionada, tentar fazer o movimento
-        if (this.selectedSquare) {
-            if (square === this.selectedSquare) {
-                // Clicou na mesma casa - desselecionar
-                this.clearSelection();
-            } else {
-                // Tentar fazer o movimento
-                this.attemptMove(this.selectedSquare, square);
-            }
-        } else {
-            // Selecionar casa se tiver peça
-            const piece = square.querySelector('.piece');
-            if (piece) {
-                this.selectSquare(square);
-            }
-        }
-    }
-
-    selectSquare(square) {
-        this.clearSelection();
-        this.selectedSquare = square;
-        square.classList.add('selected');
-        
-        // Mostrar movimentos possíveis (exemplo simples)
-        this.showPossibleMoves(square);
-    }
-
-    showPossibleMoves(square) {
-        // Exemplo simples - apenas demonstração visual
-        const piece = square.querySelector('.piece');
-        if (!piece) return;
-
-        const squareId = square.dataset.square;
-        const file = squareId.charCodeAt(0) - 97; // a=0, b=1, etc.
-        const rank = parseInt(squareId[1]);
-
-        // Exemplo para peões
-        if (piece.dataset.piece === '♙' || piece.dataset.piece === '♟') {
-            const direction = piece.dataset.color === 'white' ? 1 : -1;
-            const targetRank = rank + direction;
-            
-            if (targetRank >= 1 && targetRank <= 8) {
-                const targetSquare = String.fromCharCode(97 + file) + targetRank;
-                const targetElement = document.querySelector(`[data-square="${targetSquare}"]`);
-                if (targetElement && !targetElement.querySelector('.piece')) {
-                    targetElement.classList.add('possible-move');
-                }
-            }
-        }
-    }
-
-    attemptMove(fromSquare, toSquare) {
-        const piece = fromSquare.querySelector('.piece');
-        if (!piece) {
-            this.clearSelection();
-            return;
-        }
-
-        // Verificar se há peça no destino
-        const targetPiece = toSquare.querySelector('.piece');
-        const isCapture = targetPiece !== null;
-
-        // Animação simples de movimento
-        piece.classList.add('moving');
-
-        setTimeout(() => {
-            // Remover peça capturada
-            if (isCapture) {
-                targetPiece.classList.add('captured');
-                setTimeout(() => targetPiece.remove(), 300);
-            }
-
-            // Mover peça
-            toSquare.appendChild(piece);
-            piece.classList.remove('moving');
-
-            // Atualizar posição interna
-            const pieceData = { 
-                piece: piece.dataset.piece, 
-                color: piece.dataset.color 
-            };
-            delete this.gamePosition[fromSquare.dataset.square];
-            this.gamePosition[toSquare.dataset.square] = pieceData;
-
-            this.clearSelection();
-            
-            // Notificar sobre o movimento
-            if (typeof this.onMove === 'function') {
-                this.onMove({
-                    from: fromSquare.dataset.square,
-                    to: toSquare.dataset.square,
-                    piece: piece.dataset.piece,
-                    color: piece.dataset.color,
-                    isCapture: isCapture
-                });
-            }
-        }, 250);
-    }
-
-    clearSelection() {
-        if (this.selectedSquare) {
-            this.selectedSquare.classList.remove('selected');
-            this.selectedSquare = null;
-        }
-
-        // Limpar indicadores de movimento possível
-        document.querySelectorAll('.possible-move, .possible-capture').forEach(square => {
-            square.classList.remove('possible-move', 'possible-capture');
-        });
-    }
-
-    flip() {
-        this.isFlipped = !this.isFlipped;
-        this.board.style.transform = this.isFlipped ? 'rotate(180deg)' : 'rotate(0deg)';
-        
-        // Rotacionar peças para manter orientação correta
-        document.querySelectorAll('.piece').forEach(piece => {
-            piece.style.transform = this.isFlipped ? 'rotate(180deg)' : 'rotate(0deg)';
-        });
-
-        // Inverter coordenadas se necessário
-        const coordsElements = document.querySelectorAll('.coordinates-external');
-        coordsElements.forEach(coord => {
-            coord.style.transform = this.isFlipped ? 'rotate(180deg)' : 'rotate(0deg)';
-        });
-    }
-
-    setPosition(fen) {
-        // Implementação simplificada para demonstração
-        console.log("Definindo posição FEN:", fen);
-        // Em uma implementação real, você analisaria a string FEN e atualizaria o tabuleiro
-    }
-
-    highlightMove(from, to) {
-        // Limpar destaques anteriores
-        document.querySelectorAll('.last-move').forEach(square => {
-            square.classList.remove('last-move');
-        });
-
-        // Adicionar novos destaques
-        const fromSquare = document.querySelector(`[data-square="${from}"]`);
-        const toSquare = document.querySelector(`[data-square="${to}"]`);
-
-        if (fromSquare) fromSquare.classList.add('last-move');
-        if (toSquare) toSquare.classList.add('last-move');
-    }
-}
-
-let currentGame = null;
-let chessboard = null;
-
+// Inicializar página de jogo
 document.addEventListener('DOMContentLoaded', function() {
     initializePlayPage();
 });
 
 function initializePlayPage() {
-    // Initialize empty chessboard
-    chessboard = new ProfessionalChessboard('play-chessboard');
-    
-    // Configurar callback de movimento
-    chessboard.onMove = handlePlayerMove;
-
-    // Setup event listeners
-    setupPlayPageEvents();
-    
-    // Update model display
-    updateModelDisplay();
+    initializePlayChessboard();
+    setupPlayEventListeners();
+    updateColorDisplay();
 }
 
-function setupPlayPageEvents() {
-    // Model selection
-    document.getElementById('opponent-model')?.addEventListener('change', updateModelDisplay);
+function initializePlayChessboard() {
+    // Criar o tabuleiro usando a classe ProfessionalChessboard do professional_chessboard.html
+    playChessboard = new ProfessionalChessboard('play-chessboard', {
+        draggable: true,
+        interactive: true,
+        coordinates: true,
+        theme: 'brown',
+        onMove: handlePlayerMove
+    });
     
-    // Color selection
+    console.log('✅ Tabuleiro de jogo inicializado');
+}
+
+function setupPlayEventListeners() {
+    // Radio buttons para cor
     document.querySelectorAll('input[name="player-color"]').forEach(radio => {
         radio.addEventListener('change', updateColorDisplay);
     });
     
-    // Difficulty selection
+    // Select de modelo
+    document.getElementById('opponent-model')?.addEventListener('change', updateAIDisplay);
+    
+    // Select de dificuldade
     document.getElementById('difficulty')?.addEventListener('change', updateDifficulty);
     
-    // Time control selection
+    // Select de controle de tempo
     document.getElementById('time-control')?.addEventListener('change', updateTimeControl);
-    
-    // Board controls
-    document.querySelectorAll('[data-move]').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const action = this.dataset.move;
-            handleMoveNavigation(action);
-        });
-    });
-    
-    // Start game button
-    document.querySelector('[data-action="start-human-game"]')?.addEventListener('click', startNewGame);
-    
-    // Game controls
-    document.querySelectorAll('.card button').forEach(btn => {
-        if (btn.textContent.includes('Solicitar Dica')) {
-            btn.addEventListener('click', requestHint);
-        } else if (btn.textContent.includes('Desfazer Lance')) {
-            btn.addEventListener('click', undoMove);
-        } else if (btn.textContent.includes('Oferecer Empate')) {
-            btn.addEventListener('click', offerDraw);
-        } else if (btn.textContent.includes('Resignar')) {
-            btn.addEventListener('click', resign);
-        }
-    });
-}
-
-function updateModelDisplay() {
-    const modelSelect = document.getElementById('opponent-model');
-    const modelName = modelSelect?.value || 'Gemini-Pro';
-    
-    // Update AI model display
-    const aiModelDisplay = document.getElementById('ai-model-display');
-    if (aiModelDisplay) {
-        aiModelDisplay.textContent = modelName;
-    }
-    
-    // Update AI rating based on model
-    const aiRating = document.getElementById('ai-rating');
-    if (aiRating) {
-        const ratings = {
-            'GPT-4o': 1850,
-            'GPT-4-Turbo': 1780,
-            'Gemini-Pro': 1750,
-            'Claude-3.5-Sonnet': 1820,
-            'Deepseek-R1': 1680
-        };
-        aiRating.textContent = ratings[modelName] || 1750;
-    }
 }
 
 function updateColorDisplay() {
-    const playerColor = document.querySelector('input[name="player-color"]:checked')?.value || 'white';
+    playerColor = document.querySelector('input[name="player-color"]:checked')?.value || 'white';
     const aiColor = playerColor === 'white' ? 'black' : 'white';
     
-    // Update displays
-    const playerColorDisplay = document.getElementById('player-color-display');
-    const aiColorDisplay = document.getElementById('ai-color-display');
+    document.getElementById('player-color-display').textContent = playerColor === 'white' ? 'Brancas' : 'Pretas';
+    document.getElementById('ai-color-display').textContent = aiColor === 'white' ? 'Brancas' : 'Pretas';
     
-    if (playerColorDisplay) {
-        playerColorDisplay.textContent = playerColor === 'white' ? 'Brancas' : 'Pretas';
+    // Virar tabuleiro se jogando de pretas
+    if (playChessboard) {
+        playChessboard.config.flipped = playerColor === 'black';
+        if (playerColor === 'black') {
+            playChessboard.flip();
+        }
     }
+}
+
+function updateAIDisplay() {
+    const model = document.getElementById('opponent-model')?.value || 'Gemini-Pro';
+    document.getElementById('ai-model-display').textContent = model;
     
-    if (aiColorDisplay) {
-        aiColorDisplay.textContent = aiColor === 'white' ? 'Brancas' : 'Pretas';
-    }
+    // Ratings simulados para diferentes modelos
+    const ratings = {
+        'GPT-4o': 1850,
+        'GPT-4-Turbo': 1780,
+        'Gemini-Pro': 1750,
+        'Claude-3.5-Sonnet': 1820,
+        'Deepseek-R1': 1680
+    };
     
-    // Flip board if playing as black
-    if (chessboard) {
-        chessboard.config.flipped = playerColor === 'black';
-        chessboard.flip();
-    }
+    document.getElementById('ai-rating').textContent = ratings[model] || 1750;
 }
 
 function updateDifficulty() {
     const difficulty = document.getElementById('difficulty')?.value || 'advanced';
+    const ratings = {
+        'beginner': 1200,
+        'intermediate': 1400,
+        'advanced': 1600,
+        'expert': 1800,
+        'master': 2000
+    };
     
-    // Update player rating based on difficulty
-    const playerRating = document.getElementById('player-rating');
-    if (playerRating) {
-        const ratings = {
-            'beginner': 1200,
-            'intermediate': 1400,
-            'advanced': 1600,
-            'expert': 1800,
-            'master': 2000
-        };
-        playerRating.textContent = ratings[difficulty] || 1600;
-    }
+    document.getElementById('player-rating').textContent = ratings[difficulty] || 1600;
 }
 
 function updateTimeControl() {
     const timeControl = document.getElementById('time-control')?.value || 'blitz';
+    const controls = {
+        'unlimited': 'Sem Limite',
+        'bullet': 'Bullet 1+0',
+        'blitz': 'Blitz 5+3',
+        'rapid': 'Rapid 15+10',
+        'classical': 'Classical 30+0'
+    };
     
-    // Update time control display
-    const display = document.getElementById('time-control-display');
-    if (display) {
-        const controls = {
-            'unlimited': 'Sem Limite',
-            'bullet': 'Bullet 1+0',
-            'blitz': 'Blitz 5+3',
-            'rapid': 'Rapid 15+10',
-            'classical': 'Classical 30+0'
-        };
-        display.textContent = controls[timeControl] || 'Blitz 5+3';
-    }
+    document.getElementById('time-control-display').textContent = controls[timeControl] || 'Blitz 5+3';
     
-    // Update clock displays
+    // Atualizar relógios
     const times = {
         'unlimited': '∞',
         'bullet': '1:00',
@@ -762,130 +432,160 @@ function updateTimeControl() {
     document.getElementById('ai-time').textContent = time;
 }
 
-async function startNewGame() {
+async function startNewHumanGame() {
     try {
-        // Show loading
-        if (window.arena) {
-            window.arena.showLoading('Iniciando partida...');
-        }
+        showLoading('Iniciando partida...');
         
-        // Get game configuration
         const config = {
             opponentModel: document.getElementById('opponent-model')?.value || 'Gemini-Pro',
-            playerColor: document.querySelector('input[name="player-color"]:checked')?.value || 'white',
+            playerColor: playerColor,
             difficulty: document.getElementById('difficulty')?.value || 'advanced',
             timeControl: document.getElementById('time-control')?.value || 'blitz'
         };
         
-        // Start game via API
-        if (window.smartAPI) {
-            currentGame = await window.smartAPI.startHumanGame(config);
-        }
-        
-        // Update UI
-        updateGameStatus('playing', 'Sua vez de jogar');
-        
-        // Enable board interaction
-        if (chessboard) {
-            chessboard.config.interactive = true;
-            chessboard.updateConfig({ interactive: true });
-        }
-        
-        // Show board controls
-        document.getElementById('board-controls').style.display = 'flex';
-        
-        // Enable game controls
-        document.querySelectorAll('.card button').forEach(btn => {
-            if (!btn.textContent.includes('Iniciar Partida')) {
-                btn.disabled = false;
-            }
+        // Chamar API para criar jogo
+        const response = await fetch('/api/games/human', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(config)
         });
         
-        // Initialize move history
-        updateMoveHistory([]);
+        const result = await response.json();
         
-        // Start clocks if needed
-        if (config.timeControl !== 'unlimited') {
-            startGameClock();
+        if (result.success) {
+            currentHumanGame = result.game;
+            isPlayerTurn = (playerColor === 'white');
+            gameHistory = [];
+            
+            // Configurar tabuleiro
+            if (playChessboard) {
+                playChessboard.updatePosition(); // Posição inicial
+                playChessboard.config.interactive = true;
+            }
+            
+            // Habilitar controles
+            enableGameControls(true);
+            
+            // Atualizar status
+            updateGameStatus('playing', isPlayerTurn ? 'Sua vez de jogar' : 'IA está pensando...');
+            
+            hideLoading();
+            showToast('Partida iniciada! Faça seu lance.', 'success');
+            
+            // Se IA joga primeiro (jogador é pretas)
+            if (!isPlayerTurn) {
+                setTimeout(() => requestAIMove(), 1000);
+            }
+        } else {
+            throw new Error(result.error || 'Erro ao iniciar partida');
         }
-        
-        if (window.arena) {
-            window.arena.hideLoading();
-            window.arena.showToast('Partida iniciada! Faça seu lance.', 'success');
-        }
-        
     } catch (error) {
-        console.error('Error starting game:', error);
-        if (window.arena) {
-            window.arena.hideLoading();
-            window.arena.showToast('Erro ao iniciar partida', 'error');
-        }
+        hideLoading();
+        showToast('Erro ao iniciar partida: ' + error.message, 'error');
+        console.error('Erro ao iniciar jogo:', error);
     }
 }
 
 function handlePlayerMove(move) {
-    if (!currentGame || !isPlayerTurn) return;
+    if (!isPlayerTurn || !currentHumanGame) return false;
     
-    console.log("Jogador moveu:", move);
+    console.log('Movimento do jogador:', move);
     
-    if (window.smartAPI) {
-        window.smartAPI.makeMove(currentGame.id, move.from + move.to)
-            .then(response => {
-                // Update move history
-                updateMoveHistory(response.history || []);
-                
-                // Check for game end
-                if (response.gameOver) {
-                    endGame(response.result);
-                }
-            })
-            .catch(error => {
-                console.error('Move error:', error);
-                if (window.arena) {
-                    window.arena.showToast('Lance inválido', 'warning');
-                }
-            });
+    // Enviar movimento para o servidor
+    submitPlayerMove(move.from + move.to);
+    return true;
+}
+
+async function submitPlayerMove(move) {
+    try {
+        const response = await fetch(`/api/games/human/${currentHumanGame.id}/move`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ move })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Atualizar histórico
+            gameHistory.push(result.move);
+            updateMoveHistory();
+            
+            // Atualizar tabuleiro se necessário
+            if (result.fen && playChessboard) {
+                // playChessboard.setPositionFromFEN(result.fen);
+            }
+            
+            isPlayerTurn = false;
+            updateGameStatus('playing', 'IA está pensando...');
+            
+            // Verificar fim de jogo
+            if (result.gameOver) {
+                endGame(result.result);
+            } else {
+                // Solicitar movimento da IA
+                setTimeout(() => requestAIMove(), 1500);
+            }
+        } else {
+            showToast('Lance inválido: ' + result.error, 'warning');
+        }
+    } catch (error) {
+        showToast('Erro ao processar lance: ' + error.message, 'error');
+        console.error('Erro no movimento:', error);
     }
 }
 
-function updateGameStatus(status, message) {
-    const statusElement = document.getElementById('game-status');
-    if (statusElement) {
-        // Remover classes de status anteriores
-        statusElement.className = 'game-status';
+async function requestAIMove() {
+    try {
+        const response = await fetch(`/api/games/human/${currentHumanGame.id}/ai-move`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
         
-        // Adicionar nova classe de status
-        statusElement.classList.add(`status-${status}`);
+        const result = await response.json();
         
-        // Atualizar texto
-        statusElement.innerHTML = `
-            <i class="fas fa-${status === 'playing' ? 'play' : 
-                              status === 'check' ? 'exclamation-triangle' : 
-                              status === 'checkmate' ? 'flag' : 
-                              status === 'draw' ? 'handshake' : 'info-circle'}"></i>
-            ${message}
-        `;
+        if (result.success) {
+            // Atualizar histórico
+            gameHistory.push(result.move);
+            updateMoveHistory();
+            
+            // Atualizar tabuleiro
+            if (result.fen && playChessboard) {
+                // playChessboard.setPositionFromFEN(result.fen);
+            }
+            
+            isPlayerTurn = true;
+            updateGameStatus('playing', 'Sua vez de jogar');
+            
+            showToast(`IA jogou: ${result.move}`, 'info');
+            
+            // Verificar fim de jogo
+            if (result.gameOver) {
+                endGame(result.result);
+            }
+        } else {
+            showToast('Erro no movimento da IA', 'error');
+        }
+    } catch (error) {
+        showToast('Erro ao obter movimento da IA: ' + error.message, 'error');
+        console.error('Erro no movimento da IA:', error);
     }
 }
 
-function updateMoveHistory(moves) {
+function updateMoveHistory() {
     const historyElement = document.getElementById('move-history');
     if (!historyElement) return;
     
-    if (moves.length === 0) {
-        historyElement.innerHTML = `
-            <div style="color: var(--text-muted); text-align: center; padding: 20px; font-style: italic;">
-                Nenhuma partida em andamento
-            </div>
-        `;
+    if (gameHistory.length === 0) {
+        historyElement.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 20px; font-style: italic;">Nenhuma partida em andamento</div>';
         return;
     }
     
     let html = '';
-    for (let i = 0; i < moves.length; i += 2) {
+    for (let i = 0; i < gameHistory.length; i += 2) {
         const moveNumber = Math.floor(i / 2) + 1;
-        const whiteMove = moves[i] || '';
-        const blackMove = moves[i + 1] || '';
+        const whiteMove = gameHistory[i] || '';
+        const blackMove = gameHistory[i + 1] || '';
         
         html += `
             <div style="padding: 4px 8px; border-bottom: 1px solid var(--border-color);">
@@ -900,89 +600,181 @@ function updateMoveHistory(moves) {
     historyElement.scrollTop = historyElement.scrollHeight;
 }
 
-function handleMoveNavigation(action) {
-    // Navigate through move history
-    console.log(`Move navigation: ${action}`);
+function updateGameStatus(status, message) {
+    const statusElement = document.getElementById('game-status');
+    if (!statusElement) return;
+    
+    statusElement.className = `game-status status-${status}`;
+    statusElement.innerHTML = `
+        <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">
+            <i class="fas fa-${status === 'playing' ? 'play' : status === 'check' ? 'exclamation-triangle' : status === 'finished' ? 'flag' : 'info-circle'}"></i>
+            ${message}
+        </div>
+    `;
 }
 
-function requestHint() {
-    if (window.arena) {
-        window.arena.showToast('Dica: Considere desenvolver suas peças!', 'info');
+function enableGameControls(enabled) {
+    const buttons = ['hint-btn', 'undo-btn', 'draw-btn', 'resign-btn'];
+    buttons.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = !enabled;
+    });
+    
+    document.getElementById('board-controls').style.display = enabled ? 'flex' : 'none';
+}
+
+function endGame(result) {
+    isPlayerTurn = false;
+    enableGameControls(false);
+    
+    let message = 'Jogo finalizado';
+    if (result === '1-0') {
+        message = playerColor === 'white' ? 'Você venceu!' : 'IA venceu!';
+    } else if (result === '0-1') {
+        message = playerColor === 'black' ? 'Você venceu!' : 'IA venceu!';
+    } else {
+        message = 'Empate!';
     }
+    
+    updateGameStatus('finished', message);
+    showToast(message, 'info', 5000);
+}
+
+// Funções dos controles
+function requestHint() {
+    if (!currentHumanGame || !isPlayerTurn) return;
+    showToast('💡 Dica: Desenvolva suas peças para o centro!', 'info', 5000);
 }
 
 function undoMove() {
-    console.log('Undo move requested');
+    showToast('Desfazer lance não implementado ainda', 'warning');
 }
 
 function offerDraw() {
     if (confirm('Oferecer empate ao oponente?')) {
-        console.log('Draw offered');
+        showToast('Proposta de empate enviada', 'info');
     }
 }
 
-function resign() {
+function resignGame() {
     if (confirm('Tem certeza que deseja resignar?')) {
-        endGame('0-1', 'Você resignou');
+        endGame(playerColor === 'white' ? '0-1' : '1-0');
     }
 }
 
-function startGameClock() {
-    // Implement game clock logic
-    console.log('Game clock started');
-}
-
-function endGame(result, reason = '') {
-    // Show game result modal
-    const modal = document.getElementById('game-result-modal');
-    const resultText = document.getElementById('result-text');
-    const resultReason = document.getElementById('result-reason');
-    const resultIcon = document.getElementById('result-icon');
-    
-    if (modal && resultText && resultIcon) {
-        // Determine result message
-        let message = '';
-        let icon = '';
-        
-        if (result === '1-0') {
-            message = 'Você venceu!';
-            icon = '🏆';
-        } else if (result === '0-1') {
-            message = 'Você perdeu!';
-            icon = '😔';
-        } else {
-            message = 'Empate!';
-            icon = '🤝';
-        }
-        
-        resultText.textContent = message;
-        resultIcon.textContent = icon;
-        
-        if (resultReason) {
-            resultReason.textContent = reason || 'Fim de jogo';
-        }
-        
-        modal.style.display = 'flex';
-    }
-    
-    // Disable game controls
-    document.querySelectorAll('.card button').forEach(btn => {
-        if (!btn.textContent.includes('Nova Partida')) {
-            btn.disabled = true;
-        }
-    });
-    
-    currentGame = null;
-}
-
-function closeGameResultModal() {
-    const modal = document.getElementById('game-result-modal');
-    if (modal) {
-        modal.style.display = 'none';
+function flipPlayBoard() {
+    if (playChessboard) {
+        playChessboard.flip();
     }
 }
 
-// Export functions for global access
-window.startNewGame = startNewGame;
-window.closeGameResultModal = closeGameResultModal;
+function goToMove(direction) {
+    console.log('Navegação de movimento:', direction);
+    // Implementar navegação de histórico
+}
+
+function exportGamePGN() {
+    if (gameHistory.length === 0) {
+        showToast('Nenhuma partida para exportar', 'warning');
+        return;
+    }
+    
+    // Gerar PGN básico
+    let pgn = `[Event "Humano vs IA"]
+[White "${playerColor === 'white' ? 'Você' : document.getElementById('ai-model-display').textContent}"]
+[Black "${playerColor === 'black' ? 'Você' : document.getElementById('ai-model-display').textContent}"]
+[Result "*"]
+
+`;
+    
+    for (let i = 0; i < gameHistory.length; i += 2) {
+        const moveNumber = Math.floor(i / 2) + 1;
+        const whiteMove = gameHistory[i] || '';
+        const blackMove = gameHistory[i + 1] || '';
+        pgn += `${moveNumber}. ${whiteMove}${blackMove ? ' ' + blackMove : ''}\n`;
+    }
+    
+    pgn += ' *';
+    
+    // Download do arquivo
+    const blob = new Blob([pgn], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `jogo_${new Date().toISOString().split('T')[0]}.pgn`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast('PGN exportado com sucesso!', 'success');
+}
+
+// Funções utilitárias
+function showToast(message, type = 'info', duration = 3000) {
+    // Implementar sistema de toast
+    console.log(`[${type.toUpperCase()}] ${message}`);
+    
+    // Criar toast visual
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : type === 'warning' ? 'exclamation' : 'info'}"></i>
+        ${message}
+    `;
+    
+    // Adicionar ao container de toasts
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 8px;';
+        document.body.appendChild(container);
+    }
+    
+    container.appendChild(toast);
+    
+    // Remover após duração
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, duration);
+}
+
+function showLoading(message) {
+    let overlay = document.getElementById('loading-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'loading-overlay';
+        overlay.className = 'loading-overlay';
+        overlay.innerHTML = `
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <div id="loading-message">${message}</div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    } else {
+        document.getElementById('loading-message').textContent = message;
+        overlay.style.display = 'flex';
+    }
+}
+
+function hideLoading() {
+    const overlay = document.getElementById('loading-overlay');
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+}
+
+// Exportar funções globais
+window.startNewHumanGame = startNewHumanGame;
+window.requestHint = requestHint;
+window.undoMove = undoMove;
+window.offerDraw = offerDraw;
+window.resignGame = resignGame;
+window.flipPlayBoard = flipPlayBoard;
+window.goToMove = goToMove;
+window.exportGamePGN = exportGamePGN;
 </script>
