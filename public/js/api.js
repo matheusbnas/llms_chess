@@ -218,6 +218,11 @@ class ChessAPI extends APIManager {
     return this.get("/api/analysis/global");
   }
 
+  // Alias for getGlobalStats to match the function name used in main.js
+  async getGlobalAnalysis() {
+    return this.getGlobalStats();
+  }
+
   async getModelAnalysis(modelName) {
     return this.get(`/api/analysis/models/${modelName}`);
   }
