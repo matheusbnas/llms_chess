@@ -1,0 +1,555 @@
+<!-- ♟️ Rankings Page -->
+<div class="text-center mb-32">
+    <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">
+        <i class="fas fa-trophy" style="color: var(--lichess-brown-light);"></i>
+        Rankings e Estatísticas
+    </h1>
+    <p style="color: var(--text-secondary); font-size: 16px;">
+        Classificação dos modelos de IA e estatísticas detalhadas
+    </p>
+</div>
+
+<!-- Navigation Tabs -->
+<div class="tabs">
+    <button class="tab-btn active" data-tab="elo">
+        <i class="fas fa-chart-line"></i>
+        Ranking ELO
+    </button>
+    <button class="tab-btn" data-tab="performance">
+        <i class="fas fa-chart-bar"></i>
+        Performance
+    </button>
+    <button class="tab-btn" data-tab="openings">
+        <i class="fas fa-book"></i>
+        Aberturas
+    </button>
+    <button class="tab-btn" data-tab="history">
+        <i class="fas fa-history"></i>
+        Histórico
+    </button>
+</div>
+
+<!-- ELO Rankings Tab -->
+<div id="elo-tab" class="tab-content active">
+    <div class="card mb-24">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-trophy"></i>
+                Ranking ELO Global
+            </h3>
+            <div class="d-flex gap-8">
+                <button class="btn btn-sm btn-secondary">
+                    <i class="fas fa-filter"></i>
+                    Filtrar
+                </button>
+                <button class="btn btn-sm btn-secondary">
+                    <i class="fas fa-download"></i>
+                    Exportar
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Posição</th>
+                        <th>Modelo</th>
+                        <th>ELO</th>
+                        <th>Partidas</th>
+                        <th>Win Rate</th>
+                        <th>Precisão</th>
+                        <th>Tendência</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 24px; height: 24px; background: gold; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                    <i class="fas fa-crown"></i>
+                                </div>
+                                <strong>1</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 24px; height: 24px; background: var(--lichess-brown); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                    <i class="fas fa-crown"></i>
+                                </div>
+                                <strong>Claude-3.5-Sonnet</strong>
+                            </div>
+                        </td>
+                        <td><span style="font-family: var(--font-mono); color: var(--lichess-blue);">1847</span></td>
+                        <td><span style="font-family: var(--font-mono);">156</span></td>
+                        <td><span style="color: var(--lichess-green); font-weight: 600;">67.9%</span></td>
+                        <td><span style="color: var(--lichess-green);">89.2%</span></td>
+                        <td><span style="color: var(--lichess-green);"><i class="fas fa-arrow-up"></i> 12</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 24px; height: 24px; background: silver; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                    <i class="fas fa-medal"></i>
+                                </div>
+                                <strong>2</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 24px; height: 24px; background: var(--lichess-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <strong>GPT-4o</strong>
+                            </div>
+                        </td>
+                        <td><span style="font-family: var(--font-mono); color: var(--lichess-blue);">1823</span></td>
+                        <td><span style="font-family: var(--font-mono);">142</span></td>
+                        <td><span style="color: var(--lichess-green); font-weight: 600;">64.1%</span></td>
+                        <td><span style="color: var(--lichess-green);">87.3%</span></td>
+                        <td><span style="color: var(--lichess-green);"><i class="fas fa-arrow-up"></i> 8</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 24px; height: 24px; background: #cd7f32; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                    <i class="fas fa-medal"></i>
+                                </div>
+                                <strong>3</strong>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 24px; height: 24px; background: var(--lichess-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                    <i class="fas fa-gem"></i>
+                                </div>
+                                <strong>Gemini-1.5-Pro</strong>
+                            </div>
+                        </td>
+                        <td><span style="font-family: var(--font-mono); color: var(--lichess-blue);">1798</span></td>
+                        <td><span style="font-family: var(--font-mono);">128</span></td>
+                        <td><span style="color: var(--lichess-green); font-weight: 600;">60.9%</span></td>
+                        <td><span style="color: var(--warning);">85.1%</span></td>
+                        <td><span style="color: var(--lichess-green);"><i class="fas fa-arrow-up"></i> 5</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ELO Evolution Chart -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-chart-line"></i>
+                Evolução ELO
+            </h3>
+            <div class="d-flex gap-8">
+                <select class="form-control" style="width: auto;">
+                    <option>Últimos 30 dias</option>
+                    <option>Últimos 90 dias</option>
+                    <option>Todo período</option>
+                </select>
+            </div>
+        </div>
+        <canvas id="elo-evolution-chart" style="max-height: 400px;"></canvas>
+    </div>
+</div>
+
+<!-- Performance Tab -->
+<div id="performance-tab" class="tab-content">
+    <div class="d-grid" style="grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Performance por Modelo</h3>
+            </div>
+            <canvas id="model-performance-chart" style="max-height: 300px;"></canvas>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Performance por Cor</h3>
+            </div>
+            <canvas id="color-performance-chart" style="max-height: 300px;"></canvas>
+        </div>
+    </div>
+
+    <!-- Detailed Stats Table -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-table"></i>
+                Estatísticas Detalhadas
+            </h3>
+            <div class="d-flex gap-8">
+                <select class="form-control" id="stats-model-select">
+                    <option value="">Selecione um modelo...</option>
+                    <option value="GPT-4o">GPT-4o</option>
+                    <option value="Gemini-1.5-Pro">Gemini-1.5-Pro</option>
+                    <option value="Claude-3.5-Sonnet">Claude-3.5-Sonnet</option>
+                </select>
+            </div>
+        </div>
+        
+        <div id="model-metrics" class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-icon">🎮</div>
+                <div class="metric-content">
+                    <h3>142</h3>
+                    <p>Partidas Jogadas</p>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">🏆</div>
+                <div class="metric-content">
+                    <h3>64.1%</h3>
+                    <p>Taxa de Vitória</p>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">🎯</div>
+                <div class="metric-content">
+                    <h3>87.3%</h3>
+                    <p>Precisão Média</p>
+                </div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-icon">⭐</div>
+                <div class="metric-content">
+                    <h3>1823</h3>
+                    <p>Rating ELO</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Openings Tab -->
+<div id="openings-tab" class="tab-content">
+    <div class="d-grid" style="grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Aberturas Mais Populares</h3>
+            </div>
+            <canvas id="openings-popularity-chart" style="max-height: 300px;"></canvas>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Win Rate por Abertura</h3>
+            </div>
+            <canvas id="openings-winrate-chart" style="max-height: 300px;"></canvas>
+        </div>
+    </div>
+
+    <!-- Openings Table -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-book"></i>
+                Estatísticas por Abertura
+            </h3>
+            <div class="d-flex gap-8">
+                <button class="btn btn-sm btn-secondary">
+                    <i class="fas fa-filter"></i>
+                    Filtrar
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table class="table" id="openings-table">
+                <thead>
+                    <tr>
+                        <th>Abertura</th>
+                        <th>Partidas</th>
+                        <th>Win Rate</th>
+                        <th>Precisão</th>
+                        <th>Lances Médios</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Sicilian Defense</strong></td>
+                        <td>42</td>
+                        <td>
+                            <div class="progress-bar-small">
+                                <div class="progress-fill" style="width: 68%"></div>
+                            </div>
+                            <span>68%</span>
+                        </td>
+                        <td>89.3%</td>
+                        <td>42.5</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Queen's Gambit</strong></td>
+                        <td>38</td>
+                        <td>
+                            <div class="progress-bar-small">
+                                <div class="progress-fill" style="width: 72%"></div>
+                            </div>
+                            <span>72%</span>
+                        </td>
+                        <td>91.2%</td>
+                        <td>38.7</td>
+                    </tr>
+                    <tr>
+                        <td><strong>King's Indian</strong></td>
+                        <td>35</td>
+                        <td>
+                            <div class="progress-bar-small">
+                                <div class="progress-fill" style="width: 64%"></div>
+                            </div>
+                            <span>64%</span>
+                        </td>
+                        <td>86.5%</td>
+                        <td>45.2</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- History Tab -->
+<div id="history-tab" class="tab-content">
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <i class="fas fa-history"></i>
+                Histórico de Partidas
+            </h3>
+            <div class="d-flex gap-8">
+                <button class="btn btn-sm btn-secondary">
+                    <i class="fas fa-filter"></i>
+                    Filtrar
+                </button>
+                <button class="btn btn-sm btn-secondary">
+                    <i class="fas fa-download"></i>
+                    Exportar
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Brancas</th>
+                        <th>Pretas</th>
+                        <th>Resultado</th>
+                        <th>Lances</th>
+                        <th>Abertura</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">Hoje, 14:32</div>
+                            <div style="color: var(--text-secondary); font-size: 12px;">#GAME_001</div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 20px; height: 20px; background: var(--lichess-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <span>GPT-4o</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 20px; height: 20px; background: var(--lichess-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                    <i class="fas fa-gem"></i>
+                                </div>
+                                <span>Gemini-Pro</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status status-finished">1-0</span>
+                        </td>
+                        <td>
+                            <span style="font-family: var(--font-mono);">48</span>
+                        </td>
+                        <td>Sicilian Defense</td>
+                        <td>
+                            <div class="d-flex gap-4">
+                                <button class="btn btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                    Ver
+                                </button>
+                                <button class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-download"></i>
+                                    PGN
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div style="font-weight: 600;">Hoje, 13:15</div>
+                            <div style="color: var(--text-secondary); font-size: 12px;">#GAME_002</div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 20px; height: 20px; background: var(--lichess-brown); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                    <i class="fas fa-crown"></i>
+                                </div>
+                                <span>Claude-3.5</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-center gap-8">
+                                <div style="width: 20px; height: 20px; background: var(--lichess-orange); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px;">
+                                    <i class="fas fa-robot"></i>
+                                </div>
+                                <span>GPT-4-Turbo</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status status-active">1/2-1/2</span>
+                        </td>
+                        <td>
+                            <span style="font-family: var(--font-mono);">67</span>
+                        </td>
+                        <td>Queen's Gambit</td>
+                        <td>
+                            <div class="d-flex gap-4">
+                                <button class="btn btn-sm">
+                                    <i class="fas fa-eye"></i>
+                                    Ver
+                                </button>
+                                <button class="btn btn-sm btn-secondary">
+                                    <i class="fas fa-download"></i>
+                                    PGN
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+// Rankings page JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    initializeRankingsPage();
+});
+
+function initializeRankingsPage() {
+    // Setup event listeners
+    setupRankingsTabs();
+    
+    // Initialize charts if available
+    if (typeof chartManager !== 'undefined') {
+        initializeRankingsCharts();
+    }
+}
+
+function setupRankingsTabs() {
+    // Tab switching
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabId = this.dataset.tab;
+            switchRankingsTab(tabId);
+        });
+    });
+}
+
+function switchRankingsTab(tabId) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+    
+    // Update tab content
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+    });
+    
+    const targetTab = document.getElementById(`${tabId}-tab`);
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
+}
+
+function initializeRankingsCharts() {
+    // Initialize ELO evolution chart
+    const eloData = {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+        datasets: [
+            {
+                label: 'Claude-3.5-Sonnet',
+                data: [1750, 1780, 1795, 1810, 1825, 1830, 1835, 1840, 1847],
+                borderColor: '#8b4513',
+                backgroundColor: 'rgba(139, 69, 19, 0.1)',
+                tension: 0.4
+            },
+            {
+                label: 'GPT-4o',
+                data: [1720, 1740, 1760, 1780, 1790, 1800, 1810, 1815, 1823],
+                borderColor: '#759900',
+                backgroundColor: 'rgba(117, 153, 0, 0.1)',
+                tension: 0.4
+            },
+            {
+                label: 'Gemini-1.5-Pro',
+                data: [1700, 1720, 1730, 1745, 1760, 1770, 1780, 1790, 1798],
+                borderColor: '#3893e8',
+                backgroundColor: 'rgba(56, 147, 232, 0.1)',
+                tension: 0.4
+            }
+        ]
+    };
+    
+    if (document.getElementById('elo-evolution-chart')) {
+        chartManager.createChart('elo-evolution-chart', {
+            type: 'line',
+            data: eloData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        min: 1650,
+                        max: 1900
+                    }
+                }
+            }
+        });
+    }
+    
+    // Initialize other charts
+    if (document.getElementById('model-performance-chart')) {
+        chartManager.createPerformanceChart('model-performance-chart');
+    }
+    
+    if (document.getElementById('color-performance-chart')) {
+        chartManager.createColorPerformanceChart('color-performance-chart');
+    }
+    
+    if (document.getElementById('openings-popularity-chart')) {
+        chartManager.createOpeningChart('openings-popularity-chart');
+    }
+    
+    if (document.getElementById('openings-winrate-chart')) {
+        chartManager.createChart('openings-winrate-chart', {
+            type: 'bar',
+            data: {
+                labels: ['Sicilian', 'Queen\'s Gambit', 'King\'s Indian', 'French', 'Ruy Lopez'],
+                datasets: [{
+                    label: 'Win Rate %',
+                    data: [68, 72, 64, 58, 62],
+                    backgroundColor: '#3893e8'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+}
+</script>
