@@ -11,6 +11,7 @@ class LLMChessArena {
     this.socket = this.setupSocket();
     this.pgnGame = null;
     this.currentPgnMove = 0;
+    this.charts = new ChartManager();
 
     this.init();
   }
@@ -156,8 +157,8 @@ class LLMChessArena {
 
       // Fix for chessboard rendering
       setTimeout(() => {
-        if (DOMUtils && DOMUtils.ensureChessboardRendered) {
-          DOMUtils.ensureChessboardRendered();
+        if (Utils && Utils.ensureChessboardRendered) {
+          Utils.ensureChessboardRendered();
         }
       }, 100);
     }
@@ -199,6 +200,10 @@ class LLMChessArena {
       initializer.func();
       initializer.initialized = true;
     }
+  }
+
+  createChart(canvasId, config) {
+    return this.charts.createChart(canvasId, config);
   }
 
   // ==========================================

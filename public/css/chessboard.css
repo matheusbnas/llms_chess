@@ -1,0 +1,318 @@
+/* ♟️ Professional Chessboard CSS */
+:root {
+    /* Board Colors */
+    --board-light: #f0d9b5;
+    --board-dark: #b58863;
+    --board-border: #8b7355;
+    --board-coords: #8b7355;
+    
+    /* Piece Colors */
+    --piece-white: #ffffff;
+    --piece-black: #333333;
+    --piece-shadow: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+    
+    /* Highlight colors */
+    --highlight-move: #f4f669;
+    --highlight-check: #ff6b6b;
+    --highlight-selected: #20b2aa;
+    --highlight-target: #9bc53d;
+    --highlight-capture: #dc143c;
+}
+
+/* Container principal do tabuleiro com coordenadas */
+.chessboard-container {
+    position: relative;
+    display: inline-block;
+    padding: 30px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+}
+
+/* Coordenadas externas */
+.coordinates-external {
+    position: absolute;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--board-coords);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    user-select: none;
+}
+
+.coord-files-top {
+    top: 8px;
+    left: 30px;
+    right: 30px;
+    height: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.coord-files-bottom {
+    bottom: 8px;
+    left: 30px;
+    right: 30px;
+    height: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.coord-ranks-left {
+    left: 8px;
+    top: 30px;
+    bottom: 30px;
+    width: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.coord-ranks-right {
+    right: 8px;
+    top: 30px;
+    bottom: 30px;
+    width: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.coord-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+}
+
+/* Tabuleiro principal */
+.chessboard {
+    width: 512px !important;
+    height: 512px !important;
+    display: grid !important;
+    grid-template-columns: repeat(8, 1fr) !important;
+    grid-template-rows: repeat(8, 1fr) !important;
+    border: 2px solid var(--board-border);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    position: relative;
+}
+
+/* Casas do tabuleiro */
+.square {
+    width: 64px !important;
+    height: 64px !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer;
+    transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+    user-select: none;
+}
+
+.square.light {
+    background-color: var(--board-light);
+}
+
+.square.dark {
+    background-color: var(--board-dark);
+}
+
+/* Estados das casas */
+.square:hover {
+    box-shadow: inset 0 0 0 3px rgba(56, 147, 232, 0.6);
+    z-index: 10;
+}
+
+.square.selected {
+    background-color: var(--highlight-selected) !important;
+    box-shadow: inset 0 0 0 3px rgba(32, 178, 170, 0.8);
+    z-index: 15;
+}
+
+.square.last-move {
+    background-color: var(--highlight-move) !important;
+    box-shadow: inset 0 0 0 2px rgba(244, 246, 105, 0.8);
+}
+
+.square.check {
+    background-color: var(--highlight-check) !important;
+    animation: checkBlink 1s ease-in-out infinite;
+    z-index: 20;
+}
+
+@keyframes checkBlink {
+    0%, 100% { 
+        background-color: var(--highlight-check) !important; 
+        box-shadow: 0 0 15px rgba(255, 107, 107, 0.6);
+    }
+    50% { 
+        background-color: var(--highlight-check) !important; 
+        box-shadow: 0 0 25px rgba(255, 107, 107, 0.9);
+    }
+}
+
+/* Movimentos possíveis */
+.square.possible-move::before {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background: var(--highlight-target);
+    border-radius: 50%;
+    opacity: 0.8;
+    z-index: 5;
+}
+
+.square.possible-capture::before {
+    content: '';
+    position: absolute;
+    width: calc(100% - 8px);
+    height: calc(100% - 8px);
+    background: transparent;
+    border: 4px solid var(--highlight-capture);
+    border-radius: 4px;
+    opacity: 0.9;
+    z-index: 5;
+}
+
+/* Peças de xadrez */
+.piece {
+    font-size: 52px !important;
+    line-height: 1 !important;
+    cursor: grab;
+    transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+    filter: var(--piece-shadow);
+    z-index: 10;
+    position: relative;
+    font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', serif !important;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    user-select: none !important;
+}
+
+/* Cores das peças */
+.piece.white {
+    color: var(--piece-white) !important;
+    text-shadow: 
+        1px 1px 0 #000,
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        2px 2px 4px rgba(0, 0, 0, 0.6) !important;
+}
+
+.piece.black {
+    color: var(--piece-black) !important;
+    text-shadow: 
+        1px 1px 0 #fff,
+        -1px -1px 0 #fff,
+        1px -1px 0 #fff,
+        -1px 1px 0 #fff,
+        2px 2px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+.piece:hover {
+    transform: scale(1.08);
+    z-index: 25;
+    filter: var(--piece-shadow) brightness(1.15);
+}
+
+.piece:active {
+    cursor: grabbing;
+    transform: scale(1.12);
+}
+
+.piece.dragging {
+    opacity: 0.8;
+    z-index: 1000;
+    transform: scale(1.2) rotate(5deg);
+    filter: var(--piece-shadow) brightness(1.3);
+}
+
+/* Animações */
+.piece.moving {
+    animation: pieceMove 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes pieceMove {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.piece.captured {
+    animation: pieceCaptured 0.3s ease-out forwards;
+}
+
+@keyframes pieceCaptured {
+    0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.2) rotate(180deg);
+        opacity: 0;
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .chessboard {
+        width: 400px !important;
+        height: 400px !important;
+    }
+    
+    .square {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    .piece {
+        font-size: 40px !important;
+    }
+    
+    .coordinates-external {
+        font-size: 12px;
+    }
+    
+    .chessboard-container {
+        padding: 25px;
+    }
+}
+
+@media (max-width: 480px) {
+    .chessboard {
+        width: 320px !important;
+        height: 320px !important;
+    }
+    
+    .square {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .piece {
+        font-size: 32px !important;
+    }
+    
+    .coordinates-external {
+        font-size: 10px;
+    }
+    
+    .chessboard-container {
+        padding: 20px;
+    }
+}

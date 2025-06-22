@@ -12,6 +12,7 @@ const analysisRoutes = require("./routes/analysis");
 const lichessRoutes = require("./routes/lichess");
 const settingsRoutes = require("./routes/settings");
 const gamesRoutes = require("./routes/games");
+const dataRoutes = require("./routes/data");
 
 const app = express();
 const server = http.createServer(app);
@@ -712,6 +713,7 @@ app.use("/api/analysis", analysisRoutes);
 app.use("/api/lichess", lichessRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/games", gamesRoutes);
+app.use("/api/data", dataRoutes);
 
 // Enhanced API endpoints
 app.post("/api/games/battle", async (req, res) => {

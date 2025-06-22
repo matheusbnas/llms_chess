@@ -54,21 +54,18 @@ class Play {
   initializeBoard() {
     const boardContainer = document.getElementById("play-chessboard");
     if (boardContainer) {
-      this.gameBoard = new ChessBoard("play-chessboard", {
+      this.gameBoard = new ProfessionalChessboard("play-chessboard", {
         draggable: true,
         showCoordinates: true,
+        onMove: (move) => {
+          if (this.isPlayerTurn) {
+            this.handleBoardMove(move);
+          }
+        },
+        onGetPossibleMoves: (square) => {
+          return this.getPossibleMoves(square);
+        },
       });
-
-      // Set up board event handlers
-      this.gameBoard.onMove((move) => {
-        if (this.isPlayerTurn) {
-          this.handleBoardMove(move);
-        }
-      });
-
-      this.gameBoard.onGetPossibleMoves = (square) => {
-        return this.getPossibleMoves(square);
-      };
     }
   }
 

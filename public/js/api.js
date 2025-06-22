@@ -215,7 +215,15 @@ class ChessAPI extends APIManager {
 
   // Analysis endpoints
   async getGlobalStats() {
-    return this.get("/api/analysis/global");
+    return this.get("/api/analysis/stats");
+  }
+
+  async getResultsByModel() {
+    return this.get("/api/analysis/results-by-model");
+  }
+
+  async getWinrateData() {
+    return this.get("/api/analysis/winrate");
   }
 
   async getStats() {
@@ -248,11 +256,11 @@ class ChessAPI extends APIManager {
   }
 
   async listGames(matchup) {
-    return this.get(`/api/games/list-games/${matchup}`);
+    return this.get("/api/games/list-games", { matchup });
   }
 
   async getPgnData(matchup, gameFile) {
-    return this.get(`/api/games/pgn-data/${matchup}/${gameFile}`);
+    return this.get("/api/games/pgn", { matchup, gameFile });
   }
 
   // Lichess integration
@@ -265,7 +273,7 @@ class ChessAPI extends APIManager {
   }
 
   async getLichessUser(username) {
-    return this.get(`/api/lichess/user/${username}`);
+    return this.get(`/api/lichess/users/${username}`);
   }
 
   // Settings endpoints
@@ -283,7 +291,7 @@ class ChessAPI extends APIManager {
 
   // Data management
   async exportData(type = "all") {
-    return this.get("/api/data/export", { type });
+    return this.get(`/api/data/export`);
   }
 
   async importData(data) {
@@ -291,7 +299,7 @@ class ChessAPI extends APIManager {
   }
 
   async getStatistics(timeframe = "30d") {
-    return this.get("/api/data/statistics", { timeframe });
+    return this.get(`/api/analysis/stats?timeframe=${timeframe}`);
   }
 
   // Tournament endpoints
@@ -615,6 +623,14 @@ class SmartAPI {
 
   isOnline() {
     return this.useRealAPI;
+  }
+
+  async getResultsByModel() {
+    return this.request("getResultsByModel");
+  }
+
+  async getWinrateData() {
+    return this.request("getWinrateData");
   }
 }
 

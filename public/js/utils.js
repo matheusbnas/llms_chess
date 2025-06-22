@@ -1,7 +1,7 @@
 // ♟️ LLM Chess Arena - Utility Functions
 
-// Date and Time Utilities
-const DateUtils = {
+const Utils = {
+  // Date and Time Utilities
   formatDate(dateString) {
     try {
       const date = new Date(dateString);
@@ -52,10 +52,8 @@ const DateUtils = {
   getCurrentTimestamp() {
     return new Date().toISOString();
   },
-};
 
-// Storage Utilities
-const StorageUtils = {
+  // Storage Utilities
   set(key, value) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
@@ -96,7 +94,6 @@ const StorageUtils = {
     }
   },
 
-  // Session storage methods
   sessionSet(key, value) {
     try {
       sessionStorage.setItem(key, JSON.stringify(value));
@@ -116,10 +113,8 @@ const StorageUtils = {
       return defaultValue;
     }
   },
-};
 
-// String Utilities
-const StringUtils = {
+  // String Utilities
   capitalize(str) {
     if (!str) return "";
     return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
@@ -156,10 +151,8 @@ const StringUtils = {
       maximumFractionDigits: decimals,
     }).format(num);
   },
-};
 
-// DOM Utilities
-const DOMUtils = {
+  // DOM Utilities
   createElement(tag, attributes = {}, children = []) {
     const element = document.createElement(tag);
 
@@ -208,21 +201,21 @@ const DOMUtils = {
     }
   },
 
-  // Fix for chessboard rendering
   ensureChessboardRendered() {
-    const chessboards = document.querySelectorAll('.chessboard');
+    const chessboards = document.querySelectorAll(".chessboard");
     if (chessboards.length > 0) {
-      chessboards.forEach(board => {
+      chessboards.forEach((board) => {
         if (board.offsetWidth === 0 || board.children.length === 0) {
           // Force reflow
-          board.style.display = 'none';
+          board.style.display = "none";
           setTimeout(() => {
-            board.style.display = 'grid';
+            board.style.display = "grid";
           }, 50);
         }
       });
     }
   },
+
   debounce(func, wait, immediate = false) {
     let timeout;
     return function executedFunction(...args) {
@@ -247,10 +240,8 @@ const DOMUtils = {
       }
     };
   },
-};
 
-// Validation Utilities
-const ValidationUtils = {
+  // Validation Utilities
   isEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
@@ -281,10 +272,8 @@ const ValidationUtils = {
       /^([rnbqkpRNBQKP1-8]+\/){7}([rnbqkpRNBQKP1-8]+)\s[bw]\s(-|[KQkq]{1,4})\s(-|[a-h][36])\s\d+\s\d+$/;
     return fenPattern.test(fen);
   },
-};
 
-// Math Utilities
-const MathUtils = {
+  // Math Utilities
   clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
   },
@@ -317,10 +306,8 @@ const MathUtils = {
       1 / (1 + Math.pow(10, (opponentRating - playerRating) / 400));
     return Math.round(kFactor * (result - expectedScore));
   },
-};
 
-// Color Utilities
-const ColorUtils = {
+  // Color Utilities
   getModelColor(modelName) {
     const colorMap = {
       "GPT-4o": "#759900",
@@ -346,10 +333,8 @@ const ColorUtils = {
     const b = parseInt(hex.slice(5, 7), 16);
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   },
-};
 
-// Chess Utilities
-const ChessUtils = {
+  // Chess Utilities
   parseMove(move) {
     // Parse algebraic notation
     const movePattern =
@@ -404,10 +389,15 @@ const ChessUtils = {
   getOppositeColor(color) {
     return color === "white" ? "black" : "white";
   },
-};
 
-// File Utilities
-const FileUtils = {
+  getResultText(result) {
+    if (result === "1-0") return "Brancas vencem";
+    if (result === "0-1") return "Pretas vencem";
+    if (result === "1/2-1/2") return "Empate";
+    return result;
+  },
+
+  // File Utilities
   downloadText(content, filename, mimeType = "text/plain") {
     const blob = new Blob([content], { type: mimeType });
     const url = window.URL.createObjectURL(blob);
@@ -447,10 +437,8 @@ const FileUtils = {
 
     return result;
   },
-};
 
-// URL and Hash Utilities
-const URLUtils = {
+  // URL and Hash Utilities
   getQueryParam(param, defaultValue = null) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param) || defaultValue;
@@ -473,22 +461,30 @@ const URLUtils = {
   buildQueryString(params) {
     return new URLSearchParams(params).toString();
   },
+
+  // UI Utilities
+  showLoading(message) {
+    const loadingScreen = this.getElement("#loading-screen");
+    if (loadingScreen) {
+      const loadingText = loadingScreen.querySelector(".loading-text");
+      if (loadingText && message) {
+        loadingText.textContent = message;
+      }
+      loadingScreen.style.display = "flex";
+    }
+  },
+
+  hideLoading() {
+    const loadingScreen = this.getElement("#loading-screen");
+    if (loadingScreen) {
+      loadingScreen.style.display = "none";
+    }
+  },
+
+  handleError(error, context = "General Error") {
+    console.error(`[${context}]`, error.message, error.stack || "");
+  },
 };
 
-// Export all utilities
-window.DateUtils = DateUtils;
-window.StorageUtils = StorageUtils;
-window.StringUtils = StringUtils;
-window.DOMUtils = DOMUtils;
-window.ValidationUtils = ValidationUtils;
-window.MathUtils = MathUtils;
-window.ColorUtils = ColorUtils;
-window.ChessUtils = ChessUtils;
-window.FileUtils = FileUtils;
-window.URLUtils = URLUtils;
-
-// Global utility functions for convenience
-window.formatDate = DateUtils.formatDate;
-window.formatDuration = DateUtils.formatDuration;
-window.debounce = DOMUtils.debounce;
-window.throttle = DOMUtils.throttle;
+// Export for global use
+window.Utils = Utils;

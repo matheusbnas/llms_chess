@@ -130,7 +130,7 @@ class Dashboard {
       },
     };
 
-    this.charts.results = app.createChart("results-chart", config);
+    this.charts.results = arena.createChart("results-chart", config);
   }
 
   createWinrateChart(data) {
@@ -181,7 +181,7 @@ class Dashboard {
       },
     };
 
-    this.charts.winrate = app.createChart("winrate-chart", config);
+    this.charts.winrate = arena.createChart("winrate-chart", config);
   }
 
   updateRecentGamesTable(games) {
@@ -224,7 +224,7 @@ class Dashboard {
 
   viewGame(gameId) {
     // Switch to analysis page and load the game
-    app.showPage("analysis");
+    arena.showPage("analysis");
 
     // Update nav
     document
@@ -233,8 +233,8 @@ class Dashboard {
     document.querySelector('[data-page="analysis"]').classList.add("active");
 
     // Load the game in analysis
-    if (app.analysis) {
-      app.analysis.loadGame(gameId);
+    if (arena.analysis) {
+      arena.analysis.loadGame(gameId);
     }
   }
 
