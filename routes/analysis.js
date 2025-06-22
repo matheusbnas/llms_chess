@@ -73,13 +73,22 @@ function initializeMockData() {
 
 initializeMockData();
 
+async function getGameDirectories() {
+  const rootDir = path.join(__dirname, "..");
+  try {
+    const entries = await fs.readdir(rootDir, { withFileTypes: true });
+    return entries
+      .filter((dirent) => dirent.isDirectory() && dirent.name.includes(" vs "))
+      .map((dirent) => dirent.name);
+  } catch (error) {
+    console.error("Failed to read game directories:", error);
+    return []; // Return empty array on error
+  }
+}
+
 // Get detailed stats for all games
 router.get("/stats", async (req, res) => {
-  const gameDirectories = [
-    "Gemini-Pro vs GPT-4o",
-    "gpt-4 vs Deepseek",
-    "GPT-4o vs Gemini-Pro",
-  ];
+  const gameDirectories = await getGameDirectories();
   const stats = {};
 
   const initializePlayerStats = (player) => {
@@ -90,7 +99,7 @@ router.get("/stats", async (req, res) => {
 
   try {
     for (const dir of gameDirectories) {
-      const dirPath = path.join(__dirname, "..", "games", dir);
+      const dirPath = path.join(__dirname, "..", dir);
       try {
         const gameFiles = await fs.readdir(dirPath);
         const pgnFiles = gameFiles.filter((f) => f.endsWith(".pgn"));
@@ -159,11 +168,7 @@ router.get("/stats", async (req, res) => {
 
 // Get results by model
 router.get("/results-by-model", async (req, res) => {
-  const gameDirectories = [
-    "Gemini-Pro vs GPT-4o",
-    "gpt-4 vs Deepseek",
-    "GPT-4o vs Gemini-Pro",
-  ];
+  const gameDirectories = await getGameDirectories();
   const stats = {};
 
   const initializePlayerStats = (player) => {
@@ -181,7 +186,7 @@ router.get("/results-by-model", async (req, res) => {
 
   try {
     for (const dir of gameDirectories) {
-      const dirPath = path.join(__dirname, "..", "games", dir);
+      const dirPath = path.join(__dirname, "..", dir);
       try {
         const gameFiles = await fs.readdir(dirPath);
         const pgnFiles = gameFiles.filter((f) => f.endsWith(".pgn"));
@@ -467,11 +472,7 @@ router.get("/trends/:model", (req, res) => {
 });
 
 router.get("/winrate", async (req, res) => {
-  const gameDirectories = [
-    "Gemini-Pro vs GPT-4o",
-    "gpt-4 vs Deepseek",
-    "GPT-4o vs Gemini-Pro",
-  ];
+  const gameDirectories = await getGameDirectories();
   const stats = {
     white_wins: 0,
     black_wins: 0,
@@ -480,7 +481,7 @@ router.get("/winrate", async (req, res) => {
 
   try {
     for (const dir of gameDirectories) {
-      const dirPath = path.join(__dirname, "..", "games", dir);
+      const dirPath = path.join(__dirname, "..", dir);
       try {
         const gameFiles = await fs.readdir(dirPath);
         const pgnFiles = gameFiles.filter((f) => f.endsWith(".pgn"));
@@ -533,6 +534,80 @@ router.get("/winrate", async (req, res) => {
     res.json(winrateData);
   } catch (error) {
     console.error("Error analyzing PGN files for winrate:", error);
+    res.status(500).json({ error: "Failed to analyze PGN files" });
+  }
+});
+
+// Get performance over time
+router.get("/performance-over-time", async (req, res) => {
+  const gameDirectories = await getGameDirectories();
+  const data = {};
+
+  try {
+    for (const dir of gameDirectories) {
+      const dirPath = path.join(__dirname, "..", dir);
+      try {
+        const gameFiles = await fs.readdir(dirPath);
+        const pgnFiles = gameFiles.filter((f) => f.endsWith(".pgn"));
+
+        for (const pgnFile of pgnFiles) {
+          const filePath = path.join(dirPath, pgnFile);
+          const pgnData = await fs.readFile(filePath, "utf-8");
+
+          const chess = new Chess();
+          try {
+            chess.loadPgn(pgnData);
+          } catch (e) {
+            console.warn(
+              `Skipping ${pgnFile} in ${dir} due to invalid PGN: ${e.message}`
+            );
+            continue;
+          }
+
+          const headers = chess.header();
+          const whitePlayer = headers.White;
+          const blackPlayer = headers.Black;
+          const result = headers.Result;
+
+          if (!whitePlayer || !blackPlayer || !result) {
+            console.warn(
+              `Skipping ${pgnFile} in ${dir} due to missing headers.`
+            );
+            continue;
+          }
+
+          if (!data[dir]) {
+            data[dir] = {
+              model1: whitePlayer,
+              model2: blackPlayer,
+              wins: 0,
+              losses: 0,
+              draws: 0,
+            };
+          }
+
+          if (result === "1-0") {
+            data[dir].wins++;
+          } else if (result === "0-1") {
+            data[dir].losses++;
+          } else if (result === "1/2-1/2") {
+            data[dir].draws++;
+          }
+        }
+      } catch (error) {
+        if (error.code !== "ENOENT") {
+          console.error(`Error processing directory ${dir}:`, error);
+        } else {
+          console.warn(`Directory ${dir} not found, skipping.`);
+        }
+      }
+    }
+    res.json(data);
+  } catch (error) {
+    console.error(
+      "Error analyzing PGN files for performance over time:",
+      error
+    );
     res.status(500).json({ error: "Failed to analyze PGN files" });
   }
 });

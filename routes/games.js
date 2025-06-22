@@ -4,7 +4,7 @@ const fs = require("fs").promises;
 const path = require("path");
 const { Chess } = require("chess.js");
 
-const gamesDir = path.join(__dirname, "..");
+const gamesDir = process.cwd();
 
 // Endpoint to list matchup directories
 router.get("/list-matchups", async (req, res) => {

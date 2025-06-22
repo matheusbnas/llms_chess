@@ -42,6 +42,13 @@ app.use(
   })
 );
 
+// API Routes
+app.use("/analysis", analysisRoutes);
+app.use("/lichess", lichessRoutes);
+app.use("/settings", settingsRoutes);
+app.use("/games", gamesRoutes);
+app.use("/data", dataRoutes);
+
 // Enhanced Game Manager with Professional Chessboard Support
 class GameManager {
   constructor() {
@@ -109,6 +116,21 @@ class GameManager {
         description: "Modelo experimental",
       },
     };
+  }
+
+  async getGameDirectories() {
+    const rootDir = __dirname;
+    try {
+      const entries = await fs.readdir(rootDir, { withFileTypes: true });
+      return entries
+        .filter(
+          (dirent) => dirent.isDirectory() && dirent.name.includes(" vs ")
+        )
+        .map((dirent) => dirent.name);
+    } catch (error) {
+      console.error("Failed to read game directories:", error);
+      return [];
+    }
   }
 
   async makeMove(modelName, position, gameHistory, color) {
@@ -548,31 +570,88 @@ Give your response in the following order:
 
   async getRecentGames(limit = 10) {
     try {
-      const gamesDir = path.join(__dirname, "games");
-      const files = await fs.readdir(gamesDir);
-      const jsonFiles = files.filter((file) => file.endsWith(".json"));
+      const matchupDirs = await this.getGameDirectories();
+      const allGames = [];
 
-      const games = [];
-      for (const file of jsonFiles.slice(-limit)) {
+      for (const dir of matchupDirs) {
         try {
-          const filePath = path.join(gamesDir, file);
-          const content = await fs.readFile(filePath, "utf8");
-          const game = JSON.parse(content);
-          games.push({
-            id: game.id,
-            white: game.white,
-            black: game.black,
-            result: game.result,
-            moves: game.totalMoves,
-            duration: this.formatDuration(game.duration),
-            date: this.formatDate(game.endTime),
-          });
-        } catch (error) {
-          console.error(`Error reading game file ${file}:`, error);
+          const pgnFiles = (await fs.readdir(path.join(__dirname, dir))).filter(
+            (f) => f.endsWith(".pgn")
+          );
+
+          for (const file of pgnFiles) {
+            try {
+              const pgnPath = path.join(__dirname, dir, file);
+              const pgnContent = await fs.readFile(pgnPath, "utf8");
+
+              const chess = new Chess();
+              chess.load_pgn(pgnContent);
+
+              const headers = chess.header();
+              const history = chess.history();
+
+              if (headers.White && headers.Black && headers.Result) {
+                const gameDate = headers.Date
+                  ? new Date(headers.Date.replace(/\./g, "-"))
+                  : new Date(0);
+                allGames.push({
+                  id: `${dir}/${file}`,
+                  white: headers.White,
+                  black: headers.Black,
+                  result: headers.Result,
+                  moves: history.length,
+                  duration: this.formatDuration(null), // No duration data in PGN
+                  date: this.formatDate(gameDate.toISOString()),
+                  rawDate: gameDate,
+                });
+              }
+            } catch (e) {
+              // Gracefully skip invalid PGNs
+            }
+          }
+        } catch (e) {
+          // Gracefully skip directories that can't be read
         }
       }
 
-      return games.reverse(); // Most recent first
+      // Also check the 'games' directory for newly played games (JSON files)
+      try {
+        const gamesDir = path.join(__dirname, "games");
+        const files = await fs.readdir(gamesDir);
+        const jsonFiles = files.filter((file) => file.endsWith(".json"));
+
+        for (const file of jsonFiles) {
+          try {
+            const filePath = path.join(gamesDir, file);
+            const content = await fs.readFile(filePath, "utf8");
+            const game = JSON.parse(content);
+            allGames.push({
+              id: game.id,
+              white: game.white,
+              black: game.black,
+              result: game.result,
+              moves: game.totalMoves,
+              duration: this.formatDuration(game.duration),
+              date: this.formatDate(game.endTime),
+              rawDate: new Date(game.endTime),
+            });
+          } catch (error) {
+            // Skip broken JSON files
+          }
+        }
+      } catch (err) {
+        if (err.code !== "ENOENT") {
+          console.error("Error reading recent games from 'games' dir:", err);
+        }
+        // Ignore if 'games' dir doesn't exist yet
+      }
+
+      allGames.sort((a, b) => b.rawDate - a.rawDate);
+
+      return allGames.slice(0, limit).map((g) => {
+        const { rawDate, ...rest } = g; // Don't return rawDate to frontend
+        return rest;
+      });
     } catch (error) {
       console.error("Error getting recent games:", error);
       return [];
@@ -580,6 +659,9 @@ Give your response in the following order:
   }
 
   formatDuration(seconds) {
+    if (seconds === null || seconds === undefined) {
+      return "N/A";
+    }
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}m ${secs}s`;
@@ -773,10 +855,10 @@ app.get("/api/games/stats", (req, res) => {
 
 app.get("/api/games/list-matchups", async (req, res) => {
   try {
-    const gamesDir = path.join(__dirname, "games");
+    const gamesDir = __dirname;
     const entries = await fs.readdir(gamesDir, { withFileTypes: true });
     const directories = entries
-      .filter((dirent) => dirent.isDirectory())
+      .filter((dirent) => dirent.isDirectory() && dirent.name.includes(" vs "))
       .map((dirent) => dirent.name);
     res.json(directories);
   } catch (error) {
@@ -792,7 +874,7 @@ app.get("/api/games/list-games/:matchup", async (req, res) => {
     if (matchup.includes("..")) {
       return res.status(400).json({ error: "Invalid matchup name" });
     }
-    const matchupDir = path.join(__dirname, "games", matchup);
+    const matchupDir = path.join(__dirname, matchup);
     const files = await fs.readdir(matchupDir);
     const pgnFiles = files.filter((file) => file.endsWith(".pgn"));
     res.json(pgnFiles);
@@ -816,7 +898,7 @@ app.get("/api/games/pgn-data/:matchup/:file", async (req, res) => {
         .json({ error: "Invalid file type. Must be a PGN file." });
     }
 
-    const pgnPath = path.join(__dirname, "games", matchup, file);
+    const pgnPath = path.join(__dirname, matchup, file);
     const pgnContent = await fs.readFile(pgnPath, "utf8");
 
     const chess = new Chess();

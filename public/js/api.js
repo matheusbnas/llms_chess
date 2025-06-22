@@ -250,17 +250,17 @@ class ChessAPI extends APIManager {
     return this.post("/api/analysis/compare", { model1, model2, ...options });
   }
 
-  // Game endpoints
+  // PGN/Matchup endpoints
   async listMatchups() {
     return this.get("/api/games/list-matchups");
   }
 
-  async listGames(matchup) {
-    return this.get("/api/games/list-games", { matchup });
+  async listGamesInMatchup(matchup) {
+    return this.get(`/api/games/list-games/${matchup}`);
   }
 
   async getPgnData(matchup, gameFile) {
-    return this.get("/api/games/pgn", { matchup, gameFile });
+    return this.get(`/api/games/pgn-data/${matchup}/${gameFile}`);
   }
 
   // Lichess integration
@@ -299,7 +299,7 @@ class ChessAPI extends APIManager {
   }
 
   async getStatistics(timeframe = "30d") {
-    return this.get(`/api/analysis/stats?timeframe=${timeframe}`);
+    return this.get("/api/statistics", { timeframe });
   }
 
   // Tournament endpoints
@@ -573,7 +573,7 @@ class SmartAPI {
   }
 
   async listGames(matchup) {
-    return this.request("listGames", matchup);
+    return this.request("listGamesInMatchup", matchup);
   }
 
   async getPgnData(matchup, gameFile) {

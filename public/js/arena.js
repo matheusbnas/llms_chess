@@ -1,22 +1,17 @@
-// Global arena instance, assuming app.js creates it.
-// This is a simplified approach. A better one would be using event emitters or a state manager.
-const arena = window.arena;
-let pgnViewer = null;
-
-async function initializeDashboardPage(arena, pgnViewer) {
+async function initializeArenaPage(arena, arenaPgnViewer) {
   if (!arena || !arena.api) {
-    console.error("Arena or API not initialized for Dashboard!");
+    console.error("Arena or API not initialized on Arena Page!");
     return;
   }
-  if (!pgnViewer) {
-    console.error("PGN viewer not initialized for Dashboard!");
+  if (!arenaPgnViewer) {
+    console.error("PGN viewer not initialized for Arena Page!");
     return;
   }
 
-  console.log("Initializing dashboard page...");
+  console.log("Initializing arena page...");
 
-  const matchupSelector = document.getElementById("matchup-selector");
-  const gameSelector = document.getElementById("game-selector");
+  const matchupSelector = document.getElementById("arena-matchup-selector");
+  const gameSelector = document.getElementById("arena-game-selector");
 
   // Load matchups
   try {
@@ -28,7 +23,7 @@ async function initializeDashboardPage(arena, pgnViewer) {
       matchupSelector.add(option);
     });
   } catch (error) {
-    console.error("Failed to load matchups", error);
+    console.error("Failed to load matchups for arena", error);
     matchupSelector.innerHTML = "<option value=''>Erro ao carregar</option>";
   }
 
@@ -62,39 +57,39 @@ async function initializeDashboardPage(arena, pgnViewer) {
     const gameFile = e.target.value;
 
     if (!matchup || !gameFile) {
-      pgnViewer.clear();
+      arenaPgnViewer.clear();
       return;
     }
 
     try {
       const pgnData = await arena.api.getPgnData(matchup, gameFile);
       if (pgnData && pgnData.pgn) {
-        pgnViewer.loadPgn(pgnData.pgn);
+        arenaPgnViewer.loadPgn(pgnData.pgn);
       } else {
-        throw new Error("Invalid PGN data received");
+        throw new Error("Invalid PGN data received for arena");
       }
     } catch (error) {
-      console.error("Failed to load PGN data", error);
-      alert("Erro ao carregar os dados do PGN.");
+      console.error("Failed to load PGN data for arena", error);
+      alert("Erro ao carregar os dados do PGN para a arena.");
     }
   });
 
   // PGN controls
   document
-    .getElementById("pgn-start")
-    ?.addEventListener("click", () => pgnViewer.goToMove(0));
+    .getElementById("arena-pgn-start")
+    ?.addEventListener("click", () => arenaPgnViewer.goToMove(0));
   document
-    .getElementById("pgn-back")
-    ?.addEventListener("click", () => pgnViewer.previousMove());
+    .getElementById("arena-pgn-back")
+    ?.addEventListener("click", () => arenaPgnViewer.previousMove());
   document
-    .getElementById("pgn-next")
-    ?.addEventListener("click", () => pgnViewer.nextMove());
+    .getElementById("arena-pgn-next")
+    ?.addEventListener("click", () => arenaPgnViewer.nextMove());
   document
-    .getElementById("pgn-end")
+    .getElementById("arena-pgn-end")
     ?.addEventListener("click", () =>
-      pgnViewer.goToMove(pgnViewer.moves.length - 1)
+      arenaPgnViewer.goToMove(arenaPgnViewer.moves.length - 1)
     );
   document
-    .getElementById("pgn-flip")
-    ?.addEventListener("click", () => pgnViewer.flipBoard());
+    .getElementById("arena-pgn-flip")
+    ?.addEventListener("click", () => arenaPgnViewer.flipBoard());
 }

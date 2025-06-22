@@ -95,19 +95,6 @@ class LLMChessArena {
   }
 
   initializePages() {
-    // Setup page-specific initializers
-    this.pageInitializers = {
-      dashboard: { func: () => this.initializeDashboard(), initialized: false },
-      arena: { func: () => this.initializeArena(), initialized: false },
-      play: { func: () => this.initializePlay(), initialized: false },
-      rankings: { func: () => this.initializeRankings(), initialized: false },
-      settings: { func: () => this.initializeSettings(), initialized: false },
-      "model-management": {
-        func: () => this.initializeModelManagement(),
-        initialized: false,
-      },
-      analysis: () => this.initializeAnalysis(),
-    };
     this.pageCache = new Map();
   }
 
@@ -168,24 +155,19 @@ class LLMChessArena {
     if (this.pageCache.has(pageName)) {
       document.getElementById(`${pageName}-page`).innerHTML =
         this.pageCache.get(pageName);
-      this.initializePage(pageName);
+      this.runPageInitializer(pageName);
       return;
     }
 
     try {
-      const response = await fetch(`/pages/${pageName}.html`, {
-        headers: {
-          "Cache-Control": "no-cache",
-          Pragma: "no-cache",
-        },
-      });
+      const response = await fetch(`/pages/${pageName}.html`);
       if (!response.ok) {
         throw new Error(`Failed to load page: ${pageName}`);
       }
       const content = await response.text();
       this.pageCache.set(pageName, content);
       document.getElementById(`${pageName}-page`).innerHTML = content;
-      this.initializePage(pageName);
+      this.runPageInitializer(pageName);
     } catch (error) {
       console.error(`Error loading page ${pageName}:`, error);
       document.getElementById(
@@ -194,12 +176,27 @@ class LLMChessArena {
     }
   }
 
-  initializePage(pageName) {
-    const initializer = this.pageInitializers[pageName];
-    if (initializer && !initializer.initialized) {
-      initializer.func();
-      initializer.initialized = true;
+  runPageInitializer(pageName) {
+    if (pageName === "dashboard") {
+      if (!this.dashboardPgnViewer) {
+        this.dashboardPgnViewer = new PgnViewer({
+          boardId: "pgn-viewer-board",
+          movesId: "pgn-viewer-moves",
+        });
+      }
+      initializeDashboardPage(this, this.dashboardPgnViewer);
     }
+    if (pageName === "arena") {
+      if (!this.arenaPgnViewer) {
+        this.arenaPgnViewer = new PgnViewer({
+          boardId: "arena-pgn-viewer-board",
+          movesId: "arena-pgn-viewer-moves",
+        });
+      }
+      initializeArenaPage(this, this.arenaPgnViewer);
+    }
+    // Add other page initializers here if needed
+    // e.g., if (pageName === 'arena') { initializeArenaPage(); }
   }
 
   createChart(canvasId, config) {
@@ -212,11 +209,20 @@ class LLMChessArena {
 
   initializeDashboard() {
     console.log("🏠 Initializing Dashboard...");
-    const dashboard = new Dashboard(this.api);
-    dashboard.init();
-    this.updateDashboardStats();
-    this.loadRecentGames();
-    this.pageInitializers.dashboard.initialized = true;
+
+    // Defer initialization until PgnViewer is available
+    const checkPgnViewer = () => {
+      if (typeof PgnViewer !== "undefined") {
+        const dashboard = new Dashboard(this.api);
+        dashboard.init();
+        this.updateDashboardStats();
+        this.loadRecentGames();
+      } else {
+        setTimeout(checkPgnViewer, 100); // Check again shortly
+      }
+    };
+
+    checkPgnViewer();
   }
 
   initializeArena() {
@@ -237,65 +243,40 @@ class LLMChessArena {
       }
     }
     this.loadBattleHistory();
-    this.updateModelSelections([
-      "quick-white-model",
-      "quick-black-model",
-      "human-opponent",
-    ]);
-    const startBattleBtn = document.getElementById("start-battle-btn");
-    if (startBattleBtn) {
-      startBattleBtn.addEventListener("click", () => this.startArenaBattle());
-    }
+    this.updateModelSelections(["quick-white-model", "quick-black-model"]);
+
+    // Event Listeners
+    document
+      .getElementById("start-battle-btn")
+      .addEventListener("click", () => this.startArenaBattle());
 
     // PGN Viewer Logic
     this.initializePgnViewer();
-
-    this.pageInitializers.arena.initialized = true;
   }
 
   initializePlay() {
     console.log("🎮 Initializing Play...");
-    if (!this.pageInitializers.play.initialized) {
-      const playManager = new Play();
-      playManager.init();
-      this.pageInitializers.play.initialized = true;
-    }
   }
 
   initializeRankings() {
     console.log("🏆 Initializing Rankings...");
-    if (!this.pageInitializers.rankings.initialized) {
-      const rankings = new Rankings();
-      rankings.init();
-      this.pageInitializers.rankings.initialized = true;
-    }
   }
 
   initializeSettings() {
     console.log("⚙️ Initializing Settings...");
+    const settings = new Settings(this.api);
+    settings.init();
   }
 
   initializeAnalysis() {
     console.log("📊 Initializing Analysis...");
-    if (!this.chessboards.has("analysis")) {
-      this.chessboards.set(
-        "analysis",
-        new ProfessionalChessboard("analysis-chessboard")
-      );
-    }
+    // Initialize analysis components, e.g., load data for charts
     this.loadAnalysisData();
-    this.pageInitializers.analysis.initialized = true;
   }
 
   initializeModelManagement() {
     console.log("🤖 Initializing Model Management...");
-    // Placeholder for model management initialization
-    this.pageInitializers["model-management"].initialized = true;
   }
-
-  // ==========================================
-  // DASHBOARD METHODS
-  // ==========================================
 
   updateDashboardStats() {
     if (!this.stats) return;
