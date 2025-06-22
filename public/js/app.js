@@ -7,13 +7,14 @@ class LLMChessArena {
   constructor() {
     this.currentPage = "dashboard";
     this.chessboards = new Map();
-    this.api = window.smartAPI;
+    this.api = new Api();
     this.socket = this.setupSocket();
     this.pgnGame = null;
     this.currentPgnMove = 0;
     this.charts = new ChartManager();
 
-    this.init();
+    // Defer initialization
+    // this.init();
   }
 
   async init() {
@@ -24,14 +25,27 @@ class LLMChessArena {
     this.initializePages();
     await this.loadInitialData();
 
-    // Show initial page
+    // Show initial page and hide loading screen
     this.showPage("dashboard");
+    this.hideLoadingScreen(); // Ensure loading screen is hidden
 
     console.log("✅ LLM Chess Arena initialized successfully");
   }
 
+  hideLoadingScreen() {
+    const loadingScreen = document.getElementById("loading-screen");
+    if (loadingScreen) {
+      loadingScreen.style.opacity = "0";
+      setTimeout(() => {
+        loadingScreen.style.display = "none";
+      }, 500);
+    }
+  }
+
   setupSocket() {
-    const socket = io();
+    const socket = io({
+      transports: ["websocket"],
+    });
 
     socket.on("connect", () => {
       console.log("🔌 Connected to WebSocket server");
@@ -100,19 +114,29 @@ class LLMChessArena {
 
   async loadInitialData() {
     try {
-      // Load initial application data
-      const [models, games, stats] = await Promise.all([
-        this.api.getAvailableModels(),
-        this.api.getRecentGames(),
-        this.api.getStats(),
-      ]);
+      // Load all initial application data from the consolidated endpoint
+      const data = await this.api.getDashboardData();
 
-      this.models = models;
-      this.recentGames = games;
-      this.stats = stats;
+      this.dashboardData = data;
+      this.models = data.modelStats || [];
+      this.recentGames = data.recentGames || [];
+      this.stats = {
+        totalGames: data.totalGames,
+        totalModels: this.models.length,
+      };
     } catch (error) {
       console.error("Error loading initial data:", error);
       this.showToast("Erro ao carregar dados iniciais", "error");
+      // Initialize with empty data to prevent app from crashing
+      this.dashboardData = {
+        modelStats: [],
+        recentGames: [],
+        totalGames: 0,
+        matchupStats: [],
+      };
+      this.models = [];
+      this.recentGames = [];
+      this.stats = { totalGames: 0, totalModels: 0 };
     }
   }
 
@@ -177,26 +201,28 @@ class LLMChessArena {
   }
 
   runPageInitializer(pageName) {
-    if (pageName === "dashboard") {
-      if (!this.dashboardPgnViewer) {
-        this.dashboardPgnViewer = new PgnViewer({
-          boardId: "pgn-viewer-board",
-          movesId: "pgn-viewer-moves",
-        });
+    // Wait for the specific page's script to be loaded and ready
+    // This is a bit of a hack; a more robust solution would be module-based
+    const initializer = () => {
+      switch (pageName) {
+        case "dashboard":
+          if (typeof initializeDashboardPage === "function") {
+            initializeDashboardPage(this);
+          } else {
+            setTimeout(initializer, 100);
+          }
+          break;
+        case "arena":
+          if (typeof initializeArenaPage === "function") {
+            initializeArenaPage(this);
+          } else {
+            setTimeout(initializer, 100);
+          }
+          break;
+        // Add other page initializers here if needed
       }
-      initializeDashboardPage(this, this.dashboardPgnViewer);
-    }
-    if (pageName === "arena") {
-      if (!this.arenaPgnViewer) {
-        this.arenaPgnViewer = new PgnViewer({
-          boardId: "arena-pgn-viewer-board",
-          movesId: "arena-pgn-viewer-moves",
-        });
-      }
-      initializeArenaPage(this, this.arenaPgnViewer);
-    }
-    // Add other page initializers here if needed
-    // e.g., if (pageName === 'arena') { initializeArenaPage(); }
+    };
+    initializer();
   }
 
   createChart(canvasId, config) {
@@ -1379,9 +1405,13 @@ function goToPage(pageName) {
 // ==========================================
 
 // Initialize application when DOM is ready
-document.addEventListener("DOMContentLoaded", function () {
-  window.arena = new LLMChessArena();
-  console.log("✅ LLM Chess Arena application initialized");
+document.addEventListener("DOMContentLoaded", () => {
+  if (typeof LLMChessArena !== "undefined") {
+    window.app = new LLMChessArena();
+    window.app.init();
+  } else {
+    console.error("LLMChessArena class is not defined.");
+  }
 });
 
 // Export for use in other scripts

@@ -1,319 +1,248 @@
-// Dashboard.js - Integração com o backend (baseado no chess_comparator.py)
+// Dashboard.js - Lógica para a página de dashboard
 
-async function initializeDashboardPage(arena, pgnViewer) {
-  if (!arena || !arena.api) {
-    console.error("Arena or API not initialized on Dashboard Page!");
-    return;
-  }
+function initializeDashboardPage(app) {
+  const dashboard = {
+    elements: {
+      loadingOverlay: document.getElementById("dashboard-loading-overlay"),
+      refreshBtn: document.getElementById("refresh-dashboard-btn"),
+      totalGamesMetric: document.getElementById("total-games-metric"),
+      totalModelsMetric: document.getElementById("total-models-metric"),
+      topModelMetric: document.getElementById("top-model-metric"),
+      modelPerformanceChart: document.getElementById("model-performance-chart"),
+      matchupResultsChart: document.getElementById("matchup-results-chart"),
+      leaderboardTable: document
+        .getElementById("leaderboard-table")
+        ?.querySelector("tbody"),
+      recentGamesList: document.getElementById("recent-games-list"),
+    },
+    charts: {
+      modelChart: null,
+      matchupChart: null,
+    },
+    app: app,
+  };
 
-  console.log("🏠 Initializing Dashboard page...");
-
-  const matchupSelector = document.getElementById("matchup-selector");
-  const gameSelector = document.getElementById("game-selector");
-
-  // Load matchups (seguindo exatamente como no chess_comparator.py)
-  try {
-    const matchups = await arena.api.listMatchups();
-    matchupSelector.innerHTML =
-      "<option value=''>Selecione um confronto</option>";
-
-    matchups.forEach((matchup) => {
-      const option = new Option(matchup, matchup);
-      matchupSelector.add(option);
-    });
-
-    console.log("✅ Matchups loaded for dashboard");
-  } catch (error) {
-    console.error("❌ Failed to load matchups for dashboard", error);
-    matchupSelector.innerHTML = "<option value=''>Erro ao carregar</option>";
-  }
-
-  // Event listener for matchup changes (como no streamlit)
-  matchupSelector.addEventListener("change", async (e) => {
-    const matchup = e.target.value;
-    gameSelector.innerHTML = "<option value=''>Carregando...</option>";
-
-    if (!matchup) {
-      gameSelector.innerHTML =
-        "<option value=''>Selecione uma partida</option>";
-      if (pgnViewer) pgnViewer.clear();
-      return;
-    }
-
-    try {
-      const games = await arena.api.listGamesInMatchup(matchup);
-      gameSelector.innerHTML =
-        "<option value=''>Selecione uma partida</option>";
-
-      games.forEach((game) => {
-        const option = new Option(game.replace(".pgn", ""), game);
-        gameSelector.add(option);
-      });
-
-      console.log(`✅ Games loaded for matchup: ${matchup}`);
-    } catch (error) {
-      console.error("❌ Failed to load games for matchup", matchup, error);
-      gameSelector.innerHTML = "<option value=''>Erro ao carregar</option>";
-    }
-  });
-
-  // Event listener for game changes (carregamento do PGN)
-  gameSelector.addEventListener("change", async (e) => {
-    const matchup = matchupSelector.value;
-    const gameFile = e.target.value;
-
-    if (!matchup || !gameFile) {
-      if (pgnViewer) pgnViewer.clear();
-      return;
-    }
-
-    try {
-      console.log(`📥 Loading PGN data: ${matchup}/${gameFile}`);
-      const pgnData = await arena.api.getPgnData(matchup, gameFile);
-
-      if (pgnData && pgnData.pgn) {
-        // Integração com PgnViewer (como no chess_comparator.py)
-        if (pgnViewer) {
-          pgnViewer.loadPgn(pgnData.pgn);
-          console.log("✅ PGN loaded in viewer");
-        }
-
-        // Update dashboard stats se necessário
-        updateDashboardGameInfo(pgnData);
-      } else {
-        throw new Error("Invalid PGN data received for dashboard");
-      }
-    } catch (error) {
-      console.error("❌ Failed to load PGN data for dashboard", error);
-      if (arena && arena.showToast) {
-        arena.showToast("Erro ao carregar os dados do PGN", "error");
-      } else {
-        alert("Erro ao carregar os dados do PGN.");
-      }
-    }
-  });
-
-  // PGN controls (como no streamlit com st.button)
-  document.getElementById("pgn-start")?.addEventListener("click", () => {
-    if (pgnViewer) pgnViewer.goToMove(0);
-  });
-
-  document.getElementById("pgn-back")?.addEventListener("click", () => {
-    if (pgnViewer) pgnViewer.previousMove();
-  });
-
-  document.getElementById("pgn-next")?.addEventListener("click", () => {
-    if (pgnViewer) pgnViewer.nextMove();
-  });
-
-  document.getElementById("pgn-end")?.addEventListener("click", () => {
-    if (pgnViewer && pgnViewer.moves) {
-      pgnViewer.goToMove(pgnViewer.moves.length - 1);
-    }
-  });
-
-  document.getElementById("pgn-flip")?.addEventListener("click", () => {
-    if (pgnViewer) pgnViewer.flipBoard();
-  });
-
-  // Load recent games and stats (funcionalidade extra do dashboard)
-  await loadDashboardStats(arena);
-
-  console.log("✅ Dashboard page initialized successfully");
-}
-
-// Função para atualizar informações do jogo no dashboard
-function updateDashboardGameInfo(pgnData) {
-  try {
-    const headers = pgnData.headers || {};
-
-    // Update game info display
-    const gameTitle = document.getElementById("dashboard-game-title");
-    if (gameTitle) {
-      gameTitle.textContent = `${headers.White || "Brancas"} vs ${
-        headers.Black || "Pretas"
-      }`;
-    }
-
-    const gameResult = document.getElementById("dashboard-game-result");
-    if (gameResult) {
-      gameResult.textContent = headers.Result || "*";
-    }
-
-    const gameInfo = document.getElementById("dashboard-game-info");
-    if (gameInfo) {
-      gameInfo.innerHTML = `
-        <div><strong>Abertura:</strong> ${
-          headers.Opening || "Desconhecida"
-        }</div>
-        <div><strong>Data:</strong> ${headers.Date || "N/A"}</div>
-        <div><strong>Resultado:</strong> ${headers.Result || "*"}</div>
-        <div><strong>Lances:</strong> ${
-          pgnData.moves ? pgnData.moves.length : 0
-        }</div>
-      `;
-    }
-
-    console.log("✅ Dashboard game info updated");
-  } catch (error) {
-    console.error("❌ Error updating dashboard game info:", error);
+  if (dashboard.elements.refreshBtn) {
+    initializeDashboard(dashboard);
   }
 }
 
-// Função para carregar estatísticas do dashboard
-async function loadDashboardStats(arena) {
-  try {
-    console.log("📊 Loading dashboard statistics...");
+function initializeDashboard(dashboard) {
+  console.log("📊 Initializing Dashboard...");
+  const data = dashboard.app.dashboardData;
 
-    // Load global stats
-    const stats = await arena.api.getGlobalStats();
-
-    // Update metrics cards
-    const updateMetric = (id, value) => {
-      const element = document.getElementById(id);
-      if (element) element.textContent = value;
-    };
-
-    updateMetric("total-games", stats.totalGames || 0);
-    updateMetric("active-models", stats.activeModels || 0);
-    updateMetric("avg-moves", stats.avgMoves || 0);
-    updateMetric("tournaments", stats.tournaments || 0);
-
-    // Load recent games
-    const recentGames = await arena.api.getRecentGames(10);
-    updateRecentGamesTable(recentGames);
-
-    console.log("✅ Dashboard statistics loaded");
-  } catch (error) {
-    console.error("❌ Error loading dashboard stats:", error);
+  if (data) {
+    updateGlobalMetrics(dashboard, data);
+    updateModelPerformanceChart(dashboard, data.modelStats);
+    updateMatchupResultsChart(dashboard, data.matchupStats);
+    updateLeaderboard(dashboard, data.modelStats);
+    updateRecentGames(dashboard, data.recentGames);
+    setLoading(dashboard, false);
+  } else {
+    console.error("Dashboard data not found in app instance.");
+    setLoading(dashboard, false);
   }
-}
 
-// Função para atualizar tabela de jogos recentes
-function updateRecentGamesTable(games) {
-  const tableBody = document.getElementById("recent-games-table");
-  if (!tableBody || !games) return;
-
-  tableBody.innerHTML = "";
-
-  games.slice(0, 10).forEach((game, index) => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <div style="width: 24px; height: 24px; background: #b8860b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
-            🤖
-          </div>
-          <strong>${game.White || game.white || "Brancas"}</strong>
-        </div>
-      </td>
-      <td>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <div style="width: 24px; height: 24px; background: #666; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
-            🤖
-          </div>
-          <strong>${game.Black || game.black || "Pretas"}</strong>
-        </div>
-      </td>
-      <td>
-        <span style="background: #444; padding: 2px 6px; border-radius: 4px;">${
-          game.Result || game.result || "*"
-        }</span>
-      </td>
-      <td>
-        <span style="font-family: monospace;">${
-          game.Moves || game.moves || "-"
-        }</span>
-      </td>
-      <td style="color: #888;">
-        ${game.Date || game.date || "Hoje"}
-      </td>
-      <td>
-        <button onclick="viewGameInDashboard('${
-          game.id || index
-        }')" style="background: #b8860b; color: #000; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">
-          Ver
-        </button>
-      </td>
-    `;
-    tableBody.appendChild(row);
+  dashboard.elements.refreshBtn.addEventListener("click", async () => {
+    setLoading(dashboard, true);
+    await dashboard.app.loadInitialData(); // Reload data in the main app
+    initializeDashboard(dashboard); // Re-initialize dashboard with new data
+    setLoading(dashboard, false);
   });
-
-  console.log("✅ Recent games table updated");
 }
 
-// Função para visualizar jogo específico
-function viewGameInDashboard(gameId) {
-  console.log(`👁️ Viewing game ${gameId} in dashboard`);
-  // Implementar visualização específica se necessário
-  if (window.arena && window.arena.showToast) {
-    window.arena.showToast(`Visualizando partida ${gameId}`, "info");
+function setLoading(dashboard, isLoading) {
+  dashboard.elements.loadingOverlay.style.display = isLoading ? "flex" : "none";
+  if (dashboard.elements.refreshBtn) {
+    dashboard.elements.refreshBtn.disabled = isLoading;
+    const icon = dashboard.elements.refreshBtn.querySelector("i");
+    if (icon) {
+      icon.classList.toggle("fa-spin", isLoading);
+    }
   }
 }
 
-// Função para limpar o viewer (como no streamlit quando não há seleção)
-function clearDashboardViewer() {
-  const pgnViewer = window.dashboardPgnViewer;
-  if (pgnViewer && pgnViewer.clear) {
-    pgnViewer.clear();
-  }
+function updateGlobalMetrics(dashboard, data) {
+  const { totalGames, modelStats } = data;
+  dashboard.elements.totalGamesMetric.textContent = totalGames || 0;
+  dashboard.elements.totalModelsMetric.textContent = modelStats.length || 0;
 
-  // Clear game info
-  const gameInfo = document.getElementById("dashboard-game-info");
-  if (gameInfo) {
-    gameInfo.innerHTML =
-      '<div style="color: #888;">Selecione uma partida para ver as informações</div>';
+  if (modelStats.length > 0) {
+    const topModel = modelStats.reduce((prev, current) =>
+      prev.wins > current.wins ? prev : current
+    );
+    dashboard.elements.topModelMetric.textContent = topModel.model;
+  } else {
+    dashboard.elements.topModelMetric.textContent = "N/A";
   }
 }
 
-// Função para exportar dados do dashboard
-function exportDashboardData() {
-  console.log("📤 Exporting dashboard data...");
-  // Implementar exportação se necessário
-  if (window.arena && window.arena.showToast) {
-    window.arena.showToast(
-      "Funcionalidade de exportação será implementada",
-      "info"
+function updateModelPerformanceChart(dashboard, modelStats) {
+  if (!dashboard.elements.modelPerformanceChart) return;
+
+  const labels = modelStats.map((m) => m.model);
+  const winsData = modelStats.map((m) => m.wins);
+
+  const chartData = {
+    labels: labels,
+    datasets: [
+      {
+        label: "Vitórias",
+        data: winsData,
+        backgroundColor: getChartColors(labels.length),
+        borderColor: getChartColors(labels.length, true),
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  if (dashboard.charts.modelChart) {
+    dashboard.charts.modelChart.data = chartData;
+    dashboard.charts.modelChart.update();
+  } else {
+    dashboard.charts.modelChart = createBarChart(
+      dashboard.elements.modelPerformanceChart,
+      chartData,
+      "Ranking de Modelos por Vitórias"
     );
   }
 }
 
-// Auto-refresh functionality (opcional)
-let dashboardAutoRefresh = null;
+function updateMatchupResultsChart(dashboard, matchupStats) {
+  if (!dashboard.elements.matchupResultsChart) return;
 
-function startDashboardAutoRefresh(interval = 60000) {
-  if (dashboardAutoRefresh) {
-    clearInterval(dashboardAutoRefresh);
-  }
+  const labels = matchupStats.map((m) => m.matchup);
+  const p1Wins = matchupStats.map((m) => m.p1_wins);
+  const p2Wins = matchupStats.map((m) => m.p2_wins);
+  const draws = matchupStats.map((m) => m.draws);
 
-  dashboardAutoRefresh = setInterval(async () => {
-    try {
-      await loadDashboardStats(window.arena);
-      console.log("🔄 Dashboard auto-refreshed");
-    } catch (error) {
-      console.error("❌ Dashboard auto-refresh failed:", error);
-    }
-  }, interval);
-}
-
-function stopDashboardAutoRefresh() {
-  if (dashboardAutoRefresh) {
-    clearInterval(dashboardAutoRefresh);
-    dashboardAutoRefresh = null;
-  }
-}
-
-// Exports
-if (typeof module !== "undefined" && module.exports) {
-  module.exports = {
-    initializeDashboardPage,
-    updateDashboardGameInfo,
-    loadDashboardStats,
-    updateRecentGamesTable,
-    viewGameInDashboard,
-    clearDashboardViewer,
-    exportDashboardData,
-    startDashboardAutoRefresh,
-    stopDashboardAutoRefresh,
+  const chartData = {
+    labels: labels,
+    datasets: [
+      {
+        label: matchupStats[0]?.p1, // Assume first matchup is representative
+        data: p1Wins,
+        backgroundColor: "rgba(54, 162, 235, 0.7)",
+      },
+      {
+        label: matchupStats[0]?.p2,
+        data: p2Wins,
+        backgroundColor: "rgba(255, 99, 132, 0.7)",
+      },
+      {
+        label: "Empates",
+        data: draws,
+        backgroundColor: "rgba(201, 203, 207, 0.7)",
+      },
+    ],
   };
+
+  if (dashboard.charts.matchupChart) {
+    // This is a bit tricky since labels change. Let's just destroy and recreate.
+    dashboard.charts.matchupChart.destroy();
+  }
+
+  dashboard.charts.matchupChart = createStackedBarChart(
+    dashboard.elements.matchupResultsChart,
+    chartData,
+    "Resultados por Confronto"
+  );
+}
+
+function updateLeaderboard(dashboard, modelStats) {
+  const { leaderboardTable } = dashboard.elements;
+  if (!leaderboardTable) return;
+
+  leaderboardTable.innerHTML = ""; // Clear existing data
+
+  modelStats.forEach((model, index) => {
+    const winRate =
+      model.total > 0
+        ? (((model.wins + 0.5 * model.draws) / model.total) * 100).toFixed(1)
+        : 0;
+    const row = document.createElement("tr");
+    row.innerHTML = `
+            <td>${index + 1}</td>
+            <td class="model-name-cell">${model.model}</td>
+            <td>${model.total}</td>
+            <td class="wins">${model.wins}</td>
+            <td class="draws">${model.draws}</td>
+            <td class="losses">${model.losses}</td>
+            <td>
+                <div class="win-rate-bar-container">
+                    <div class="win-rate-bar" style="width: ${winRate}%;"></div>
+                    <span>${winRate}%</span>
+                </div>
+            </td>
+        `;
+    leaderboardTable.appendChild(row);
+  });
+}
+
+function updateRecentGames(dashboard, recentGames) {
+  const { recentGamesList } = dashboard.elements;
+  if (!recentGamesList) return;
+
+  recentGamesList.innerHTML = "";
+
+  if (recentGames.length === 0) {
+    recentGamesList.innerHTML = `<li class="empty-state">Nenhuma partida recente encontrada.</li>`;
+    return;
+  }
+
+  recentGames.forEach((game) => {
+    const li = document.createElement("li");
+    li.className = "recent-game-item";
+
+    let resultHtml = `<span class="result-draw">${game.result}</span>`;
+    if (game.result === "1-0") {
+      resultHtml = `<span class="result-win">${game.white}</span> venceu`;
+    } else if (game.result === "0-1") {
+      resultHtml = `<span class="result-win">${game.black}</span> venceu`;
+    }
+
+    li.innerHTML = `
+            <div class="game-matchup">
+                <span class="player">${game.white}</span>
+                <span class="vs">vs</span>
+                <span class="player">${game.black}</span>
+            </div>
+            <div class="game-result">
+                ${resultHtml}
+            </div>
+            <div class="game-date">
+                ${new Date(game.date.replace(/\./g, "-")).toLocaleDateString()}
+            </div>
+        `;
+    recentGamesList.appendChild(li);
+  });
+}
+
+// Utility for chart colors
+function getChartColors(numColors, isBorder = false) {
+  const colors = [
+    "rgba(255, 99, 132, 0.8)",
+    "rgba(54, 162, 235, 0.8)",
+    "rgba(255, 206, 86, 0.8)",
+    "rgba(75, 192, 192, 0.8)",
+    "rgba(153, 102, 255, 0.8)",
+    "rgba(255, 159, 64, 0.8)",
+    "rgba(199, 199, 199, 0.8)",
+    "rgba(83, 102, 255, 0.8)",
+  ];
+  const borders = [
+    "rgba(255, 99, 132, 1)",
+    "rgba(54, 162, 235, 1)",
+    "rgba(255, 206, 86, 1)",
+    "rgba(75, 192, 192, 1)",
+    "rgba(153, 102, 255, 1)",
+    "rgba(255, 159, 64, 1)",
+    "rgba(199, 199, 199, 1)",
+    "rgba(83, 102, 255, 1)",
+  ];
+  const selected = isBorder ? borders : colors;
+  return Array.from(
+    { length: numColors },
+    (_, i) => selected[i % selected.length]
+  );
 }

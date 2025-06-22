@@ -49,6 +49,11 @@ app.use("/settings", settingsRoutes);
 app.use("/games", gamesRoutes);
 app.use("/data", dataRoutes);
 
+// Catch-all route for SPA
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
 // Enhanced Game Manager with Professional Chessboard Support
 class GameManager {
   constructor() {

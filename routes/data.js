@@ -1,92 +1,118 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
+const path = require("path");
+const fs = require("fs").promises;
 
-// Get database statistics
-router.get('/stats', (req, res) => {
-    const stats = {
-        total_games: Math.floor(Math.random() * 500) + 100,
-        unique_models: 6,
-        db_size_mb: Math.random() * 50 + 10
-    };
-    
-    res.json(stats);
-});
+const PGN_DIR = path.join(__dirname, "..");
 
-// Export all data
-router.get('/export', (req, res) => {
-    // Mock export data
-    const exportData = {
-        games: [
-            {
-                id: 1,
-                white: "GPT-4o",
-                black: "Gemini-Pro",
-                result: "1-0",
-                pgn: "[White \"GPT-4o\"] [Black \"Gemini-Pro\"] [Result \"1-0\"] 1. e4 e5 2. Nf3 Nc6 1-0",
-                date: new Date().toISOString()
-            }
-        ],
-        model_stats: [
-            {
-                model_name: "GPT-4o",
-                games_played: 25,
-                wins: 12,
-                draws: 3,
-                losses: 10,
-                current_elo: 1567
-            }
-        ],
-        export_date: new Date().toISOString()
-    };
-    
-    res.json(exportData);
-});
+async function getGameDirectories() {
+  const entries = await fs.readdir(PGN_DIR, { withFileTypes: true });
+  return entries
+    .filter((dirent) => dirent.isDirectory() && dirent.name.includes(" vs "))
+    .map((dirent) => dirent.name);
+}
 
-// Import data
-router.post('/import', (req, res) => {
-    const data = req.body;
-    
-    // Mock import process
-    setTimeout(() => {
-        if (data && data.games) {
-            res.json({
-                success: true,
-                imported_games: data.games.length,
-                message: 'Data imported successfully'
-            });
-        } else {
-            res.json({
-                success: false,
-                error: 'Invalid data format'
-            });
+async function getModelStats() {
+  const modelStats = {};
+  const gameDirs = await getGameDirectories();
+
+  for (const dir of gameDirs) {
+    const pgnFiles = (await fs.readdir(path.join(PGN_DIR, dir))).filter((f) =>
+      f.endsWith(".pgn")
+    );
+
+    for (const file of pgnFiles) {
+      const pgnPath = path.join(PGN_DIR, dir, file);
+      const pgn = await fs.readFile(pgnPath, "utf-8");
+
+      const whiteMatch = pgn.match(/\[White "(.*?)"\]/);
+      const blackMatch = pgn.match(/\[Black "(.*?)"\]/);
+      const resultMatch = pgn.match(/\[Result "(.*?)"\]/);
+
+      if (whiteMatch && blackMatch && resultMatch) {
+        const white = whiteMatch[1];
+        const black = blackMatch[1];
+        const result = resultMatch[1];
+
+        if (!modelStats[white])
+          modelStats[white] = {
+            model: white,
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            total: 0,
+          };
+        if (!modelStats[black])
+          modelStats[black] = {
+            model: black,
+            wins: 0,
+            losses: 0,
+            draws: 0,
+            total: 0,
+          };
+
+        modelStats[white].total++;
+        modelStats[black].total++;
+
+        if (result === "1-0") {
+          modelStats[white].wins++;
+          modelStats[black].losses++;
+        } else if (result === "0-1") {
+          modelStats[black].wins++;
+          modelStats[white].losses++;
+        } else if (result === "1/2-1/2") {
+          modelStats[white].draws++;
+          modelStats[black].draws++;
         }
-    }, 1000);
+      }
+    }
+  }
+  return Object.values(modelStats).sort((a, b) => b.wins - a.wins);
+}
+
+router.get("/dashboard", async (req, res) => {
+  try {
+    const modelStats = await getModelStats();
+    const totalGames = modelStats.reduce((sum, m) => sum + m.total, 0) / 2;
+
+    res.json({
+      totalGames,
+      modelStats,
+      recentGames: [],
+      matchupStats: [],
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch dashboard data" });
+  }
 });
 
-// Clear old games
-router.post('/clear-old', (req, res) => {
-    const { days } = req.body;
-    
-    // Mock clearing old games
-    setTimeout(() => {
-        const deleted = Math.floor(Math.random() * 20) + 5;
-        res.json({
-            success: true,
-            deleted,
-            message: `Deleted ${deleted} games older than ${days} days`
-        });
-    }, 1000);
+router.get("/models", async (req, res) => {
+  try {
+    const modelStats = await getModelStats();
+    res.json(modelStats);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch models" });
+  }
 });
 
-// Reset database
-router.post('/reset', (req, res) => {
-    // Mock database reset
-    setTimeout(() => {
-        res.json({
-            success: true,
-            message: 'Database reset successfully'
-        });
-    }, 2000);
+router.get("/recent-games", async (req, res) => {
+  res.json([]);
+});
+
+router.get("/stats", async (req, res) => {
+  try {
+    const modelStats = await getModelStats();
+    const totalGames = modelStats.reduce((sum, m) => sum + m.total, 0) / 2;
+    res.json({
+      totalGames,
+      totalModels: modelStats.length,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch stats" });
+  }
 });
 
 module.exports = router;

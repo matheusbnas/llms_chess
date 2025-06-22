@@ -1,674 +1,126 @@
-<!-- ♟️ Arena Page - Clean HTML -->
+<!-- Arena de Visualização de Partidas - HTML Clean -->
 <link rel="stylesheet" href="/css/arena.css">
 
 <div class="arena-container">
-  <!-- Arena Header -->
-  <div class="arena-header">
-    <h1 class="arena-title">
-      <i class="fas fa-swords"></i>
-      Arena de Batalhas
-    </h1>
-    <p class="arena-subtitle">
-      Configure e assista batalhas épicas entre modelos de IA
-    </p>
-  </div>
+  <!-- Header da Arena -->
+  <header class="arena-header">
+    <div class="arena-title">
+      <i class="fas fa-chess-board"></i>
+      <h1>Arena de Partidas</h1>
+    </div>
+    <div class="arena-subtitle">
+      Visualize partidas entre modelos de IA com navegação interativa
+    </div>
+  </header>
 
-  <!-- Battle Setup Section -->
-  <section class="battle-setup">
-    <header class="battle-setup-header">
-      <h3 class="battle-setup-title">
-        <i class="fas fa-cogs"></i>
-        Configurar Nova Batalha
-      </h3>
-    </header>
-
-    <div class="battle-form">
-      <!-- Model Selection -->
-      <div class="model-selection">
-        <h4 style="margin-bottom: 16px; color: var(--text-primary);">
-          <i class="fas fa-chess-king"></i>
-          Selecionar Modelos
-        </h4>
+  <!-- Seletor de Partidas -->
+  <section class="game-selector">
+    <div class="selector-card">
+      <div class="selector-header">
+        <h3>Selecionar Partida</h3>
+      </div>
+      
+      <div class="selector-controls">
+        <div class="selector-group">
+          <label for="arena-matchup-select">Confronto</label>
+          <select id="arena-matchup-select" class="selector-input">
+            <option value="">Carregando confrontos...</option>
+          </select>
+        </div>
         
-        <!-- White Model -->
-        <div class="model-selector" data-color="white" data-model="GPT-4o">
-          <div class="model-header">
-            <div class="model-icon" style="background: var(--lichess-blue);">
-              <i class="fas fa-crown"></i>
-            </div>
-            <div class="model-name">GPT-4o</div>
-            <div class="model-rating">1850</div>
-          </div>
-          <div class="model-description">
-            Modelo mais avançado da OpenAI com excelente raciocínio estratégico
-          </div>
-          <div class="model-stats">
-            <div class="model-stat">
-              <span class="stat-value">68%</span>
-              <span class="stat-label">Taxa de Vitória</span>
-            </div>
-            <div class="model-stat">
-              <span class="stat-value">142</span>
-              <span class="stat-label">Partidas</span>
-            </div>
-            <div class="model-stat">
-              <span class="stat-value">87%</span>
-              <span class="stat-label">Precisão</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Black Model -->
-        <div class="model-selector" data-color="black" data-model="Gemini-Pro">
-          <div class="model-header">
-            <div class="model-icon" style="background: var(--lichess-green);">
-              <i class="fas fa-gem"></i>
-            </div>
-            <div class="model-name">Gemini-Pro</div>
-            <div class="model-rating">1798</div>
-          </div>
-          <div class="model-description">
-            Modelo da Google conhecido por jogadas criativas e inovadoras
-          </div>
-          <div class="model-stats">
-            <div class="model-stat">
-              <span class="stat-value">61%</span>
-              <span class="stat-label">Taxa de Vitória</span>
-            </div>
-            <div class="model-stat">
-              <span class="stat-value">128</span>
-              <span class="stat-label">Partidas</span>
-            </div>
-            <div class="model-stat">
-              <span class="stat-value">84%</span>
-              <span class="stat-label">Precisão</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Additional Models (Hidden by default) -->
-        <div class="more-models" style="display: none;">
-          <div class="model-selector" data-model="Claude-3.5-Sonnet">
-            <div class="model-header">
-              <div class="model-icon" style="background: var(--lichess-brown);">
-                <i class="fas fa-brain"></i>
-              </div>
-              <div class="model-name">Claude-3.5-Sonnet</div>
-              <div class="model-rating">1847</div>
-            </div>
-            <div class="model-description">
-              Modelo da Anthropic com foco em precisão e análise profunda
-            </div>
-          </div>
-
-          <div class="model-selector" data-model="GPT-4-Turbo">
-            <div class="model-header">
-              <div class="model-icon" style="background: var(--lichess-orange);">
-                <i class="fas fa-rocket"></i>
-              </div>
-              <div class="model-name">GPT-4-Turbo</div>
-              <div class="model-rating">1756</div>
-            </div>
-            <div class="model-description">
-              Versão otimizada do GPT-4 com respostas mais rápidas
-            </div>
-          </div>
-        </div>
-
-        <button class="show-more-btn" onclick="toggleMoreModels()">
-          <i class="fas fa-chevron-down"></i>
-          Mostrar Mais Modelos
-        </button>
-      </div>
-
-      <!-- Battle Options -->
-      <div class="battle-options">
-        <h4 style="margin-bottom: 16px; color: var(--text-primary);">
-          <i class="fas fa-sliders-h"></i>
-          Opções da Batalha
-        </h4>
-
-        <div class="option-group">
-          <label class="option-label">Número de Partidas</label>
-          <div class="option-range">
-            <input type="range" id="num-games" class="range-input" min="1" max="10" value="3">
-            <span id="num-games-value" class="range-value">3</span>
-          </div>
-        </div>
-
-        <div class="option-group">
-          <label class="option-label">Abertura</label>
-          <select id="opening-select" class="option-select">
-            <option value="random">Abertura Aleatória</option>
-            <option value="e4">1. e4 (Abertura do Rei)</option>
-            <option value="d4">1. d4 (Abertura da Dama)</option>
-            <option value="Nf3">1. Nf3 (Abertura Réti)</option>
-            <option value="c4">1. c4 (Abertura Inglesa)</option>
-            <option value="g3">1. g3 (Abertura Benko)</option>
+        <div class="selector-group">
+          <label for="arena-game-select">Partida</label>
+          <select id="arena-game-select" class="selector-input" disabled>
+            <option value="">Selecione um confronto</option>
           </select>
         </div>
-
-        <div class="option-group">
-          <label class="option-label">Controle de Tempo</label>
-          <select id="time-control" class="option-select">
-            <option value="unlimited">Sem Limite</option>
-            <option value="bullet">Bullet (1+0)</option>
-            <option value="blitz">Blitz (5+3)</option>
-            <option value="rapid">Rapid (15+10)</option>
-            <option value="classical">Classical (30+0)</option>
-          </select>
-        </div>
-
-        <div class="option-group">
-          <label class="option-label">Dificuldade</label>
-          <div class="option-range">
-            <input type="range" id="difficulty" class="range-input" min="1" max="5" value="3">
-            <span id="difficulty-value" class="range-value">Médio</span>
-          </div>
-        </div>
-
-        <button class="battle-start-btn" id="start-battle-btn" onclick="startBattle()">
-          <i class="fas fa-play"></i>
-          Iniciar Batalha
+        
+        <button id="arena-load-game-btn" class="load-game-btn" disabled>
+          <i class="fas fa-eye"></i>
+          Visualizar Partida
         </button>
       </div>
     </div>
   </section>
 
-  <!-- Live Battle Section -->
-  <section class="live-battle" id="live-battle">
-    <div class="live-battle-header">
-      <div class="battle-info">
-        <h3 class="battle-title" id="battle-title">Batalha em Andamento</h3>
-        <div class="battle-status" id="battle-status">Ativo</div>
-      </div>
-      <div class="battle-progress">
-        <div class="battle-progress-bar" id="battle-progress-bar" style="width: 0%"></div>
-      </div>
+  <!-- Área Principal da Arena (inicialmente oculta) -->
+  <main class="arena-main" id="arena-main-content" style="display: none;">
+
+    <div class="game-info-bar">
+        <div class="player-info">
+          <i class="fas fa-robot player-icon"></i>
+          <span id="white-player-name">Brancas</span>
+        </div>
+        <div class="game-result" id="game-result-display">*</div>
+        <div class="player-info">
+          <i class="fas fa-robot player-icon"></i>
+          <span id="black-player-name">Pretas</span>
+        </div>
     </div>
 
-    <div class="live-game-layout">
-      <!-- Left Sidebar - White Player -->
-      <div class="battle-sidebar">
-        <div class="player-card" id="white-player-card">
-          <div class="player-header">
-            <div class="player-avatar-large" style="background: var(--lichess-blue);">
-              <i class="fas fa-crown"></i>
-            </div>
-            <div class="player-info">
-              <div class="player-name-large" id="white-player-name">GPT-4o</div>
-              <div class="player-rating-large">Brancas • 1850 ELO</div>
-            </div>
+    <!-- Layout Principal: Tabuleiro + Histórico -->
+    <div class="arena-layout">
+      
+      <!-- Área do Tabuleiro -->
+      <div class="board-area">
+        <div class="chessboard-container">
+          <div id="arena-chessboard" class="chessboard"></div>
+        </div>
+        
+        <div class="navigation-controls">
+          <button id="arena-pgn-start" class="nav-btn" title="Primeiro lance"><i class="fas fa-fast-backward"></i></button>
+          <button id="arena-pgn-back" class="nav-btn" title="Lance anterior"><i class="fas fa-step-backward"></i></button>
+          <button id="arena-pgn-play" class="nav-btn play-btn" title="Auto-play"><i class="fas fa-play"></i></button>
+          <button id="arena-pgn-next" class="nav-btn" title="Próximo lance"><i class="fas fa-step-forward"></i></button>
+          <button id="arena-pgn-end" class="nav-btn" title="Último lance"><i class="fas fa-fast-forward"></i></button>
+          <div class="nav-spacer"></div>
+          <button id="arena-pgn-flip" class="nav-btn" title="Virar tabuleiro"><i class="fas fa-sync-alt"></i></button>
+        </div>
+        
+        <div class="position-slider-container">
+          <span class="slider-label-ext">Início</span>
+          <input type="range" id="arena-position-slider" min="0" max="0" value="0" class="slider">
+          <span class="slider-label-ext">Fim</span>
+        </div>
+         <div id="current-position-display" class="slider-label">Lance 0 / 0</div>
+      </div>
+      
+      <!-- Painel Lateral: Histórico de Lances -->
+      <div class="side-panel">
+        <div class="panel-section">
+          <div class="panel-header">
+            <h4><i class="fas fa-history"></i> Histórico</h4>
           </div>
-          <div class="player-stats-grid">
-            <div class="player-stat-item">
-              <div style="font-weight: 600; color: var(--lichess-green);">2</div>
-              <div style="font-size: 11px; color: var(--text-secondary);">Vitórias</div>
-            </div>
-            <div class="player-stat-item">
-              <div style="font-weight: 600; color: var(--text-primary);">00:05:30</div>
-              <div style="font-size: 11px; color: var(--text-secondary);">Tempo</div>
+          <div class="moves-list" id="arena-moves-list">
+             <div class="empty-state">
+              <i class="fas fa-chess-pawn"></i>
+              <p>Carregue uma partida.</p>
             </div>
           </div>
         </div>
-
-        <div class="move-info">
-          <div class="current-move" id="current-move">Aguardando...</div>
-          <div class="move-time" id="move-time">Preparando partida</div>
+        
+        <div class="panel-section">
+          <div class="panel-header">
+            <h4><i class="fas fa-info-circle"></i> Detalhes</h4>
+          </div>
+          <div class="game-details" id="game-details-list">
+             <!-- Detalhes serão populados via JS -->
+          </div>
         </div>
       </div>
 
-      <!-- Center - Battle Board -->
-      <div class="battle-board-area">
-        <div id="arena-pgn-viewer-board" class="chessboard-container">
-          <!-- Tabuleiro será renderizado aqui -->
-        </div>
-
-        <div class="battle-controls">
-          <button class="battle-control-btn" onclick="pauseBattle()" title="Pausar batalha">
-            <i class="fas fa-pause"></i>
-            Pausar
-          </button>
-          <button class="battle-control-btn" onclick="resumeBattle()" title="Retomar batalha">
-            <i class="fas fa-play"></i>
-            Retomar
-          </button>
-          <button class="battle-control-btn stop" onclick="stopBattle()" title="Parar batalha">
-            <i class="fas fa-stop"></i>
-            Parar
-          </button>
-        </div>
-      </div>
-
-      <!-- Right Sidebar - Black Player -->
-      <div class="battle-sidebar">
-        <div class="player-card" id="black-player-card">
-          <div class="player-header">
-            <div class="player-avatar-large" style="background: var(--lichess-green);">
-              <i class="fas fa-gem"></i>
-            </div>
-            <div class="player-info">
-              <div class="player-name-large" id="black-player-name">Gemini-Pro</div>
-              <div class="player-rating-large">Pretas • 1798 ELO</div>
-            </div>
-          </div>
-          <div class="player-stats-grid">
-            <div class="player-stat-item">
-              <div style="font-weight: 600; color: var(--lichess-green);">1</div>
-              <div style="font-size: 11px; color: var(--text-secondary);">Vitórias</div>
-            </div>
-            <div class="player-stat-item">
-              <div style="font-weight: 600; color: var(--text-primary);">00:04:45</div>
-              <div style="font-size: 11px; color: var(--text-secondary);">Tempo</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Move History -->
-        <div class="info-card">
-          <div class="info-card-header">
-            <div class="info-card-title">
-              <i class="fas fa-history"></i>
-              Lances
-            </div>
-          </div>
-          <div class="info-card-body">
-            <div id="arena-pgn-viewer-moves" class="move-history">
-              <div class="empty-state">
-                Aguardando início da partida...
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
-
-    <!-- PGN Controls -->
-    <div class="pgn-controls">
-      <button id="arena-pgn-start" class="pgn-control-btn" title="Primeiro lance">
-        <i class="fas fa-fast-backward"></i>
-      </button>
-      <button id="arena-pgn-back" class="pgn-control-btn" title="Lance anterior">
-        <i class="fas fa-step-backward"></i>
-      </button>
-      <button id="arena-pgn-next" class="pgn-control-btn" title="Próximo lance">
-        <i class="fas fa-step-forward"></i>
-      </button>
-      <button id="arena-pgn-end" class="pgn-control-btn" title="Último lance">
-        <i class="fas fa-fast-forward"></i>
-      </button>
-      <button id="arena-pgn-flip" class="pgn-control-btn" title="Virar tabuleiro">
-        <i class="fas fa-retweet"></i>
-      </button>
+  </main>
+  
+  <!-- Estado de Carregamento -->
+  <div class="loading-overlay" id="arena-loading-overlay" style="display: none;">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <p>Carregando partida...</p>
     </div>
-  </section>
-
-  <!-- Battle History Section -->
-  <section class="battle-history">
-    <div class="battle-history-header">
-      <h3 class="history-title">
-        <i class="fas fa-trophy"></i>
-        Histórico de Batalhas
-      </h3>
-      <div class="battle-filters">
-        <button class="filter-btn active" data-filter="all">Todas</button>
-        <button class="filter-btn" data-filter="today">Hoje</button>
-        <button class="filter-btn" data-filter="week">Esta Semana</button>
-        <button class="filter-btn" data-filter="completed">Finalizadas</button>
-      </div>
-    </div>
-
-    <div class="battle-list" id="battle-list">
-      <!-- Será preenchido dinamicamente -->
-    </div>
-  </section>
+  </div>
 </div>
 
-<script>
-// Arena specific functionality
-let currentBattle = null;
-let battleInterval = null;
-
-document.addEventListener('DOMContentLoaded', function() {
-  initializeArena();
-  loadBattleHistory();
-});
-
-function initializeArena() {
-  // Configurar eventos dos range inputs
-  const numGamesRange = document.getElementById('num-games');
-  const difficultyRange = document.getElementById('difficulty');
-  
-  numGamesRange.addEventListener('input', function() {
-    document.getElementById('num-games-value').textContent = this.value;
-  });
-  
-  difficultyRange.addEventListener('input', function() {
-    const levels = ['Muito Fácil', 'Fácil', 'Médio', 'Difícil', 'Mestre'];
-    document.getElementById('difficulty-value').textContent = levels[this.value - 1];
-  });
-  
-  // Configurar seleção de modelos
-  setupModelSelection();
-}
-
-function setupModelSelection() {
-  const modelSelectors = document.querySelectorAll('.model-selector');
-  
-  modelSelectors.forEach(selector => {
-    selector.addEventListener('click', function() {
-      // Remover seleção anterior do mesmo grupo
-      const color = this.dataset.color;
-      if (color) {
-        document.querySelectorAll(`[data-color="${color}"]`).forEach(s => s.classList.remove('selected'));
-      }
-      
-      // Adicionar seleção atual
-      this.classList.add('selected');
-      
-      // Atualizar informações da batalha
-      updateBattlePreview();
-    });
-  });
-}
-
-function toggleMoreModels() {
-  const moreModels = document.querySelector('.more-models');
-  const btn = document.querySelector('.show-more-btn');
-  
-  if (moreModels.style.display === 'none') {
-    moreModels.style.display = 'block';
-    btn.innerHTML = '<i class="fas fa-chevron-up"></i> Mostrar Menos Modelos';
-  } else {
-    moreModels.style.display = 'none';
-    btn.innerHTML = '<i class="fas fa-chevron-down"></i> Mostrar Mais Modelos';
-  }
-}
-
-function updateBattlePreview() {
-  const whiteModel = document.querySelector('[data-color="white"].selected');
-  const blackModel = document.querySelector('[data-color="black"].selected');
-  
-  if (whiteModel && blackModel) {
-    const startBtn = document.getElementById('start-battle-btn');
-    startBtn.disabled = false;
-    startBtn.innerHTML = `<i class="fas fa-play"></i> Iniciar: ${whiteModel.dataset.model} vs ${blackModel.dataset.model}`;
-  }
-}
-
-function startBattle() {
-  const whiteModel = document.querySelector('[data-color="white"].selected');
-  const blackModel = document.querySelector('[data-color="black"].selected');
-  
-  if (!whiteModel || !blackModel) {
-    showToast('Selecione ambos os modelos para iniciar a batalha', 'warning');
-    return;
-  }
-  
-  const battleConfig = {
-    whiteModel: whiteModel.dataset.model,
-    blackModel: blackModel.dataset.model,
-    numGames: parseInt(document.getElementById('num-games').value),
-    opening: document.getElementById('opening-select').value,
-    timeControl: document.getElementById('time-control').value,
-    difficulty: parseInt(document.getElementById('difficulty').value)
-  };
-  
-  // Mostrar seção de batalha ao vivo
-  const liveBattle = document.getElementById('live-battle');
-  liveBattle.classList.add('active');
-  liveBattle.scrollIntoView({ behavior: 'smooth' });
-  
-  // Atualizar informações da batalha
-  document.getElementById('battle-title').textContent = `${battleConfig.whiteModel} vs ${battleConfig.blackModel}`;
-  document.getElementById('white-player-name').textContent = battleConfig.whiteModel;
-  document.getElementById('black-player-name').textContent = battleConfig.blackModel;
-  
-  // Simular batalha
-  simulateBattle(battleConfig);
-  
-  showToast('Batalha iniciada!', 'success');
-}
-
-function simulateBattle(config) {
-  currentBattle = {
-    ...config,
-    currentGame: 1,
-    whiteWins: 0,
-    blackWins: 0,
-    draws: 0,
-    moves: []
-  };
-  
-  // Simular progresso da batalha
-  let progress = 0;
-  battleInterval = setInterval(() => {
-    progress += Math.random() * 10;
-    
-    if (progress >= 100) {
-      progress = 100;
-      clearInterval(battleInterval);
-      completeBattle();
-    }
-    
-    updateBattleProgress(progress);
-    simulateMove();
-  }, 2000);
-}
-
-function updateBattleProgress(progress) {
-  const progressBar = document.getElementById('battle-progress-bar');
-  progressBar.style.width = `${progress}%`;
-  
-  // Atualizar estatísticas dos jogadores
-  updatePlayerStats();
-}
-
-function updatePlayerStats() {
-  if (!currentBattle) return;
-  
-  // Simular tempo decorrente
-  const whiteTime = formatTime(Math.random() * 300 + 200);
-  const blackTime = formatTime(Math.random() * 300 + 180);
-  
-  document.querySelector('#white-player-card .player-stat-item:last-child div:first-child').textContent = whiteTime;
-  document.querySelector('#black-player-card .player-stat-item:last-child div:first-child').textContent = blackTime;
-}
-
-function simulateMove() {
-  const moves = ['e4', 'e5', 'Nf3', 'Nc6', 'Bb5', 'a6', 'Ba4', 'Nf6', 'O-O', 'Be7'];
-  const randomMove = moves[Math.floor(Math.random() * moves.length)];
-  
-  document.getElementById('current-move').textContent = randomMove;
-  document.getElementById('move-time').textContent = `Pensando... ${Math.floor(Math.random() * 5) + 1}s`;
-  
-  // Adicionar ao histórico
-  const moveHistory = document.getElementById('arena-pgn-viewer-moves');
-  if (currentBattle.moves.length === 0) {
-    moveHistory.innerHTML = '';
-  }
-  
-  currentBattle.moves.push(randomMove);
-  updateMoveHistory();
-}
-
-function updateMoveHistory() {
-  const moveHistory = document.getElementById('arena-pgn-viewer-moves');
-  let html = '';
-  
-  for (let i = 0; i < currentBattle.moves.length; i += 2) {
-    const moveNumber = Math.floor(i / 2) + 1;
-    const whiteMove = currentBattle.moves[i] || '';
-    const blackMove = currentBattle.moves[i + 1] || '';
-    
-    html += `
-      <div class="move-entry">
-        <span class="move-number">${moveNumber}.</span>
-        <span class="move-san">${whiteMove}</span>
-        ${blackMove ? `<span class="move-san">${blackMove}</span>` : ''}
-      </div>
-    `;
-  }
-  
-  moveHistory.innerHTML = html;
-  moveHistory.scrollTop = moveHistory.scrollHeight;
-}
-
-function completeBattle() {
-  document.getElementById('battle-status').textContent = 'Finalizada';
-  document.getElementById('current-move').textContent = 'Batalha Finalizada';
-  document.getElementById('move-time').textContent = `${currentBattle.whiteModel} venceu 2-1`;
-  
-  showToast('Batalha finalizada!', 'success');
-  
-  // Adicionar ao histórico
-  addToBattleHistory(currentBattle);
-}
-
-function pauseBattle() {
-  if (battleInterval) {
-    clearInterval(battleInterval);
-    battleInterval = null;
-    document.getElementById('battle-status').textContent = 'Pausada';
-    showToast('Batalha pausada', 'info');
-  }
-}
-
-function resumeBattle() {
-  if (!battleInterval && currentBattle) {
-    simulateBattle(currentBattle);
-    document.getElementById('battle-status').textContent = 'Ativo';
-    showToast('Batalha retomada', 'info');
-  }
-}
-
-function stopBattle() {
-  if (battleInterval) {
-    clearInterval(battleInterval);
-    battleInterval = null;
-  }
-  
-  document.getElementById('live-battle').classList.remove('active');
-  currentBattle = null;
-  showToast('Batalha interrompida', 'warning');
-}
-
-function loadBattleHistory() {
-  const battleList = document.getElementById('battle-list');
-  
-  // Simular carregamento
-  battleList.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div><div class="loading-text">Carregando histórico...</div></div>';
-  
-  setTimeout(() => {
-    const sampleBattles = generateSampleBattles(5);
-    displayBattleHistory(sampleBattles);
-  }, 1000);
-}
-
-function generateSampleBattles(count) {
-  const models = ['GPT-4o', 'Gemini-Pro', 'Claude-3.5-Sonnet', 'GPT-4-Turbo', 'Deepseek-R1'];
-  const battles = [];
-  
-  for (let i = 0; i < count; i++) {
-    const white = models[Math.floor(Math.random() * models.length)];
-    let black = models[Math.floor(Math.random() * models.length)];
-    while (black === white) {
-      black = models[Math.floor(Math.random() * models.length)];
-    }
-    
-    const whiteWins = Math.floor(Math.random() * 3);
-    const blackWins = Math.floor(Math.random() * 3);
-    const draws = Math.max(0, 3 - whiteWins - blackWins);
-    
-    battles.push({
-      id: `battle_${Date.now()}_${i}`,
-      white,
-      black,
-      result: `${whiteWins}-${draws}-${blackWins}`,
-      games: whiteWins + blackWins + draws,
-      duration: `${Math.floor(Math.random() * 30) + 10}min`,
-      date: formatRelativeDate(new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000))
-    });
-  }
-  
-  return battles;
-}
-
-function displayBattleHistory(battles) {
-  const battleList = document.getElementById('battle-list');
-  
-  if (battles.length === 0) {
-    battleList.innerHTML = '<div class="empty-state"><div class="empty-icon">⚔️</div>Nenhuma batalha encontrada</div>';
-    return;
-  }
-  
-  battleList.innerHTML = battles.map(battle => `
-    <div class="battle-item">
-      <div class="battle-item-header">
-        <div class="battle-matchup">${battle.white} vs ${battle.black}</div>
-        <div class="battle-result">${battle.result}</div>
-      </div>
-      <div class="battle-meta">
-        <span><i class="fas fa-chess"></i> ${battle.games} partidas</span>
-        <span><i class="fas fa-clock"></i> ${battle.duration}</span>
-        <span><i class="fas fa-calendar"></i> ${battle.date}</span>
-      </div>
-    </div>
-  `).join('');
-}
-
-function addToBattleHistory(battle) {
-  // Adicionar batalha ao histórico
-  console.log('Batalha adicionada ao histórico:', battle);
-}
-
-function formatTime(seconds) {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
-function formatRelativeDate(date) {
-  const now = new Date();
-  const diffTime = Math.abs(now - date);
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-  const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
-  
-  if (diffHours < 24) {
-    return 'Hoje';
-  } else if (diffDays === 1) {
-    return 'Ontem';
-  } else {
-    return `Há ${diffDays} dias`;
-  }
-}
-
-function showToast(message, type = 'info') {
-  if (window.arena && window.arena.showToast) {
-    window.arena.showToast(message, type);
-  } else {
-    console.log(`${type.toUpperCase()}: ${message}`);
-  }
-}
-
-// Configurar filtros
-document.addEventListener('DOMContentLoaded', function() {
-  const filterBtns = document.querySelectorAll('.filter-btn');
-  
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
-      filterBtns.forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-      
-      const filter = this.dataset.filter;
-      filterBattleHistory(filter);
-    });
-  });
-});
-
-function filterBattleHistory(filter) {
-  // Implementar filtro do histórico
-  console.log('Filtrando por:', filter);
-  loadBattleHistory(); // Recarregar com filtro
-}
-</script>
+<!-- Scripts -->
+<script src="/js/pgn_viewer.js"></script>
+<script src="/js/arena.js"></script>
