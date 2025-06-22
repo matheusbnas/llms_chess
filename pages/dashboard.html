@@ -1,123 +1,365 @@
-<!-- ♟️ Dashboard Page -->
-<div id="dashboard-page" class="page active">
-    <div class="text-center mb-32">
-        <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">
-            <i class="fas fa-chart-bar" style="color: var(--lichess-brown-light);"></i>
-            Dashboard Executivo
-        </h1>
-        <p style="color: var(--text-secondary); font-size: 16px;">
-            Visão geral das estatísticas e performance dos modelos LLM
-        </p>
+<!-- ♟️ Dashboard Page - Clean HTML -->
+<link rel="stylesheet" href="/css/dashboard.css">
+
+<div class="dashboard-container">
+  <!-- Dashboard Header -->
+  <div class="dashboard-header">
+    <h1 class="dashboard-title">
+      <i class="fas fa-chart-bar"></i>
+      Dashboard Executivo
+    </h1>
+    <p class="dashboard-subtitle">
+      Visão geral das estatísticas e performance dos modelos LLM
+    </p>
+  </div>
+
+  <!-- Key Metrics Grid -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon" style="background: var(--lichess-blue);">
+        <i class="fas fa-chess"></i>
+      </div>
+      <div class="metric-content">
+        <div id="total-games" class="metric-value">248</div>
+        <div class="metric-label">Total de Partidas</div>
+      </div>
     </div>
 
-    <!-- Key Metrics Grid -->
-    <div class="metrics-grid">
-        <div class="metric-card">
-            <div class="metric-icon" style="background: var(--lichess-blue);">
-                <i class="fas fa-chess"></i>
-            </div>
-            <div class="metric-content">
-                <div id="total-games" class="metric-value">248</div>
-                <div class="metric-label">Total de Partidas</div>
-            </div>
-        </div>
-
-        <div class="metric-card">
-            <div class="metric-icon" style="background: var(--lichess-green);">
-                <i class="fas fa-robot"></i>
-            </div>
-            <div class="metric-content">
-                <div id="active-models" class="metric-value">8</div>
-                <div class="metric-label">Modelos Ativos</div>
-            </div>
-        </div>
-
-        <div class="metric-card">
-            <div class="metric-icon" style="background: var(--lichess-orange);">
-                <i class="fas fa-chart-line"></i>
-            </div>
-            <div class="metric-content">
-                <div id="avg-moves" class="metric-value">42</div>
-                <div class="metric-label">Lances por Partida</div>
-            </div>
-        </div>
-
-        <div class="metric-card">
-            <div class="metric-icon" style="background: var(--lichess-purple);">
-                <i class="fas fa-trophy"></i>
-            </div>
-            <div class="metric-content">
-                <div id="tournaments" class="metric-value">12</div>
-                <div class="metric-label">Torneios Completos</div>
-            </div>
-        </div>
+    <div class="metric-card">
+      <div class="metric-icon" style="background: var(--lichess-green);">
+        <i class="fas fa-robot"></i>
+      </div>
+      <div class="metric-content">
+        <div id="active-models" class="metric-value">8</div>
+        <div class="metric-label">Modelos Ativos</div>
+      </div>
     </div>
 
-    <!-- Game Viewer Section -->
-    <div class="card mb-32">
-        <div class="card-header">
-            <h3>Analisador de Partidas</h3>
-            <div class="card-toolbar">
-                <select id="matchup-selector" class="form-select">
-                    <option>Selecione um confronto</option>
-                </select>
-                <select id="game-selector" class="form-select">
-                    <option>Selecione uma partida</option>
-                </select>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="pgn-viewer-layout">
-                <div id="pgn-viewer-board" class="chessboard-container">
-                    <!-- O tabuleiro de xadrez será renderizado aqui -->
-                </div>
-                <div id="pgn-viewer-moves" class="moves-container">
-                    <!-- A lista de movimentos será renderizada aqui -->
-                </div>
-            </div>
-        </div>
-        <div class="card-footer pgn-controls">
-            <button id="pgn-start" class="btn btn-icon">
-                <i class="fas fa-fast-backward"></i>
-            </button>
-            <button id="pgn-back" class="btn btn-icon">
-                <i class="fas fa-step-backward"></i>
-            </button>
-            <button id="pgn-next" class="btn btn-icon">
-                <i class="fas fa-step-forward"></i>
-            </button>
-            <button id="pgn-end" class="btn btn-icon">
-                <i class="fas fa-fast-forward"></i>
-            </button>
-            <button id="pgn-flip" class="btn btn-icon">
-                <i class="fas fa-retweet"></i>
-            </button>
-        </div>
+    <div class="metric-card">
+      <div class="metric-icon" style="background: var(--lichess-orange);">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <div class="metric-content">
+        <div id="avg-moves" class="metric-value">42</div>
+        <div class="metric-label">Lances por Partida</div>
+      </div>
     </div>
 
-    <!-- Histórico de Partidas Recentes -->
-    <div class="card">
-        <div class="card-header">
-            <h3>Histórico de Partidas Recentes</h3>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table" id="recent-games-table">
-                    <thead>
-                        <tr>
-                            <th>Jogadores</th>
-                            <th>Resultado</th>
-                            <th>Lances</th>
-                            <th>Duração</th>
-                            <th>Data</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- As linhas de jogos serão inseridas aqui dinamicamente -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
+    <div class="metric-card">
+      <div class="metric-icon" style="background: var(--lichess-purple);">
+        <i class="fas fa-trophy"></i>
+      </div>
+      <div class="metric-content">
+        <div id="tournaments" class="metric-value">12</div>
+        <div class="metric-label">Torneios Completos</div>
+      </div>
     </div>
+  </div>
+
+  <!-- Game Viewer Section -->
+  <section class="game-viewer-section">
+    <header class="section-header">
+      <h3 class="section-title">
+        <i class="fas fa-chess-board"></i>
+        Analisador de Partidas
+      </h3>
+      <div class="section-toolbar">
+        <select id="matchup-selector" class="form-select-modern">
+          <option value="">Selecione um confronto</option>
+        </select>
+        <select id="game-selector" class="form-select-modern">
+          <option value="">Selecione uma partida</option>
+        </select>
+      </div>
+    </header>
+    
+    <div class="pgn-viewer-layout">
+      <div class="chessboard-area">
+        <div id="pgn-viewer-board" class="chessboard-container">
+          <!-- O tabuleiro de xadrez será renderizado aqui -->
+        </div>
+        
+        <!-- Board Controls -->
+        <div class="board-controls">
+          <button id="pgn-start" class="pgn-control-btn" title="Primeiro lance">
+            <i class="fas fa-fast-backward"></i>
+          </button>
+          <button id="pgn-back" class="pgn-control-btn" title="Lance anterior">
+            <i class="fas fa-step-backward"></i>
+          </button>
+          <button id="pgn-next" class="pgn-control-btn" title="Próximo lance">
+            <i class="fas fa-step-forward"></i>
+          </button>
+          <button id="pgn-end" class="pgn-control-btn" title="Último lance">
+            <i class="fas fa-fast-forward"></i>
+          </button>
+          <button id="pgn-flip" class="pgn-control-btn" title="Virar tabuleiro">
+            <i class="fas fa-retweet"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="moves-area">
+        <div class="moves-header">
+          <i class="fas fa-history"></i>
+          Histórico de Lances
+        </div>
+        <div id="pgn-viewer-moves" class="moves-list">
+          <div class="empty-state">
+            <div class="empty-icon">♟️</div>
+            Carregue uma partida para ver o histórico
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recent Games Section -->
+  <section class="recent-games-section">
+    <header class="section-header">
+      <h3 class="section-title">
+        <i class="fas fa-clock"></i>
+        Histórico de Partidas Recentes
+      </h3>
+    </header>
+    
+    <div class="table-container">
+      <table class="modern-table" id="recent-games-table">
+        <thead>
+          <tr>
+            <th>Jogador Branco</th>
+            <th>Jogador Preto</th>
+            <th>Resultado</th>
+            <th>Lances</th>
+            <th>Duração</th>
+            <th>Data</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Será preenchido dinamicamente -->
+        </tbody>
+      </table>
+    </div>
+  </section>
 </div>
+
+<script>
+// Dashboard specific functionality
+document.addEventListener('DOMContentLoaded', function() {
+  // Inicializar dashboard quando a página carregar
+  if (typeof initializeDashboard === 'function') {
+    initializeDashboard();
+  }
+  
+  // Atualizar métricas
+  updateDashboardMetrics();
+  
+  // Carregar jogos recentes
+  loadRecentGames();
+});
+
+function updateDashboardMetrics() {
+  // Simular carregamento de métricas
+  const metrics = {
+    'total-games': Math.floor(Math.random() * 300) + 150,
+    'active-models': Math.floor(Math.random() * 5) + 6,
+    'avg-moves': Math.floor(Math.random() * 20) + 35,
+    'tournaments': Math.floor(Math.random() * 10) + 8
+  };
+  
+  Object.entries(metrics).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) {
+      // Animação de contagem
+      animateCounter(element, 0, value, 1000);
+    }
+  });
+}
+
+function animateCounter(element, start, end, duration) {
+  const startTime = performance.now();
+  const difference = end - start;
+  
+  function updateCounter(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    
+    const currentValue = Math.floor(start + (difference * progress));
+    element.textContent = currentValue;
+    
+    if (progress < 1) {
+      requestAnimationFrame(updateCounter);
+    }
+  }
+  
+  requestAnimationFrame(updateCounter);
+}
+
+function loadRecentGames() {
+  const tableBody = document.querySelector('#recent-games-table tbody');
+  if (!tableBody) return;
+  
+  // Limpar conteúdo existente
+  tableBody.innerHTML = '<tr><td colspan="7" class="loading-state"><div class="loading-spinner"></div><div class="loading-text">Carregando partidas...</div></td></tr>';
+  
+  // Simular carregamento
+  setTimeout(() => {
+    const sampleGames = generateSampleGames(10);
+    displayGames(sampleGames);
+  }, 1500);
+}
+
+function generateSampleGames(count) {
+  const models = ['GPT-4o', 'Gemini-Pro', 'Claude-3.5-Sonnet', 'GPT-4-Turbo', 'Deepseek-R1'];
+  const results = ['1-0', '0-1', '1/2-1/2'];
+  const games = [];
+  
+  for (let i = 0; i < count; i++) {
+    const whiteModel = models[Math.floor(Math.random() * models.length)];
+    let blackModel = models[Math.floor(Math.random() * models.length)];
+    while (blackModel === whiteModel) {
+      blackModel = models[Math.floor(Math.random() * models.length)];
+    }
+    
+    games.push({
+      id: `game_${Date.now()}_${i}`,
+      white: whiteModel,
+      black: blackModel,
+      result: results[Math.floor(Math.random() * results.length)],
+      moves: Math.floor(Math.random() * 40) + 20,
+      duration: `${Math.floor(Math.random() * 30) + 5}m ${Math.floor(Math.random() * 60)}s`,
+      date: formatRelativeDate(new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000))
+    });
+  }
+  
+  return games;
+}
+
+function displayGames(games) {
+  const tableBody = document.querySelector('#recent-games-table tbody');
+  if (!tableBody) return;
+  
+  if (games.length === 0) {
+    tableBody.innerHTML = '<tr><td colspan="7" class="empty-state"><div class="empty-icon">🏁</div>Nenhuma partida encontrada</td></tr>';
+    return;
+  }
+  
+  tableBody.innerHTML = games.map(game => createGameRow(game)).join('');
+}
+
+function createGameRow(game) {
+  const getModelColor = (modelName) => {
+    const colors = {
+      'GPT-4o': 'var(--lichess-blue)',
+      'Gemini-Pro': 'var(--lichess-green)', 
+      'Claude-3.5-Sonnet': 'var(--lichess-brown)',
+      'GPT-4-Turbo': 'var(--lichess-orange)',
+      'Deepseek-R1': 'var(--lichess-purple)'
+    };
+    return colors[modelName] || 'var(--bg-tertiary)';
+  };
+  
+  const getResultClass = (result) => {
+    if (result === '1-0') return 'status-white-win';
+    if (result === '0-1') return 'status-black-win';
+    return 'status-draw';
+  };
+  
+  return `
+    <tr>
+      <td>
+        <div class="player-display">
+          <div class="player-avatar" style="background: ${getModelColor(game.white)};">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div>
+            <div class="player-name">${game.white}</div>
+            <div class="player-model">IA Model</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="player-display">
+          <div class="player-avatar" style="background: ${getModelColor(game.black)};">
+            <i class="fas fa-robot"></i>
+          </div>
+          <div>
+            <div class="player-name">${game.black}</div>
+            <div class="player-model">IA Model</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <span class="game-status-badge ${getResultClass(game.result)}">
+          ${formatGameResult(game.result)}
+        </span>
+      </td>
+      <td>
+        <span style="font-family: var(--font-mono); font-weight: 600;">${game.moves}</span>
+      </td>
+      <td>
+        <span style="font-family: var(--font-mono);">${game.duration}</span>
+      </td>
+      <td>
+        <span style="color: var(--text-secondary);">${game.date}</span>
+      </td>
+      <td>
+        <div class="action-buttons">
+          <button class="action-btn" onclick="viewGame('${game.id}')" title="Visualizar partida">
+            <i class="fas fa-eye"></i>
+            Ver
+          </button>
+          <button class="action-btn secondary" onclick="downloadPGN('${game.id}')" title="Baixar PGN">
+            <i class="fas fa-download"></i>
+            PGN
+          </button>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
+function formatGameResult(result) {
+  switch(result) {
+    case '1-0': return 'Brancas';
+    case '0-1': return 'Pretas';
+    case '1/2-1/2': return 'Empate';
+    default: return result;
+  }
+}
+
+function formatRelativeDate(date) {
+  const now = new Date();
+  const diffTime = Math.abs(now - date);
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+  const diffMinutes = Math.floor(diffTime / (1000 * 60));
+  
+  if (diffMinutes < 60) {
+    return `Há ${diffMinutes} min`;
+  } else if (diffHours < 24) {
+    return `Há ${diffHours}h`;
+  } else if (diffDays === 1) {
+    return 'Ontem';
+  } else {
+    return `Há ${diffDays} dias`;
+  }
+}
+
+function viewGame(gameId) {
+  console.log('Visualizando partida:', gameId);
+  if (window.arena && window.arena.showToast) {
+    window.arena.showToast(`Carregando partida ${gameId}`, 'info');
+  }
+  // Implementar visualização da partida
+}
+
+function downloadPGN(gameId) {
+  console.log('Baixando PGN:', gameId);
+  if (window.arena && window.arena.showToast) {
+    window.arena.showToast('Download do PGN iniciado', 'success');
+  }
+  // Implementar download do PGN
+}
+</script>

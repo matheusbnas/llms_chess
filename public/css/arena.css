@@ -1,0 +1,793 @@
+/* ♟️ Arena Specific Styles */
+
+/* Arena Layout */
+.arena-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+  min-height: calc(100vh - 80px);
+}
+
+.arena-header {
+  text-align: center;
+  margin-bottom: 40px;
+  background: linear-gradient(135deg, var(--lichess-red), var(--lichess-orange));
+  border-radius: 16px;
+  padding: 32px;
+  color: white;
+  box-shadow: 0 8px 32px rgba(231, 76, 60, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.arena-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  animation: pulse 4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+.arena-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  position: relative;
+  z-index: 2;
+}
+
+.arena-subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  font-weight: 400;
+  position: relative;
+  z-index: 2;
+}
+
+/* Battle Setup Section */
+.battle-setup {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 0;
+  margin-bottom: 32px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+}
+
+.battle-setup-header {
+  background: linear-gradient(135deg, var(--lichess-blue), var(--lichess-purple));
+  padding: 20px 24px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.battle-setup-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.battle-form {
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.model-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.model-selector {
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.model-selector:hover {
+  border-color: var(--lichess-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(56, 147, 232, 0.2);
+}
+
+.model-selector.selected {
+  border-color: var(--lichess-green);
+  background: rgba(117, 153, 0, 0.1);
+}
+
+.model-selector.selected::before {
+  content: '✓';
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 24px;
+  height: 24px;
+  background: var(--lichess-green);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.model-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.model-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: white;
+  font-weight: 600;
+}
+
+.model-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.model-rating {
+  background: var(--lichess-brown);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.model-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.model-stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+.model-stat {
+  text-align: center;
+  flex: 1;
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+/* Battle Options */
+.battle-options {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.option-group {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.option-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.option-select {
+  width: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--text-primary);
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.option-select:focus {
+  outline: none;
+  border-color: var(--lichess-blue);
+  box-shadow: 0 0 0 3px rgba(56, 147, 232, 0.1);
+}
+
+.option-range {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.range-input {
+  flex: 1;
+  height: 6px;
+  background: var(--border-color);
+  border-radius: 3px;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.range-input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: var(--lichess-blue);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(56, 147, 232, 0.3);
+}
+
+.range-input::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--lichess-blue);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 8px rgba(56, 147, 232, 0.3);
+}
+
+.range-value {
+  background: var(--lichess-blue);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: center;
+}
+
+.battle-start-btn {
+  background: linear-gradient(135deg, var(--lichess-green), var(--lichess-blue));
+  border: none;
+  color: white;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.battle-start-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.battle-start-btn:hover::before {
+  left: 100%;
+}
+
+.battle-start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(117, 153, 0, 0.4);
+}
+
+.battle-start-btn:active {
+  transform: translateY(0);
+}
+
+.battle-start-btn:disabled {
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Live Battle Section */
+.live-battle {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 32px;
+  display: none;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+}
+
+.live-battle.active {
+  display: block;
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.live-battle-header {
+  background: linear-gradient(135deg, var(--lichess-green), var(--lichess-blue));
+  padding: 20px 24px;
+  color: white;
+}
+
+.battle-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.battle-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.battle-status {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.battle-progress {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  height: 8px;
+  overflow: hidden;
+}
+
+.battle-progress-bar {
+  background: white;
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.5s ease;
+  position: relative;
+}
+
+.battle-progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: progressShine 2s infinite;
+}
+
+@keyframes progressShine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.live-game-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr 300px;
+  gap: 24px;
+  padding: 24px;
+  min-height: 500px;
+}
+
+.battle-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.player-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.3s ease;
+}
+
+.player-card.active {
+  border-color: var(--lichess-green);
+  box-shadow: 0 0 20px rgba(117, 153, 0, 0.3);
+  transform: scale(1.02);
+}
+
+.player-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.player-avatar-large {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: white;
+  font-weight: 600;
+}
+
+.player-info {
+  flex: 1;
+}
+
+.player-name-large {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.player-rating-large {
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.player-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.player-stat-item {
+  text-align: center;
+  padding: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+}
+
+.battle-board-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.move-info {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+.current-move {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.move-time {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.battle-controls {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.battle-control-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.battle-control-btn:hover {
+  background: var(--lichess-blue);
+  color: white;
+  border-color: var(--lichess-blue);
+}
+
+.battle-control-btn.pause {
+  background: var(--lichess-orange);
+  border-color: var(--lichess-orange);
+  color: white;
+}
+
+.battle-control-btn.stop {
+  background: var(--lichess-red);
+  border-color: var(--lichess-red);
+  color: white;
+}
+
+/* Battle History */
+.battle-history {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+}
+
+.battle-history-header {
+  background: var(--bg-tertiary);
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.history-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.battle-filters {
+  display: flex;
+  gap: 8px;
+}
+
+.filter-btn {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn.active,
+.filter-btn:hover {
+  background: var(--lichess-blue);
+  color: white;
+  border-color: var(--lichess-blue);
+}
+
+.battle-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.battle-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.2s ease;
+  cursor: pointer;
+}
+
+.battle-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.battle-item:last-child {
+  border-bottom: none;
+}
+
+.battle-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: between;
+  margin-bottom: 8px;
+}
+
+.battle-matchup {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.battle-result {
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+  margin-left: auto;
+}
+
+.battle-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .battle-form {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .live-game-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .battle-sidebar {
+    order: -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .arena-container {
+    padding: 16px;
+  }
+  
+  .arena-header {
+    padding: 24px 16px;
+  }
+  
+  .arena-title {
+    font-size: 2rem;
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .battle-form {
+    padding: 16px;
+  }
+  
+  .model-selector {
+    padding: 16px;
+  }
+  
+  .model-stats {
+    gap: 8px;
+  }
+  
+  .live-game-layout {
+    padding: 16px;
+  }
+  
+  .battle-controls {
+    flex-direction: column;
+  }
+  
+  .battle-control-btn {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .arena-container {
+    padding: 12px;
+  }
+  
+  .arena-header {
+    padding: 20px 12px;
+  }
+  
+  .arena-title {
+    font-size: 1.75rem;
+  }
+  
+  .battle-form {
+    padding: 12px;
+  }
+  
+  .model-selector {
+    padding: 12px;
+  }
+  
+  .model-header {
+    gap: 8px;
+  }
+  
+  .model-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+  
+  .model-name {
+    font-size: 1rem;
+  }
+  
+  .model-stats {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .player-card {
+    padding: 12px;
+  }
+  
+  .player-avatar-large {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+  
+  .battle-history-header {
+    padding: 12px 16px;
+  }
+  
+  .battle-item {
+    padding: 12px 16px;
+  }
+}

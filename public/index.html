@@ -13,8 +13,6 @@
     
     <!-- Main CSS -->
     <link rel="stylesheet" href="/css/main.css">
-    
-    <!-- Additional CSS files -->
     <link rel="stylesheet" href="/css/responsive.css">
     <link rel="stylesheet" href="/css/chessboard.css">
     
@@ -22,17 +20,6 @@
     <meta name="description" content="Professional Chess Arena for LLM AI models. Watch AI battle AI in professional chess matches.">
     <meta name="keywords" content="chess, AI, LLM, artificial intelligence, chess arena, professional chess">
     <meta name="author" content="LLM Chess Arena">
-    
-    <!-- Open Graph tags -->
-    <meta property="og:title" content="LLM Chess Arena">
-    <meta property="og:description" content="Professional Chess Arena for LLM AI models">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="/images/og-image.png">
-    
-    <!-- Twitter Card tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="LLM Chess Arena">
-    <meta name="twitter:description" content="Professional Chess Arena for LLM AI models">
     
     <style>
         /* Critical CSS for faster loading */
@@ -125,27 +112,27 @@
                 ♟️ LLM Chess Arena
             </a>
             <nav class="nav">
-                <button class="nav-btn active" onclick="goToPage('dashboard')">
+                <button class="nav-btn active" data-page="dashboard">
                     <i class="fas fa-chart-bar"></i>
                     <span>Dashboard</span>
                 </button>
-                <button class="nav-btn" onclick="goToPage('arena')">
+                <button class="nav-btn" data-page="arena">
                     <i class="fas fa-swords"></i>
                     <span>Arena</span>
                 </button>
-                <button class="nav-btn" onclick="goToPage('play')">
+                <button class="nav-btn" data-page="play">
                     <i class="fas fa-gamepad"></i>
                     <span>Jogar</span>
                 </button>
-                <button class="nav-btn" onclick="goToPage('lichess')">
+                <button class="nav-btn" data-page="lichess">
                     <i class="fas fa-chess-board"></i>
                     <span>Lichess</span>
                 </button>
-                <button class="nav-btn" onclick="goToPage('rankings')">
+                <button class="nav-btn" data-page="rankings">
                     <i class="fas fa-crown"></i>
                     <span>Rankings</span>
                 </button>
-                <button class="nav-btn" onclick="goToPage('settings')">
+                <button class="nav-btn" data-page="settings">
                     <i class="fas fa-cog"></i>
                     <span>Config</span>
                 </button>
@@ -220,35 +207,36 @@
         </div>
     </div>
 
-    <!-- Toast Container (will be created dynamically) -->
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
     
-    <!-- Socket.IO -->
+    <!-- External Dependencies -->
     <script src="/socket.io/socket.io.js"></script>
-    
-    <!-- Chess.js for move validation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    
-    <!-- Chart.js for analytics -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 
-    <!-- App Scripts -->
+    <!-- Core Application Scripts -->
     <script src="/js/utils.js"></script>
     <script src="/js/api.js"></script>
     <script src="/js/charts.js"></script>
+    <script src="/js/chessboard.js"></script>
     <script src="/js/pgn_viewer.js"></script>
+    
+    <!-- Page-specific Scripts -->
     <script src="/js/dashboard.js"></script>
     <script src="/js/arena.js"></script>
-    <script src="/js/rankings.js"></script>
-    <script src="/js/chessboard.js"></script>
     <script src="/js/play.js"></script>
+    <script src="/js/rankings.js"></script>
     <script src="/js/settings.js"></script>
     
-    <!-- Main Application Script -->
+    <!-- Chess Arena Manager -->
+    <script src="/js/chess_arena_manager.js"></script>
+    
+    <!-- Main Application -->
     <script src="/js/app.js"></script>
     
     <!-- Page Content Loader -->
     <script>
-        // Page content loader
         class PageLoader {
             constructor() {
                 this.loadedPages = new Set();
@@ -274,8 +262,8 @@
                         this.loadedPages.add(pageName);
                         this.cache.set(pageName, content);
                         
-                        // Execute any page-specific JavaScript
-                        this.executePageScripts(pageElement);
+                        // Execute page-specific initialization
+                        this.initializePage(pageName);
                         
                         console.log(`✅ Loaded page: ${pageName}`);
                     }
@@ -285,17 +273,34 @@
                 }
             }
 
-            executePageScripts(pageElement) {
-                const scripts = pageElement.querySelectorAll('script');
-                scripts.forEach(script => {
-                    const newScript = document.createElement('script');
-                    if (script.src) {
-                        newScript.src = script.src;
-                    } else {
-                        newScript.textContent = script.textContent;
-                    }
-                    document.head.appendChild(newScript);
-                });
+            initializePage(pageName) {
+                switch(pageName) {
+                    case 'dashboard':
+                        if (window.initializeDashboardPage) {
+                            window.initializeDashboardPage();
+                        }
+                        break;
+                    case 'arena':
+                        if (window.initializeArenaPage) {
+                            window.initializeArenaPage();
+                        }
+                        break;
+                    case 'play':
+                        if (window.initializePlayPage) {
+                            window.initializePlayPage();
+                        }
+                        break;
+                    case 'rankings':
+                        if (window.initializeRankingsPage) {
+                            window.initializeRankingsPage();
+                        }
+                        break;
+                    case 'settings':
+                        if (window.initializeSettingsPage) {
+                            window.initializeSettingsPage();
+                        }
+                        break;
+                }
             }
 
             showErrorPage(pageName) {
@@ -320,15 +325,13 @@
             }
 
             async preloadPages() {
-                // Preload critical pages
-                const criticalPages = ['dashboard', 'play'];
+                const criticalPages = ['dashboard', 'arena'];
                 
                 for (const page of criticalPages) {
                     await this.loadPage(page);
                 }
 
-                // Lazy load other pages
-                const otherPages = ['arena', 'lichess', 'rankings', 'settings'];
+                const otherPages = ['play', 'lichess', 'rankings', 'settings'];
                 setTimeout(() => {
                     otherPages.forEach(page => this.loadPage(page));
                 }, 2000);
@@ -338,11 +341,57 @@
         // Global page loader instance
         window.pageLoader = new PageLoader();
 
-        // Initialize loading screen and page loader
+        // Page navigation function
+        async function goToPage(pageName) {
+            if (!window.pageLoader.loadedPages.has(pageName)) {
+                await window.pageLoader.loadPage(pageName);
+            }
+
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Update navigation
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show target page
+            const targetPage = document.getElementById(`${pageName}-page`);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+
+            // Update active nav button
+            const activeBtn = document.querySelector(`[data-page="${pageName}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+            }
+
+            // Trigger page-specific actions
+            if (window.arena && window.arena.onPageChange) {
+                window.arena.onPageChange(pageName);
+            }
+        }
+
+        // Navigation event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const pageName = btn.dataset.page;
+                    if (pageName) {
+                        goToPage(pageName);
+                    }
+                });
+            });
+        });
+
+        // Initialize application
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 Starting LLM Chess Arena...');
             
-            // Hide loading screen after a delay
+            // Hide loading screen after delay
             setTimeout(() => {
                 const loadingScreen = document.getElementById('loading-screen');
                 if (loadingScreen) {
@@ -358,42 +407,13 @@
             try {
                 await window.pageLoader.preloadPages();
                 console.log('✅ Pages loaded successfully');
+                
+                // Initialize dashboard by default
+                goToPage('dashboard');
             } catch (error) {
                 console.error('❌ Error loading pages:', error);
             }
         });
-
-        // Enhanced goToPage function
-        async function goToPage(pageName) {
-            // Load page if not already loaded
-            if (!window.pageLoader.loadedPages.has(pageName)) {
-                await window.pageLoader.loadPage(pageName);
-            }
-
-            // Use arena's showPage if available, otherwise fallback
-            if (window.arena) {
-                window.arena.showPage(pageName);
-            } else {
-                // Fallback page switching
-                document.querySelectorAll('.page').forEach(page => {
-                    page.classList.remove('active');
-                });
-                
-                document.querySelectorAll('.nav-btn').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-
-                const targetPage = document.getElementById(`${pageName}-page`);
-                if (targetPage) {
-                    targetPage.classList.add('active');
-                }
-
-                const activeBtn = document.querySelector(`[onclick*="${pageName}"]`);
-                if (activeBtn) {
-                    activeBtn.classList.add('active');
-                }
-            }
-        }
 
         // Modal functions
         function closeGameResultModal() {
@@ -412,7 +432,6 @@
             const finalDuration = document.getElementById('final-duration');
 
             if (modal) {
-                // Update modal content
                 if (result === '1-0') {
                     resultIcon.textContent = '🏆';
                     resultText.textContent = 'Você venceu!';
@@ -434,65 +453,28 @@
             }
         }
 
-        // Error handling
+        // Global error handling
         window.addEventListener('error', function(e) {
             console.error('❌ Global error:', e.error);
-            
-            // Show error toast if arena is available
-            if (window.arena) {
-                window.arena.showToast('Ocorreu um erro inesperado', 'error');
-            }
         });
 
-        // Unhandled promise rejection handling
         window.addEventListener('unhandledrejection', function(e) {
             console.error('❌ Unhandled promise rejection:', e.reason);
             e.preventDefault();
-            
-            if (window.arena) {
-                window.arena.showToast('Erro de conexão', 'error');
-            }
         });
 
-        // Performance monitoring
-        window.addEventListener('load', function() {
-            if ('performance' in window) {
-                const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
-                console.log(`⚡ Page loaded in ${loadTime}ms`);
-            }
-        });
-
-        // Service Worker registration (if available)
+        // Service Worker registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', function() {
                 navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                        console.log('✅ Service Worker registered successfully:', registration.scope);
-                        
-                        // Handle updates
-                        registration.addEventListener('updatefound', function() {
-                            const newWorker = registration.installing;
-                            if (newWorker) {
-                                newWorker.addEventListener('statechange', function() {
-                                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                        console.log('🔄 New Service Worker available');
-                                        // Optionally show update notification
-                                    }
-                                });
-                            }
-                        });
+                    .then(registration => {
+                        console.log('✅ Service Worker registered');
                     })
-                    .catch(function(error) {
+                    .catch(error => {
                         console.log('❌ Service Worker registration failed:', error);
                     });
             });
         }
-    </script>
-
-    <!-- Analytics (placeholder) -->
-    <script>
-        // Google Analytics or other analytics code would go here
-        console.log('📊 Analytics initialized');
     </script>
 </body>
 </html>
