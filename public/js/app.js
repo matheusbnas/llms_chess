@@ -153,7 +153,7 @@ class LLMChessArena {
 
       this.currentPage = pageName;
       this.loadPageContent(pageName);
-      
+
       // Fix for chessboard rendering
       setTimeout(() => {
         if (DOMUtils && DOMUtils.ensureChessboardRendered) {
@@ -174,9 +174,9 @@ class LLMChessArena {
     try {
       const response = await fetch(`/pages/${pageName}.html`, {
         headers: {
-          'Cache-Control': 'no-cache',
-          'Pragma': 'no-cache'
-        }
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
       });
       if (!response.ok) {
         throw new Error(`Failed to load page: ${pageName}`);
@@ -251,7 +251,7 @@ class LLMChessArena {
   initializePlay() {
     console.log("🎮 Initializing Play...");
     if (!this.pageInitializers.play.initialized) {
-      const playManager = new PlayManager();
+      const playManager = new Play();
       playManager.init();
       this.pageInitializers.play.initialized = true;
     }
@@ -953,375 +953,381 @@ class LLMChessArena {
 // PROFESSIONAL CHESSBOARD CLASS
 // ==========================================
 
-class ProfessionalChessboard {
-  constructor(containerId) {
-    this.board = document.getElementById(containerId);
-    this.selectedSquare = null;
-    this.isFlipped = false;
-    this.currentTheme = "brown";
-    this.gamePosition = this.getInitialPosition();
-    this.moveHistory = [];
-    this.currentMove = 0;
-    this.onMove = null; // Callback for when a move is made
+if (typeof ProfessionalChessboard === "undefined") {
+  class ProfessionalChessboard {
+    constructor(containerId) {
+      this.board = document.getElementById(containerId);
+      this.selectedSquare = null;
+      this.isFlipped = false;
+      this.currentTheme = "brown";
+      this.gamePosition = this.getInitialPosition();
+      this.moveHistory = [];
+      this.currentMove = 0;
+      this.onMove = null; // Callback for when a move is made
 
-    if (this.board) {
-      this.initializeBoard();
-      this.setupInitialPosition();
-      this.addEventListeners();
-    }
-  }
-
-  getInitialPosition() {
-    return {
-      a8: { piece: "♜", color: "black" },
-      b8: { piece: "♞", color: "black" },
-      c8: { piece: "♝", color: "black" },
-      d8: { piece: "♛", color: "black" },
-      e8: { piece: "♚", color: "black" },
-      f8: { piece: "♝", color: "black" },
-      g8: { piece: "♞", color: "black" },
-      h8: { piece: "♜", color: "black" },
-      a7: { piece: "♟", color: "black" },
-      b7: { piece: "♟", color: "black" },
-      c7: { piece: "♟", color: "black" },
-      d7: { piece: "♟", color: "black" },
-      e7: { piece: "♟", color: "black" },
-      f7: { piece: "♟", color: "black" },
-      g7: { piece: "♟", color: "black" },
-      h7: { piece: "♟", color: "black" },
-
-      a2: { piece: "♙", color: "white" },
-      b2: { piece: "♙", color: "white" },
-      c2: { piece: "♙", color: "white" },
-      d2: { piece: "♙", color: "white" },
-      e2: { piece: "♙", color: "white" },
-      f2: { piece: "♙", color: "white" },
-      g2: { piece: "♙", color: "white" },
-      h2: { piece: "♙", color: "white" },
-      a1: { piece: "♖", color: "white" },
-      b1: { piece: "♘", color: "white" },
-      c1: { piece: "♗", color: "white" },
-      d1: { piece: "♕", color: "white" },
-      e1: { piece: "♔", color: "white" },
-      f1: { piece: "♗", color: "white" },
-      g1: { piece: "♘", color: "white" },
-      h1: { piece: "♖", color: "white" },
-    };
-  }
-
-  initializeBoard() {
-    this.board.innerHTML = "";
-
-    for (let rank = 8; rank >= 1; rank--) {
-      for (let file = 0; file < 8; file++) {
-        const square = document.createElement("div");
-        const fileChar = String.fromCharCode(97 + file); // a-h
-        const squareId = `${fileChar}${rank}`;
-
-        const isLight = (rank + file) % 2 !== 0;
-        square.className = `square ${isLight ? "light" : "dark"}`;
-        square.dataset.square = squareId;
-
-        this.board.appendChild(square);
+      if (this.board) {
+        this.initializeBoard();
+        this.setupInitialPosition();
+        this.addEventListeners();
       }
     }
-  }
 
-  setupInitialPosition() {
-    // Clear all squares
-    document.querySelectorAll(`#${this.board.id} .square`).forEach((square) => {
-      square.innerHTML = "";
-    });
+    getInitialPosition() {
+      return {
+        a8: { piece: "♜", color: "black" },
+        b8: { piece: "♞", color: "black" },
+        c8: { piece: "♝", color: "black" },
+        d8: { piece: "♛", color: "black" },
+        e8: { piece: "♚", color: "black" },
+        f8: { piece: "♝", color: "black" },
+        g8: { piece: "♞", color: "black" },
+        h8: { piece: "♜", color: "black" },
+        a7: { piece: "♟", color: "black" },
+        b7: { piece: "♟", color: "black" },
+        c7: { piece: "♟", color: "black" },
+        d7: { piece: "♟", color: "black" },
+        e7: { piece: "♟", color: "black" },
+        f7: { piece: "♟", color: "black" },
+        g7: { piece: "♟", color: "black" },
+        h7: { piece: "♟", color: "black" },
 
-    // Add pieces to initial position
-    Object.entries(this.gamePosition).forEach(([square, pieceData]) => {
-      this.placePiece(square, pieceData.piece, pieceData.color);
-    });
-  }
-
-  setPositionFromFen(fen) {
-    // Clear all squares first
-    document.querySelectorAll(`#${this.board.id} .square`).forEach((square) => {
-      square.innerHTML = "";
-    });
-
-    const fenParts = fen.split(" ");
-    const boardState = fenParts[0];
-    const ranks = boardState.split("/");
-
-    const pieceMap = {
-      r: "♜",
-      n: "♞",
-      b: "♝",
-      q: "♛",
-      k: "♚",
-      p: "♟",
-      R: "♖",
-      N: "♘",
-      B: "♗",
-      Q: "♕",
-      K: "♔",
-      P: "♙",
-    };
-
-    let rankIndex = 8;
-    ranks.forEach((rank) => {
-      let fileIndex = 0;
-      for (const char of rank) {
-        if (isNaN(char)) {
-          const squareId = String.fromCharCode(97 + fileIndex) + rankIndex;
-          const color = char === char.toUpperCase() ? "white" : "black";
-          this.placePiece(squareId, pieceMap[char], color);
-          fileIndex++;
-        } else {
-          fileIndex += parseInt(char);
-        }
-      }
-      rankIndex--;
-    });
-  }
-
-  placePiece(squareId, piece, color) {
-    const square = this.board.querySelector(`[data-square="${squareId}"]`);
-    if (!square) return;
-
-    const pieceElement = document.createElement("div");
-    pieceElement.className = `piece ${color}`;
-    pieceElement.textContent = piece;
-    pieceElement.dataset.piece = piece;
-    pieceElement.dataset.color = color;
-    pieceElement.draggable = true;
-
-    square.appendChild(pieceElement);
-  }
-
-  addEventListeners() {
-    this.board.addEventListener("click", (e) => {
-      const square = e.target.closest(".square");
-      if (!square) return;
-      this.handleSquareClick(square);
-    });
-
-    // Drag and drop
-    this.board.addEventListener("dragstart", (e) => {
-      if (e.target.classList.contains("piece")) {
-        e.target.classList.add("dragging");
-        this.selectedSquare = e.target.closest(".square");
-      }
-    });
-
-    this.board.addEventListener("dragend", (e) => {
-      if (e.target.classList.contains("piece")) {
-        e.target.classList.remove("dragging");
-      }
-    });
-
-    this.board.addEventListener("dragover", (e) => {
-      e.preventDefault();
-    });
-
-    this.board.addEventListener("drop", (e) => {
-      e.preventDefault();
-      const targetSquare = e.target.closest(".square");
-      if (targetSquare && this.selectedSquare) {
-        this.attemptMove(this.selectedSquare, targetSquare);
-      }
-    });
-  }
-
-  handleSquareClick(square) {
-    if (this.selectedSquare) {
-      if (square === this.selectedSquare) {
-        this.clearSelection();
-      } else {
-        this.attemptMove(this.selectedSquare, square);
-      }
-    } else {
-      const piece = square.querySelector(".piece");
-      if (piece) {
-        this.selectSquare(square);
-      }
-    }
-  }
-
-  selectSquare(square) {
-    this.clearSelection();
-    this.selectedSquare = square;
-    square.classList.add("selected");
-    this.showPossibleMoves(square);
-  }
-
-  showPossibleMoves(square) {
-    const piece = square.querySelector(".piece");
-    if (!piece) return;
-
-    const squareId = square.dataset.square;
-    const file = squareId.charCodeAt(0) - 97;
-    const rank = parseInt(squareId[1]);
-
-    // Simple pawn movement example
-    if (piece.dataset.piece === "♙" || piece.dataset.piece === "♟") {
-      const direction = piece.dataset.color === "white" ? 1 : -1;
-      const targetRank = rank + direction;
-
-      if (targetRank >= 1 && targetRank <= 8) {
-        const targetSquare = String.fromCharCode(97 + file) + targetRank;
-        const targetElement = this.board.querySelector(
-          `[data-square="${targetSquare}"]`
-        );
-        if (targetElement && !targetElement.querySelector(".piece")) {
-          targetElement.classList.add("possible-move");
-        }
-      }
-    }
-  }
-
-  attemptMove(fromSquare, toSquare) {
-    const piece = fromSquare.querySelector(".piece");
-    if (!piece) {
-      this.clearSelection();
-      return;
-    }
-
-    const targetPiece = toSquare.querySelector(".piece");
-    const isCapture = targetPiece !== null;
-
-    piece.classList.add("moving");
-
-    setTimeout(() => {
-      if (isCapture) {
-        targetPiece.classList.add("captured");
-        setTimeout(() => targetPiece.remove(), 300);
-      }
-
-      toSquare.appendChild(piece);
-      piece.classList.remove("moving");
-
-      this.addToHistory(
-        fromSquare.dataset.square,
-        toSquare.dataset.square,
-        isCapture
-      );
-
-      const pieceData = {
-        piece: piece.dataset.piece,
-        color: piece.dataset.color,
+        a2: { piece: "♙", color: "white" },
+        b2: { piece: "♙", color: "white" },
+        c2: { piece: "♙", color: "white" },
+        d2: { piece: "♙", color: "white" },
+        e2: { piece: "♙", color: "white" },
+        f2: { piece: "♙", color: "white" },
+        g2: { piece: "♙", color: "white" },
+        h2: { piece: "♙", color: "white" },
+        a1: { piece: "♖", color: "white" },
+        b1: { piece: "♘", color: "white" },
+        c1: { piece: "♗", color: "white" },
+        d1: { piece: "♕", color: "white" },
+        e1: { piece: "♔", color: "white" },
+        f1: { piece: "♗", color: "white" },
+        g1: { piece: "♘", color: "white" },
+        h1: { piece: "♖", color: "white" },
       };
-      delete this.gamePosition[fromSquare.dataset.square];
-      this.gamePosition[toSquare.dataset.square] = pieceData;
+    }
 
+    initializeBoard() {
+      this.board.innerHTML = "";
+
+      for (let rank = 8; rank >= 1; rank--) {
+        for (let file = 0; file < 8; file++) {
+          const square = document.createElement("div");
+          const fileChar = String.fromCharCode(97 + file); // a-h
+          const squareId = `${fileChar}${rank}`;
+
+          const isLight = (rank + file) % 2 !== 0;
+          square.className = `square ${isLight ? "light" : "dark"}`;
+          square.dataset.square = squareId;
+
+          this.board.appendChild(square);
+        }
+      }
+    }
+
+    setupInitialPosition() {
+      // Clear all squares
+      document
+        .querySelectorAll(`#${this.board.id} .square`)
+        .forEach((square) => {
+          square.innerHTML = "";
+        });
+
+      // Add pieces to initial position
+      Object.entries(this.gamePosition).forEach(([square, pieceData]) => {
+        this.placePiece(square, pieceData.piece, pieceData.color);
+      });
+    }
+
+    setPositionFromFen(fen) {
+      // Clear all squares first
+      document
+        .querySelectorAll(`#${this.board.id} .square`)
+        .forEach((square) => {
+          square.innerHTML = "";
+        });
+
+      const fenParts = fen.split(" ");
+      const boardState = fenParts[0];
+      const ranks = boardState.split("/");
+
+      const pieceMap = {
+        r: "♜",
+        n: "♞",
+        b: "♝",
+        q: "♛",
+        k: "♚",
+        p: "♟",
+        R: "♖",
+        N: "♘",
+        B: "♗",
+        Q: "♕",
+        K: "♔",
+        P: "♙",
+      };
+
+      let rankIndex = 8;
+      ranks.forEach((rank) => {
+        let fileIndex = 0;
+        for (const char of rank) {
+          if (isNaN(char)) {
+            const squareId = String.fromCharCode(97 + fileIndex) + rankIndex;
+            const color = char === char.toUpperCase() ? "white" : "black";
+            this.placePiece(squareId, pieceMap[char], color);
+            fileIndex++;
+          } else {
+            fileIndex += parseInt(char);
+          }
+        }
+        rankIndex--;
+      });
+    }
+
+    placePiece(squareId, piece, color) {
+      const square = this.board.querySelector(`[data-square="${squareId}"]`);
+      if (!square) return;
+
+      const pieceElement = document.createElement("div");
+      pieceElement.className = `piece ${color}`;
+      pieceElement.textContent = piece;
+      pieceElement.dataset.piece = piece;
+      pieceElement.dataset.color = color;
+      pieceElement.draggable = true;
+
+      square.appendChild(pieceElement);
+    }
+
+    addEventListeners() {
+      this.board.addEventListener("click", (e) => {
+        const square = e.target.closest(".square");
+        if (!square) return;
+        this.handleSquareClick(square);
+      });
+
+      // Drag and drop
+      this.board.addEventListener("dragstart", (e) => {
+        if (e.target.classList.contains("piece")) {
+          e.target.classList.add("dragging");
+          this.selectedSquare = e.target.closest(".square");
+        }
+      });
+
+      this.board.addEventListener("dragend", (e) => {
+        if (e.target.classList.contains("piece")) {
+          e.target.classList.remove("dragging");
+        }
+      });
+
+      this.board.addEventListener("dragover", (e) => {
+        e.preventDefault();
+      });
+
+      this.board.addEventListener("drop", (e) => {
+        e.preventDefault();
+        const targetSquare = e.target.closest(".square");
+        if (targetSquare && this.selectedSquare) {
+          this.attemptMove(this.selectedSquare, targetSquare);
+        }
+      });
+    }
+
+    handleSquareClick(square) {
+      if (this.selectedSquare) {
+        if (square === this.selectedSquare) {
+          this.clearSelection();
+        } else {
+          this.attemptMove(this.selectedSquare, square);
+        }
+      } else {
+        const piece = square.querySelector(".piece");
+        if (piece) {
+          this.selectSquare(square);
+        }
+      }
+    }
+
+    selectSquare(square) {
       this.clearSelection();
-      this.updateGameStatus();
+      this.selectedSquare = square;
+      square.classList.add("selected");
+      this.showPossibleMoves(square);
+    }
 
-      // Notify move callback
-      if (typeof this.onMove === "function") {
-        this.onMove({
-          from: fromSquare.dataset.square,
-          to: toSquare.dataset.square,
+    showPossibleMoves(square) {
+      const piece = square.querySelector(".piece");
+      if (!piece) return;
+
+      const squareId = square.dataset.square;
+      const file = squareId.charCodeAt(0) - 97;
+      const rank = parseInt(squareId[1]);
+
+      // Simple pawn movement example
+      if (piece.dataset.piece === "♙" || piece.dataset.piece === "♟") {
+        const direction = piece.dataset.color === "white" ? 1 : -1;
+        const targetRank = rank + direction;
+
+        if (targetRank >= 1 && targetRank <= 8) {
+          const targetSquare = String.fromCharCode(97 + file) + targetRank;
+          const targetElement = this.board.querySelector(
+            `[data-square="${targetSquare}"]`
+          );
+          if (targetElement && !targetElement.querySelector(".piece")) {
+            targetElement.classList.add("possible-move");
+          }
+        }
+      }
+    }
+
+    attemptMove(fromSquare, toSquare) {
+      const piece = fromSquare.querySelector(".piece");
+      if (!piece) {
+        this.clearSelection();
+        return;
+      }
+
+      const targetPiece = toSquare.querySelector(".piece");
+      const isCapture = targetPiece !== null;
+
+      piece.classList.add("moving");
+
+      setTimeout(() => {
+        if (isCapture) {
+          targetPiece.classList.add("captured");
+          setTimeout(() => targetPiece.remove(), 300);
+        }
+
+        toSquare.appendChild(piece);
+        piece.classList.remove("moving");
+
+        this.addToHistory(
+          fromSquare.dataset.square,
+          toSquare.dataset.square,
+          isCapture
+        );
+
+        const pieceData = {
           piece: piece.dataset.piece,
           color: piece.dataset.color,
-          isCapture: isCapture,
-        });
+        };
+        delete this.gamePosition[fromSquare.dataset.square];
+        this.gamePosition[toSquare.dataset.square] = pieceData;
+
+        this.clearSelection();
+        this.updateGameStatus();
+
+        // Notify move callback
+        if (typeof this.onMove === "function") {
+          this.onMove({
+            from: fromSquare.dataset.square,
+            to: toSquare.dataset.square,
+            piece: piece.dataset.piece,
+            color: piece.dataset.color,
+            isCapture: isCapture,
+          });
+        }
+      }, 250);
+    }
+
+    makeMove(from, to) {
+      const fromSquare = this.board.querySelector(`[data-square="${from}"]`);
+      const toSquare = this.board.querySelector(`[data-square="${to}"]`);
+
+      if (fromSquare && toSquare) {
+        this.attemptMove(fromSquare, toSquare);
       }
-    }, 250);
-  }
-
-  makeMove(from, to) {
-    const fromSquare = this.board.querySelector(`[data-square="${from}"]`);
-    const toSquare = this.board.querySelector(`[data-square="${to}"]`);
-
-    if (fromSquare && toSquare) {
-      this.attemptMove(fromSquare, toSquare);
-    }
-  }
-
-  addToHistory(from, to, isCapture) {
-    this.moveHistory.push({
-      from,
-      to,
-      capture: isCapture,
-      timestamp: Date.now(),
-    });
-    this.currentMove = this.moveHistory.length;
-  }
-
-  clearSelection() {
-    if (this.selectedSquare) {
-      this.selectedSquare.classList.remove("selected");
-      this.selectedSquare = null;
     }
 
-    this.board
-      .querySelectorAll(".possible-move, .possible-capture")
-      .forEach((square) => {
-        square.classList.remove("possible-move", "possible-capture");
+    addToHistory(from, to, isCapture) {
+      this.moveHistory.push({
+        from,
+        to,
+        capture: isCapture,
+        timestamp: Date.now(),
       });
-  }
+      this.currentMove = this.moveHistory.length;
+    }
 
-  updateGameStatus() {
-    const statusElement = document.querySelector(".game-status");
-    if (statusElement) {
-      const moveCount = this.moveHistory.length;
-      const isWhiteTurn = moveCount % 2 === 0;
-      statusElement.innerHTML = `
-                <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">
-                    <i class="fas fa-chess"></i>
-                    ${isWhiteTurn ? "Brancas" : "Pretas"} jogam - Lance ${
-        Math.floor(moveCount / 2) + 1
+    clearSelection() {
+      if (this.selectedSquare) {
+        this.selectedSquare.classList.remove("selected");
+        this.selectedSquare = null;
       }
-                </div>
-            `;
-    }
-  }
 
-  flipBoard() {
-    this.isFlipped = !this.isFlipped;
-    this.board.style.transform = this.isFlipped
-      ? "rotate(180deg)"
-      : "rotate(0deg)";
-
-    this.board.querySelectorAll(".piece").forEach((piece) => {
-      piece.style.transform = this.isFlipped
-        ? "rotate(180deg)"
-        : "rotate(0deg)";
-    });
-
-    const coordsElements = document.querySelectorAll(".coordinates-external");
-    coordsElements.forEach((coord) => {
-      coord.style.transform = this.isFlipped
-        ? "rotate(180deg)"
-        : "rotate(0deg)";
-    });
-  }
-
-  changeTheme(theme) {
-    document.querySelectorAll(".theme-option").forEach((option) => {
-      option.classList.remove("active");
-    });
-
-    document.querySelector(`.theme-option.${theme}`)?.classList.add("active");
-
-    const root = document.documentElement;
-
-    switch (theme) {
-      case "brown":
-        root.style.setProperty("--board-light", "#f0d9b5");
-        root.style.setProperty("--board-dark", "#b58863");
-        root.style.setProperty("--board-border", "#8b7355");
-        break;
-      case "blue":
-        root.style.setProperty("--board-light", "#dee3e6");
-        root.style.setProperty("--board-dark", "#8ca2ad");
-        root.style.setProperty("--board-border", "#7a8b94");
-        break;
-      case "green":
-        root.style.setProperty("--board-light", "#ffffdd");
-        root.style.setProperty("--board-dark", "#86a666");
-        root.style.setProperty("--board-border", "#759654");
-        break;
+      this.board
+        .querySelectorAll(".possible-move, .possible-capture")
+        .forEach((square) => {
+          square.classList.remove("possible-move", "possible-capture");
+        });
     }
 
-    this.currentTheme = theme;
+    updateGameStatus() {
+      const statusElement = document.querySelector(".game-status");
+      if (statusElement) {
+        const moveCount = this.moveHistory.length;
+        const isWhiteTurn = moveCount % 2 === 0;
+        statusElement.innerHTML = `
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">
+                        <i class="fas fa-chess"></i>
+                        ${isWhiteTurn ? "Brancas" : "Pretas"} jogam - Lance ${
+          Math.floor(moveCount / 2) + 1
+        }
+                    </div>
+                `;
+      }
+    }
+
+    flipBoard() {
+      this.isFlipped = !this.isFlipped;
+      this.board.style.transform = this.isFlipped
+        ? "rotate(180deg)"
+        : "rotate(0deg)";
+
+      this.board.querySelectorAll(".piece").forEach((piece) => {
+        piece.style.transform = this.isFlipped
+          ? "rotate(180deg)"
+          : "rotate(0deg)";
+      });
+
+      const coordsElements = document.querySelectorAll(".coordinates-external");
+      coordsElements.forEach((coord) => {
+        coord.style.transform = this.isFlipped
+          ? "rotate(180deg)"
+          : "rotate(0deg)";
+      });
+    }
+
+    changeTheme(theme) {
+      document.querySelectorAll(".theme-option").forEach((option) => {
+        option.classList.remove("active");
+      });
+
+      document.querySelector(`.theme-option.${theme}`)?.classList.add("active");
+
+      const root = document.documentElement;
+
+      switch (theme) {
+        case "brown":
+          root.style.setProperty("--board-light", "#f0d9b5");
+          root.style.setProperty("--board-dark", "#b58863");
+          root.style.setProperty("--board-border", "#8b7355");
+          break;
+        case "blue":
+          root.style.setProperty("--board-light", "#dee3e6");
+          root.style.setProperty("--board-dark", "#8ca2ad");
+          root.style.setProperty("--board-border", "#7a8b94");
+          break;
+        case "green":
+          root.style.setProperty("--board-light", "#ffffdd");
+          root.style.setProperty("--board-dark", "#86a666");
+          root.style.setProperty("--board-border", "#759654");
+          break;
+      }
+
+      this.currentTheme = theme;
+    }
   }
 }
 

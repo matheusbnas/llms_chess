@@ -15,10 +15,6 @@
     <link rel="stylesheet" href="/css/main.css">
     
     <!-- Additional CSS files -->
-    <link rel="stylesheet" href="/css/variables.css">
-    <link rel="stylesheet" href="/css/base.css">
-    <link rel="stylesheet" href="/css/components.css">
-    <link rel="stylesheet" href="/css/enhanced_chessboard.css">
     <link rel="stylesheet" href="/css/responsive.css">
     
     <!-- Meta tags for SEO -->
@@ -229,10 +225,19 @@
     <script src="/socket.io/socket.io.js"></script>
     
     <!-- Chess.js for move validation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0-beta.6/chess.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     
     <!-- Chart.js for analytics -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+
+    <!-- App Scripts -->
+    <script src="/js/utils.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/charts.js"></script>
+    <script src="/js/dashboard.js"></script>
+    <script src="/js/play.js"></script>
+    <script src="/js/rankings.js"></script>
+    <script src="/js/settings.js"></script>
     
     <!-- Main Application Script -->
     <script src="/js/app.js"></script>
@@ -319,7 +324,7 @@
                 }
 
                 // Lazy load other pages
-                const otherPages = ['arena', 'analysis', 'comparison', 'lichess', 'rankings', 'settings'];
+                const otherPages = ['arena', 'lichess', 'rankings', 'settings'];
                 setTimeout(() => {
                     otherPages.forEach(page => this.loadPage(page));
                 }, 2000);

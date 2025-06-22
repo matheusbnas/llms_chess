@@ -1,4 +1,4 @@
-<!-- ♟️ Play Page - Corrigida -->
+<!-- ♟️ Play Page - Corrigida com Tabuleiro Profissional -->
 <div class="text-center mb-24">
     <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">
         <i class="fas fa-gamepad" style="color: var(--lichess-brown-light);"></i>
@@ -37,13 +37,13 @@
             <div class="form-group">
                 <label class="form-label">Sua Cor</label>
                 <div class="d-flex gap-8">
-                    <label class="form-check" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); cursor: pointer;">
-                        <input type="radio" name="player-color" value="white" checked>
+                    <label class="form-check" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); cursor: pointer; text-align: center;">
+                        <input type="radio" name="player-color" value="white" checked style="margin-right: 8px;">
                         <span style="font-size: 16px;">♔</span>
                         <span class="form-check-label">Brancas</span>
                     </label>
-                    <label class="form-check" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); cursor: pointer;">
-                        <input type="radio" name="player-color" value="black">
+                    <label class="form-check" style="flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--border-radius); cursor: pointer; text-align: center;">
+                        <input type="radio" name="player-color" value="black" style="margin-right: 8px;">
                         <span style="font-size: 16px;">♚</span>
                         <span class="form-check-label">Pretas</span>
                     </label>
@@ -79,7 +79,7 @@
         </div>
 
         <!-- Game Controls -->
-        <div class="card">
+        <div class="card" id="game-controls-card" style="display: none;">
             <div class="card-header">
                 <h3 class="card-title">
                     <i class="fas fa-tools"></i>
@@ -88,19 +88,19 @@
             </div>
             
             <div class="d-flex" style="flex-direction: column; gap: 8px;">
-                <button class="btn btn-secondary" style="justify-content: center;" onclick="requestHint()" id="hint-btn" disabled>
+                <button class="btn btn-secondary" style="justify-content: center;" onclick="requestHint()" id="hint-btn">
                     <i class="fas fa-lightbulb"></i>
                     Solicitar Dica
                 </button>
-                <button class="btn btn-secondary" style="justify-content: center;" onclick="undoMove()" id="undo-btn" disabled>
+                <button class="btn btn-secondary" style="justify-content: center;" onclick="undoMove()" id="undo-btn">
                     <i class="fas fa-undo"></i>
                     Desfazer Lance
                 </button>
-                <button class="btn btn-warning" style="justify-content: center;" onclick="offerDraw()" id="draw-btn" disabled>
+                <button class="btn btn-warning" style="justify-content: center;" onclick="offerDraw()" id="draw-btn">
                     <i class="fas fa-handshake"></i>
                     Oferecer Empate
                 </button>
-                <button class="btn btn-danger" style="justify-content: center;" onclick="resignGame()" id="resign-btn" disabled>
+                <button class="btn btn-danger" style="justify-content: center;" onclick="resignGame()" id="resign-btn">
                     <i class="fas fa-flag"></i>
                     Resignar
                 </button>
@@ -111,7 +111,7 @@
     <!-- Center - Game Board -->
     <div class="d-flex" style="flex-direction: column; align-items: center; gap: 16px;">
         <!-- Game Status -->
-        <div id="game-status" class="game-status status-playing" style="width: 100%;">
+        <div id="game-status" class="game-status status-playing" style="width: 100%; max-width: 512px;">
             <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">
                 <i class="fas fa-info-circle"></i>
                 Configure uma nova partida para começar
@@ -121,7 +121,7 @@
             </div>
         </div>
         
-        <!-- Chess Board Container - Integrado do professional_chessboard.html -->
+        <!-- Professional Chess Board -->
         <div class="chessboard-wrapper">
             <div class="chessboard-container" id="play-chessboard-container">
                 <!-- Coordenadas externas -->
@@ -193,6 +193,14 @@
             <button class="control-btn" title="Virar tabuleiro" onclick="flipPlayBoard()">
                 <i class="fas fa-refresh"></i>
             </button>
+        </div>
+        
+        <!-- Theme Selector -->
+        <div class="theme-selector" style="display: none;">
+            <span class="theme-label">Tema:</span>
+            <div class="theme-option brown active" onclick="changePlayTheme('brown')" title="Tema Marrom (Lichess)"></div>
+            <div class="theme-option blue" onclick="changePlayTheme('blue')" title="Tema Azul"></div>
+            <div class="theme-option green" onclick="changePlayTheme('green')" title="Tema Verde"></div>
         </div>
     </div>
 
@@ -321,9 +329,18 @@ let playerColor = 'white';
 let isPlayerTurn = false;
 let gameHistory = [];
 
+// Inicializar imediatamente quando o script carregar
+setTimeout(function() {
+    if (document.getElementById('play-chessboard')) {
+        initializePlayPage();
+    }
+}, 100);
+
 // Inicializar página de jogo
 document.addEventListener('DOMContentLoaded', function() {
-    initializePlayPage();
+    if (document.getElementById('play-chessboard')) {
+        initializePlayPage();
+    }
 });
 
 function initializePlayPage() {
@@ -333,13 +350,10 @@ function initializePlayPage() {
 }
 
 function initializePlayChessboard() {
-    // Criar o tabuleiro usando a classe ProfessionalChessboard do professional_chessboard.html
+    // Criar o tabuleiro usando a classe ProfessionalChessboard (que funciona)
     playChessboard = new ProfessionalChessboard('play-chessboard', {
-        draggable: true,
-        interactive: true,
-        coordinates: true,
-        theme: 'brown',
-        onMove: handlePlayerMove
+        onMove: handlePlayerMove,
+        interactive: true
     });
     
     console.log('✅ Tabuleiro de jogo inicializado');
@@ -369,11 +383,10 @@ function updateColorDisplay() {
     document.getElementById('ai-color-display').textContent = aiColor === 'white' ? 'Brancas' : 'Pretas';
     
     // Virar tabuleiro se jogando de pretas
-    if (playChessboard) {
-        playChessboard.config.flipped = playerColor === 'black';
-        if (playerColor === 'black') {
-            playChessboard.flip();
-        }
+    if (playChessboard && playerColor === 'black' && !playChessboard.isFlipped) {
+        playChessboard.flip();
+    } else if (playChessboard && playerColor === 'white' && playChessboard.isFlipped) {
+        playChessboard.flip();
     }
 }
 
@@ -459,12 +472,13 @@ async function startNewHumanGame() {
             
             // Configurar tabuleiro
             if (playChessboard) {
-                playChessboard.updatePosition(); // Posição inicial
-                playChessboard.config.interactive = true;
+                playChessboard.setupInitialPosition();
+                playChessboard.setInteractive(true);
             }
             
-            // Habilitar controles
-            enableGameControls(true);
+            // Mostrar controles
+            document.getElementById('game-controls-card').style.display = 'block';
+            document.getElementById('board-controls').style.display = 'flex';
             
             // Atualizar status
             updateGameStatus('playing', isPlayerTurn ? 'Sua vez de jogar' : 'IA está pensando...');
@@ -511,11 +525,6 @@ async function submitPlayerMove(move) {
             gameHistory.push(result.move);
             updateMoveHistory();
             
-            // Atualizar tabuleiro se necessário
-            if (result.fen && playChessboard) {
-                // playChessboard.setPositionFromFEN(result.fen);
-            }
-            
             isPlayerTurn = false;
             updateGameStatus('playing', 'IA está pensando...');
             
@@ -537,6 +546,8 @@ async function submitPlayerMove(move) {
 
 async function requestAIMove() {
     try {
+        showAIThinking();
+        
         const response = await fetch(`/api/games/human/${currentHumanGame.id}/ai-move`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
@@ -544,15 +555,12 @@ async function requestAIMove() {
         
         const result = await response.json();
         
+        hideAIThinking();
+        
         if (result.success) {
             // Atualizar histórico
             gameHistory.push(result.move);
             updateMoveHistory();
-            
-            // Atualizar tabuleiro
-            if (result.fen && playChessboard) {
-                // playChessboard.setPositionFromFEN(result.fen);
-            }
             
             isPlayerTurn = true;
             updateGameStatus('playing', 'Sua vez de jogar');
@@ -567,8 +575,31 @@ async function requestAIMove() {
             showToast('Erro no movimento da IA', 'error');
         }
     } catch (error) {
+        hideAIThinking();
         showToast('Erro ao obter movimento da IA: ' + error.message, 'error');
         console.error('Erro no movimento da IA:', error);
+    }
+}
+
+function showAIThinking() {
+    const status = document.getElementById('game-status');
+    if (status) {
+        const indicator = document.createElement('div');
+        indicator.className = 'ai-thinking';
+        indicator.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
+                <div class="spinner" style="width: 20px; height: 20px; border: 2px solid var(--border-color); border-top: 2px solid var(--lichess-blue); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                <span style="color: var(--lichess-blue);">IA está pensando...</span>
+            </div>
+        `;
+        status.appendChild(indicator);
+    }
+}
+
+function hideAIThinking() {
+    const indicator = document.querySelector('.ai-thinking');
+    if (indicator) {
+        indicator.remove();
     }
 }
 
@@ -613,19 +644,14 @@ function updateGameStatus(status, message) {
     `;
 }
 
-function enableGameControls(enabled) {
-    const buttons = ['hint-btn', 'undo-btn', 'draw-btn', 'resign-btn'];
-    buttons.forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) btn.disabled = !enabled;
-    });
-    
-    document.getElementById('board-controls').style.display = enabled ? 'flex' : 'none';
-}
-
 function endGame(result) {
     isPlayerTurn = false;
-    enableGameControls(false);
+    if (playChessboard) {
+        playChessboard.setInteractive(false);
+    }
+    
+    document.getElementById('game-controls-card').style.display = 'none';
+    document.getElementById('board-controls').style.display = 'none';
     
     let message = 'Jogo finalizado';
     if (result === '1-0') {
@@ -665,6 +691,12 @@ function resignGame() {
 function flipPlayBoard() {
     if (playChessboard) {
         playChessboard.flip();
+    }
+}
+
+function changePlayTheme(theme) {
+    if (playChessboard) {
+        playChessboard.changeTheme(theme);
     }
 }
 
@@ -712,61 +744,138 @@ function exportGamePGN() {
 
 // Funções utilitárias
 function showToast(message, type = 'info', duration = 3000) {
-    // Implementar sistema de toast
-    console.log(`[${type.toUpperCase()}] ${message}`);
-    
-    // Criar toast visual
+    const container = getToastContainer();
+
     const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
+    toast.className = `toast show ${type}`;
     toast.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'times' : type === 'warning' ? 'exclamation' : 'info'}"></i>
-        ${message}
+        <i class="fas fa-${getToastIcon(type)}"></i>
+        <span>${message}</span>
     `;
-    
-    // Adicionar ao container de toasts
-    let container = document.getElementById('toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'toast-container';
-        container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 8px;';
-        document.body.appendChild(container);
-    }
-    
+
     container.appendChild(toast);
-    
-    // Remover após duração
+
+    // Auto remove
     setTimeout(() => {
-        if (toast.parentNode) {
-            toast.parentNode.removeChild(toast);
-        }
+        toast.remove();
     }, duration);
 }
 
-function showLoading(message) {
-    let overlay = document.getElementById('loading-overlay');
+function getToastContainer() {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        container.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 8px;';
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
+function getToastIcon(type) {
+    const icons = {
+        success: 'check-circle',
+        error: 'exclamation-circle',
+        warning: 'exclamation-triangle',
+        info: 'info-circle',
+    };
+    return icons[type] || 'info-circle';
+}
+
+function showLoading(message = 'Carregando...') {
+    let overlay = document.querySelector('.loading-overlay');
     if (!overlay) {
         overlay = document.createElement('div');
-        overlay.id = 'loading-overlay';
         overlay.className = 'loading-overlay';
-        overlay.innerHTML = `
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-                <div id="loading-message">${message}</div>
-            </div>
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(38, 36, 33, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(4px);
         `;
         document.body.appendChild(overlay);
-    } else {
-        document.getElementById('loading-message').textContent = message;
-        overlay.style.display = 'flex';
     }
+
+    overlay.innerHTML = `
+        <div style="text-align: center; color: var(--text-primary);">
+            <div class="spinner" style="width: 40px; height: 40px; border: 4px solid var(--border-color); border-top: 4px solid var(--lichess-brown); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+            <div>${message}</div>
+        </div>
+    `;
+    overlay.style.display = 'flex';
 }
 
 function hideLoading() {
-    const overlay = document.getElementById('loading-overlay');
+    const overlay = document.querySelector('.loading-overlay');
     if (overlay) {
         overlay.style.display = 'none';
     }
 }
+
+// CSS para animação do spinner
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    /* Garantir que o tabuleiro seja renderizado corretamente */
+    #play-chessboard {
+        width: 512px !important;
+        height: 512px !important;
+        display: grid !important;
+        grid-template-columns: repeat(8, 1fr) !important;
+        grid-template-rows: repeat(8, 1fr) !important;
+    }
+    
+    #play-chessboard .square {
+        width: 64px !important;
+        height: 64px !important;
+        position: relative !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    #play-chessboard .piece {
+        font-size: 52px !important;
+        line-height: 1 !important;
+        font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', serif !important;
+        user-select: none !important;
+        cursor: grab !important;
+        transition: all 0.15s ease !important;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4)) !important;
+    }
+    
+    #play-chessboard .piece.white {
+        color: #ffffff !important;
+        text-shadow: 
+            1px 1px 0 #000,
+            -1px -1px 0 #000,
+            1px -1px 0 #000,
+            -1px 1px 0 #000,
+            2px 2px 4px rgba(0, 0, 0, 0.6) !important;
+    }
+    
+    #play-chessboard .piece.black {
+        color: #333333 !important;
+        text-shadow: 
+            1px 1px 0 #fff,
+            -1px -1px 0 #fff,
+            1px -1px 0 #fff,
+            -1px 1px 0 #fff,
+            2px 2px 4px rgba(0, 0, 0, 0.4) !important;
+    }
+`;
+document.head.appendChild(style);
 
 // Exportar funções globais
 window.startNewHumanGame = startNewHumanGame;
@@ -775,6 +884,11 @@ window.undoMove = undoMove;
 window.offerDraw = offerDraw;
 window.resignGame = resignGame;
 window.flipPlayBoard = flipPlayBoard;
+window.changePlayTheme = changePlayTheme;
 window.goToMove = goToMove;
 window.exportGamePGN = exportGamePGN;
+
+// Função global para inicializar a página de jogo (chamada pelo app.js)
+window.initializePlayPage = initializePlayPage;
+window.checkAndInitialize = checkAndInitialize;
 </script>

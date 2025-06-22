@@ -77,7 +77,8 @@ class Play {
       const models = await api.getAvailableModels();
       this.updateModelSelector(models);
     } catch (error) {
-      Utils.handleError(error, "loadAvailableModels");
+      console.error("Error in loadAvailableModels:", error);
+      window.arena.showToast("Failed to load models", "error");
     }
   }
 
@@ -104,12 +105,12 @@ class Play {
     const timeControl = document.getElementById("time-control").value;
 
     if (!opponentModel) {
-      Utils.showToast("Selecione um modelo oponente", "warning");
+      window.arena.showToast("Selecione um modelo oponente", "warning");
       return;
     }
 
     try {
-      Utils.showLoading("Iniciando novo jogo...");
+      window.arena.showLoading("Iniciando novo jogo...");
 
       const gameConfig = {
         opponentModel,
@@ -135,16 +136,17 @@ class Play {
 
       this.isPlayerTurn = playerColor === "white";
 
-      Utils.hideLoading();
-      Utils.showToast("Novo jogo iniciado!", "success");
+      window.arena.hideLoading();
+      window.arena.showToast("Novo jogo iniciado!", "success");
 
       // If AI plays first (player is black), get AI move
       if (playerColor === "black") {
         this.getAIMove();
       }
     } catch (error) {
-      Utils.hideLoading();
-      Utils.handleError(error, "startNewGame");
+      window.arena.hideLoading();
+      console.error("Error in startNewGame:", error);
+      window.arena.showToast("Failed to start new game", "error");
     }
   }
 
@@ -212,12 +214,12 @@ class Play {
 
     const move = moveInput.value.trim();
     if (!move) {
-      Utils.showToast("Digite um lance válido", "warning");
+      window.arena.showToast("Digite um lance válido", "warning");
       return;
     }
 
     try {
-      Utils.showLoading("Processando lance...");
+      window.arena.showLoading("Processando lance...");
 
       const result = await api.makeHumanMove(this.currentGame.id, move);
 
@@ -244,23 +246,24 @@ class Play {
         // Switch turns
         this.isPlayerTurn = false;
 
-        Utils.hideLoading();
-        Utils.showToast("Lance jogado com sucesso!", "success");
+        window.arena.hideLoading();
+        window.arena.showToast("Lance jogado com sucesso!", "success");
 
         // Check if game is over
         if (result.game.status === "finished") {
           this.endGame();
         } else {
-          // Get AI response
-          setTimeout(() => this.getAIMove(), 1000);
+          // It's now AI's turn
+          this.getAIMove();
         }
       } else {
-        Utils.hideLoading();
-        Utils.showToast(result.error || "Lance inválido", "error");
+        window.arena.hideLoading();
+        window.arena.showToast(result.error || "Lance inválido", "error");
       }
     } catch (error) {
-      Utils.hideLoading();
-      Utils.handleError(error, "makePlayerMove");
+      window.arena.hideLoading();
+      console.error("Error making player move:", error);
+      window.arena.showToast("Erro ao processar o lance", "error");
     }
   }
 
@@ -285,33 +288,15 @@ class Play {
     if (!this.currentGame || this.isPlayerTurn) return;
 
     try {
-      // Show thinking indicator
-      const gameStatus = document.getElementById("game-status");
-      if (gameStatus) {
-        const thinkingDiv = document.createElement("div");
-        thinkingDiv.className = "thinking-indicator";
-        thinkingDiv.textContent = "🤖 IA está pensando...";
-        gameStatus.appendChild(thinkingDiv);
-      }
+      window.arena.showLoading("IA está pensando...");
 
       const result = await api.getAIMove(this.currentGame.id);
-
-      // Remove thinking indicator
-      const thinkingIndicator = document.querySelector(".thinking-indicator");
-      if (thinkingIndicator) {
-        thinkingIndicator.remove();
-      }
+      window.arena.hideLoading();
 
       if (result.success) {
         // Update board
         if (this.gameBoard) {
           this.gameBoard.setPosition(result.fen);
-          if (result.lastMove) {
-            this.gameBoard.highlightMove(
-              result.lastMove.from,
-              result.lastMove.to
-            );
-          }
         }
 
         // Update game state
@@ -319,20 +304,22 @@ class Play {
         this.updateGameStatus();
         this.updateMoveHistory();
 
-        // Switch turns
+        // Switch turns back to player
         this.isPlayerTurn = true;
 
-        Utils.showToast(`IA jogou: ${result.move}`, "info");
+        window.arena.showToast(`IA jogou: ${result.move}`, "info");
 
         // Check if game is over
         if (result.game.status === "finished") {
           this.endGame();
         }
       } else {
-        Utils.showToast("Erro ao processar lance da IA", "error");
+        window.arena.showToast("Erro ao processar lance da IA", "error");
       }
     } catch (error) {
-      Utils.handleError(error, "getAIMove");
+      window.arena.hideLoading();
+      console.error("Error getting AI move:", error);
+      window.arena.showToast("Erro ao obter lance da IA", "error");
     }
   }
 
@@ -368,91 +355,72 @@ class Play {
   }
 
   async getHint() {
-    if (!this.currentGame || !this.isPlayerTurn) {
-      Utils.showToast("Não é possível obter dica agora", "warning");
-      return;
-    }
+    if (!this.currentGame) return;
 
     try {
-      Utils.showLoading("Obtendo dica...");
-
+      window.arena.showLoading("Obtendo dica...");
       const hint = await api.getHint(this.currentGame.id);
+      window.arena.hideLoading();
 
-      Utils.hideLoading();
-
-      if (hint.success) {
-        Utils.showToast(`💡 Dica: ${hint.suggestion}`, "info", 8000);
+      if (hint && hint.move) {
+        window.arena.showToast(`Dica: ${hint.move}`, "info");
+        // Optionally highlight hint move on board
+        if (this.gameBoard && hint.from && hint.to) {
+          this.gameBoard.highlightMove(hint.from, hint.to, "hint");
+        }
       } else {
-        Utils.showToast("Não foi possível obter uma dica", "warning");
+        window.arena.showToast("Não foi possível obter uma dica", "warning");
       }
     } catch (error) {
-      Utils.hideLoading();
-      Utils.handleError(error, "getHint");
+      window.arena.hideLoading();
+      console.error("Error getting hint:", error);
+      window.arena.showToast("Erro ao obter dica", "error");
     }
   }
 
   async saveGame() {
-    if (!this.currentGame) {
-      Utils.showToast("Nenhum jogo para salvar", "warning");
-      return;
-    }
+    if (!this.currentGame) return;
 
     try {
-      Utils.showLoading("Salvando jogo...");
+      window.arena.showLoading("Salvando jogo...");
+      const result = await api.saveGame(this.currentGame.id);
+      window.arena.hideLoading();
 
-      // Implementation would depend on API
-      // For now, just show success message
-
-      Utils.hideLoading();
-      Utils.showToast("Jogo salvo com sucesso!", "success");
+      if (result.success) {
+        window.arena.showToast("Jogo salvo com sucesso!", "success");
+      } else {
+        window.arena.showToast(
+          result.message || "Não foi possível salvar",
+          "warning"
+        );
+      }
     } catch (error) {
-      Utils.hideLoading();
-      Utils.handleError(error, "saveGame");
+      window.arena.hideLoading();
+      console.error("Error saving game:", error);
+      window.arena.showToast("Erro ao salvar o jogo", "error");
     }
   }
 
   restartGame() {
-    if (confirm("Tem certeza que deseja reiniciar o jogo?")) {
-      this.currentGame = null;
-      this.isPlayerTurn = false;
+    if (!this.currentGame) return;
 
-      if (this.gameBoard) {
-        this.gameBoard.setPosition(
-          "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-        );
-      }
-
-      // Hide game controls
-      const gameControls = document.querySelector(".game-controls");
-      if (gameControls) {
-        gameControls.style.display = "none";
-      }
-
-      const moveInput = document.querySelector(".move-input");
-      if (moveInput) {
-        moveInput.style.display = "none";
-      }
-
-      // Update status
-      const gameStatus = document.getElementById("game-status");
-      if (gameStatus) {
-        gameStatus.innerHTML = "<p>Configure um novo jogo para começar</p>";
-      }
-
-      // Clear move history
-      const moveList = document.getElementById("move-list");
-      if (moveList) {
-        moveList.innerHTML = "";
-      }
+    // Confirmation dialog
+    if (
+      confirm(
+        "Tem certeza que deseja reiniciar o jogo? O progresso será perdido."
+      )
+    ) {
+      this.startNewGame();
     }
   }
 
   endGame() {
-    this.isPlayerTurn = false;
     this.stopGameMonitoring();
+    this.isPlayerTurn = false;
+    this.updateGameStatus();
 
     const result = this.getGameResult();
-    Utils.showToast(`Jogo finalizado: ${result}`, "info", 10000);
+    window.arena.showToast(`Jogo finalizado: ${result}`, "info", 10000);
 
     // Hide move input
     const moveInput = document.querySelector(".move-input");
