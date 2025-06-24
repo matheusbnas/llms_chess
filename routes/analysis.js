@@ -315,7 +315,6 @@ router.post("/position", (req, res) => {
     return res.status(400).json({ error: "FEN position required" });
   }
 
-  // Simulate Stockfish analysis
   setTimeout(() => {
     const evaluation = (Math.random() - 0.5) * 4;
     const mate =

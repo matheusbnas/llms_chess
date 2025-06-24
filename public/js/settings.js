@@ -30,12 +30,6 @@ class Settings {
       );
     }
 
-    // Stockfish testing
-    const testStockfishBtn = document.getElementById("test-stockfish");
-    if (testStockfishBtn) {
-      testStockfishBtn.addEventListener("click", () => this.testStockfish());
-    }
-
     // Data management
     const exportDataBtn = document.getElementById("export-data");
     if (exportDataBtn) {
@@ -66,7 +60,6 @@ class Settings {
       "temperature",
       "max-tokens",
       "thinking-time",
-      "stockfish-depth",
       "analysis-depth",
     ];
 
@@ -164,22 +157,6 @@ class Settings {
       const saveAnalysis = document.getElementById("save-analysis");
       if (saveAnalysis) {
         saveAnalysis.checked = settings.gameSettings.saveAnalysis !== false;
-      }
-    }
-
-    // Stockfish settings
-    if (settings.stockfish) {
-      const stockfishPath = document.getElementById("stockfish-path");
-      if (stockfishPath) {
-        stockfishPath.value =
-          settings.stockfish.path || "/usr/local/bin/stockfish";
-      }
-
-      const stockfishDepth = document.getElementById("stockfish-depth");
-      if (stockfishDepth) {
-        stockfishDepth.value = settings.stockfish.depth || 15;
-        document.getElementById("stockfish-depth-value").textContent =
-          stockfishDepth.value;
       }
     }
   }
@@ -311,40 +288,6 @@ class Settings {
     } catch (error) {
       Utils.hideLoading();
       Utils.handleError(error, "connectToLichess");
-    }
-  }
-
-  async testStockfish() {
-    const path = document.getElementById("stockfish-path").value;
-
-    if (!path) {
-      Utils.showToast("Insira o caminho do Stockfish", "warning");
-      return;
-    }
-
-    try {
-      Utils.showLoading("Testando Stockfish...");
-
-      const result = await api.testStockfish(path);
-
-      Utils.hideLoading();
-
-      if (result.success) {
-        Utils.showToast(
-          `✅ Stockfish funcionando! Versão: ${
-            result.version || "Desconhecida"
-          }`,
-          "success"
-        );
-      } else {
-        Utils.showToast(
-          "❌ Erro no Stockfish: " + (result.error || "Caminho inválido"),
-          "error"
-        );
-      }
-    } catch (error) {
-      Utils.hideLoading();
-      Utils.handleError(error, "testStockfish");
     }
   }
 
@@ -555,10 +498,6 @@ class Settings {
           document.getElementById("analysis-depth").value
         ),
         saveAnalysis: document.getElementById("save-analysis").checked,
-      },
-      stockfish: {
-        path: document.getElementById("stockfish-path").value,
-        depth: parseInt(document.getElementById("stockfish-depth").value),
       },
     };
 
