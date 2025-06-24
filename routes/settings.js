@@ -24,12 +24,6 @@ let currentSettings = {
     boardTheme: "brown",
     pieceSet: "classic",
   },
-  stockfish: {
-    path: "/usr/local/bin/stockfish",
-    depth: 15,
-    threads: 4,
-    hash: 256,
-  },
   ui: {
     theme: "dark",
     language: "pt-BR",
@@ -131,17 +125,6 @@ router.put("/", async (req, res) => {
       }
     }
 
-    if (updates.stockfish) {
-      if (updates.stockfish.depth !== undefined) {
-        if (updates.stockfish.depth < 1 || updates.stockfish.depth > 30) {
-          return res.status(400).json({
-            success: false,
-            error: "Stockfish depth must be between 1 and 30",
-          });
-        }
-      }
-    }
-
     // Merge updates with current settings
     currentSettings = mergeDeep(currentSettings, updates);
 
@@ -152,65 +135,6 @@ router.put("/", async (req, res) => {
       success: true,
       settings: currentSettings,
       message: "Settings updated successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message,
-    });
-  }
-});
-
-// Reset settings to defaults
-router.post("/reset", async (req, res) => {
-  try {
-    currentSettings = {
-      modelParams: {
-        temperature: 0.1,
-        maxTokens: 1000,
-        thinkingTime: 5,
-        systemPrompt:
-          "You are a chess-playing AI. Play the best move in the given position.",
-      },
-      gameSettings: {
-        defaultTimeControl: "10",
-        autoSaveGames: true,
-        showCoordinates: true,
-        highlightLastMove: true,
-        autoAnalysis: false,
-        analysisDepth: 12,
-        saveAnalysis: true,
-        enableSounds: true,
-        boardTheme: "brown",
-        pieceSet: "classic",
-      },
-      stockfish: {
-        path: "/usr/local/bin/stockfish",
-        depth: 15,
-        threads: 4,
-        hash: 256,
-      },
-      ui: {
-        theme: "dark",
-        language: "pt-BR",
-        animations: true,
-        autoRefresh: true,
-        refreshInterval: 30,
-      },
-      api: {
-        rateLimit: 100,
-        timeout: 30000,
-        retries: 3,
-        cacheEnabled: true,
-      },
-    };
-
-    await saveSettingsToFile();
-
-    res.json({
-      success: true,
-      settings: currentSettings,
-      message: "Settings reset to defaults",
     });
   } catch (error) {
     res.status(500).json({
@@ -299,82 +223,6 @@ router.post("/api-keys", async (req, res) => {
     res.status(500).json({
       success: false,
       error: error.message,
-    });
-  }
-});
-
-// Test Stockfish installation
-router.post("/test-stockfish", async (req, res) => {
-  const { path: stockfishPath } = req.body;
-
-  if (!stockfishPath) {
-    return res.status(400).json({
-      success: false,
-      error: "Stockfish path is required",
-    });
-  }
-
-  try {
-    const { spawn } = require("child_process");
-
-    // Test if Stockfish executable exists and works
-    const stockfish = spawn(stockfishPath, [], { timeout: 5000 });
-
-    let output = "";
-    let errorOutput = "";
-
-    stockfish.stdout.on("data", (data) => {
-      output += data.toString();
-    });
-
-    stockfish.stderr.on("data", (data) => {
-      errorOutput += data.toString();
-    });
-
-    // Send UCI command
-    stockfish.stdin.write("uci\n");
-
-    setTimeout(() => {
-      stockfish.stdin.write("quit\n");
-    }, 2000);
-
-    stockfish.on("close", (code) => {
-      if (code === 0 && output.includes("uciok")) {
-        // Extract version if available
-        const versionMatch = output.match(/Stockfish\s+(\d+(?:\.\d+)*)/i);
-        const version = versionMatch ? versionMatch[1] : "Unknown";
-
-        res.json({
-          success: true,
-          version: `Stockfish ${version}`,
-          message: "Stockfish is working correctly",
-          output: output.substring(0, 200), // Limit output
-        });
-      } else {
-        res.json({
-          success: false,
-          error: "Stockfish did not respond correctly",
-          details: errorOutput || "No error details available",
-        });
-      }
-    });
-
-    stockfish.on("error", (error) => {
-      res.json({
-        success: false,
-        error: `Failed to start Stockfish: ${error.message}`,
-        suggestions: [
-          "Check if the path is correct",
-          "Ensure Stockfish is installed",
-          "Verify file permissions",
-          "Try the default path: /usr/local/bin/stockfish",
-        ],
-      });
-    });
-  } catch (error) {
-    res.json({
-      success: false,
-      error: `Error testing Stockfish: ${error.message}`,
     });
   }
 });

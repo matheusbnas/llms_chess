@@ -18,11 +18,11 @@ Trabalho apresentado como projeto de pesquisa em Inteligência Artificial, focan
 
 ## Resumo
 
-Este projeto apresenta uma plataforma web inovadora para análise comparativa de modelos de linguagem de grande porte (LLMs) utilizando o xadrez como domínio de teste. A plataforma permite que diferentes modelos (GPT-4o, Gemini-Pro, Claude, etc.) compitam entre si em partidas automatizadas, fornecendo métricas detalhadas de performance, análise estratégica e integração com dados do Lichess.org para aprimoramento via RAG (Retrieval-Augmented Generation). O sistema oferece funcionalidades avançadas como torneios automatizados, análise em tempo real com Stockfish, dashboard interativo com visualizações, e modo de jogo humano vs IA.
+Este projeto apresenta uma plataforma web inovadora para análise comparativa de modelos de linguagem de grande porte (LLMs) utilizando o xadrez como domínio de teste. A plataforma permite que diferentes modelos (GPT-4o, Gemini-Pro, Claude, etc.) compitam entre si em partidas automatizadas, fornecendo métricas detalhadas de performance, análise estratégica e integração com dados do Lichess.org para aprimoramento via RAG (Retrieval-Augmented Generation). O sistema oferece funcionalidades avançadas como torneios automatizados, análise em tempo real com AI, dashboard interativo com visualizações, e modo de jogo humano vs IA.
 
 ## Abstract
 
-This project presents an innovative web platform for comparative analysis of Large Language Models (LLMs) using chess as a testing domain. The platform enables different models (GPT-4o, Gemini-Pro, Claude, etc.) to compete against each other in automated matches, providing detailed performance metrics, strategic analysis, and integration with Lichess.org data for RAG (Retrieval-Augmented Generation) enhancement. The system offers advanced features including automated tournaments, real-time analysis with Stockfish, interactive dashboard with visualizations, and human vs AI gameplay mode.
+This project presents an innovative web platform for comparative analysis of Large Language Models (LLMs) using chess as a testing domain. The platform enables different models (GPT-4o, Gemini-Pro, Claude, etc.) to compete against each other in automated matches, providing detailed performance metrics, strategic analysis, and integration with Lichess.org data for RAG (Retrieval-Augmented Generation) enhancement. The system offers advanced features including automated tournaments, real-time analysis with AI, interactive dashboard with visualizations, and human vs AI gameplay mode.
 
 ## 1. Introdução
 
@@ -66,14 +66,13 @@ Backend (Node.js/Express)
 ├── WebSocket (Socket.IO)
 ├── Integração LLMs
 ├── Processamento PGN
-└── Análise Stockfish
+└── Análise AI
 
 Integrações Externas
 ├── OpenAI API (GPT-4o, GPT-4-Turbo)
 ├── Google AI API (Gemini-Pro)
 ├── DeepSeek API
 ├── Lichess API
-└── Stockfish Engine
 ```
 
 ### 2.2 Modelos Suportados
@@ -90,7 +89,7 @@ Integrações Externas
 #### 2.3.1 Métricas de Performance
 
 - **Rating ELO**: Sistema clássico de classificação
-- **Precisão de Lances**: Comparação com melhores jogadas do Stockfish
+- **Precisão de Lances**: Comparação com melhores jogadas
 - **Tempo de Resposta**: Velocidade de tomada de decisão
 - **Qualidade Estratégica**: Análise de padrões de jogo
 
@@ -168,7 +167,6 @@ app.use("/api/lichess", lichessRoutes);
 - Sistema de gerenciamento de partidas
 - Integração com APIs dos LLMs
 - Processador de notação PGN
-- Analisador Stockfish
 - Cache Redis para performance
 
 ### 4.3 Integração Lichess
@@ -257,7 +255,6 @@ A plataforma utiliza um design system moderno com:
 ```bash
 Node.js >= 16.0.0
 npm >= 8.0.0
-Stockfish engine (opcional)
 ```
 
 ### 7.2 Instalação
@@ -288,7 +285,6 @@ GOOGLE_AI_API_KEY=AIza...
 DEEPSEEK_API_KEY=sk-...
 GROQ_API_KEY=gsk_...
 LICHESS_API_TOKEN=lip_...
-STOCKFISH_PATH=/usr/local/bin/stockfish
 ```
 
 ### 7.4 Docker (Opcional)
@@ -358,9 +354,7 @@ A integração com o Lichess e o sistema RAG mostram potencial significativo par
 
 4. Lichess.org. (2024). "Lichess API Documentation". Disponível em: https://lichess.org/api
 
-5. Stockfish Team. (2024). "Stockfish Chess Engine". Disponível em: https://stockfishchess.org/
-
-6. Silver, D. et al. (2016). "Mastering the game of Go with deep neural networks and tree search". _Nature_, 529(7587), 484-489.
+5. Silver, D. et al. (2016). "Mastering the game of Go with deep neural networks and tree search". _Nature_, 529(7587), 484-489.
 
 ---
 
