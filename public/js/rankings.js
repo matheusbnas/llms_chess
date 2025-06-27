@@ -105,4 +105,21 @@ class Rankings {
       }
     }
   }
+
+  async loadRankings() {
+    const rankings = await this.api.getEloRankings();
+    const eloHistory = await this.api.getEloHistory();
+    this.renderRankingsTable(rankings);
+    this.renderEloHistoryChart(eloHistory);
+  }
+
+  async loadModelStats(model) {
+    const stats = await this.api.getModelStats(model);
+    this.renderModelStats(stats);
+  }
+
+  async loadOpeningStats() {
+    const openingStats = await this.api.getOpeningStats();
+    this.renderOpeningStatsTable(openingStats);
+  }
 }

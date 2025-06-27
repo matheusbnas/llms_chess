@@ -69,18 +69,143 @@ class Api {
 
   // API Endpoints
   async getDashboardData() {
-    return this.get("/data/dashboard");
+    return this.get("/api/data/dashboard");
   }
 
   async getAvailableModels() {
-    return this.get("/data/models");
+    return this.get("/api/models/available");
   }
 
-  async getRecentGames() {
-    return this.get("/data/recent-games");
+  async getRecentGames(limit = 10) {
+    return this.get("/api/data/recent-games", { limit });
   }
 
   async getStats() {
-    return this.get("/data/stats");
+    return this.get("/api/data/stats");
+  }
+
+  async getSettings() {
+    return this.get("/api/settings");
+  }
+
+  async getDatabaseStats() {
+    return this.get("/api/data/database-stats");
+  }
+
+  async getGlobalStats() {
+    return this.get("/api/data/global-stats");
+  }
+
+  async getResultsByModel() {
+    return this.get("/api/data/results-by-model");
+  }
+
+  async getWinrateData() {
+    return this.get("/api/data/winrate");
+  }
+
+  async playGameRealtime(data) {
+    return this.post("/api/arena/play-realtime", data);
+  }
+
+  async saveGame(data) {
+    return this.post("/api/games/save", data);
+  }
+
+  async getCurrentBattle() {
+    return this.get("/api/arena/current-battle");
+  }
+
+  async getBattleResults() {
+    return this.get("/api/arena/battle-results");
+  }
+
+  async getAllGames() {
+    return this.get("/api/games/all");
+  }
+
+  async getEloRankings() {
+    return this.get("/api/analysis/elo-rankings");
+  }
+
+  async getEloHistory() {
+    return this.get("/api/analysis/elo-history");
+  }
+
+  async getModelStats(model) {
+    return this.get("/api/analysis/model-stats", { model });
+  }
+
+  async getOpeningStats() {
+    return this.get("/api/analysis/opening-stats");
+  }
+
+  async testModel(model) {
+    return this.post("/api/models/test", { model });
+  }
+
+  async exportData() {
+    return this.get("/api/data/export");
+  }
+
+  async importData(data) {
+    return this.post("/api/data/import", data);
+  }
+
+  async deleteOldGames(days) {
+    return this.post("/api/data/delete-old-games", { days });
+  }
+
+  async resetDatabase() {
+    return this.post("/api/data/reset-database");
+  }
+
+  async testLichessConnection(token) {
+    return this.post("/api/lichess/test-connection", { token });
+  }
+
+  async getGamePgn(id) {
+    return this.get(`/api/games/pgn/${id}`);
+  }
+
+  async analyzeGame(id) {
+    return this.get(`/api/analysis/game/${id}`);
+  }
+
+  async compareModels(model1, model2) {
+    return this.post("/api/analysis/compare-models", { model1, model2 });
+  }
+
+  async importLichessGames(username, max_games) {
+    return this.post("/api/lichess/import-games", { username, max_games });
+  }
+
+  async processLichessGames(games) {
+    return this.post("/api/analysis/process-lichess-games", { games });
+  }
+
+  async applyRagImprovements() {
+    return this.post("/api/analysis/apply-rag-improvements");
+  }
+
+  async importPgns() {
+    return this.post("/api/import-pgns");
+  }
+
+  async getImportedGames() {
+    return this.get("/api/imported-games");
   }
 }
+
+const api = new Api();
+const app = {};
+
+async function loadDashboard() {
+  document.getElementById("dashboard-loading-overlay").style.display = "flex";
+  app.dashboardData = await api.getDashboardData();
+  initializeDashboardPage(app);
+  document.getElementById("dashboard-loading-overlay").style.display = "none";
+}
+
+// Chame isso ao ativar a aba do dashboard
+loadDashboard();

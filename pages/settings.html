@@ -1,461 +1,341 @@
-<!-- ♟️ Settings Page -->
-<div class="text-center mb-32">
-    <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">
-        <i class="fas fa-cog" style="color: var(--lichess-brown-light);"></i>
-        Configurações
-    </h1>
-    <p style="color: var(--text-secondary); font-size: 16px;">
-        Personalize a experiência e configure os modelos de IA
-    </p>
-</div>
+<!-- Settings - Visual Moderno -->
+<link rel="stylesheet" href="/css/dashboard.css">
 
-<!-- Navigation Tabs -->
-<div class="tabs">
-    <button class="tab-btn active" data-tab="general">
-        <i class="fas fa-sliders-h"></i>
-        Geral
-    </button>
-    <button class="tab-btn" data-tab="models">
-        <i class="fas fa-robot"></i>
-        Modelos
-    </button>
-    <button class="tab-btn" data-tab="api">
-        <i class="fas fa-key"></i>
-        API Keys
-    </button>
-    <button class="tab-btn" data-tab="advanced">
-        <i class="fas fa-tools"></i>
-        Avançado
-    </button>
-</div>
+<div id="settings-page" class="dashboard-container">
+    <!-- Header -->
+    <header class="dashboard-header gradient-header">
+        <div class="header-title">
+            <i class="fas fa-cog"></i>
+            <h1>Configurações</h1>
+        </div>
+        <div class="header-subtitle">
+            Personalize a experiência e configure os modelos de IA
+        </div>
+    </header>
 
-<!-- General Settings Tab -->
-<div id="general-tab" class="tab-content active">
-    <div class="card mb-24">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-palette"></i>
-                Aparência
-            </h3>
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label">Tema do Tabuleiro</label>
-            <div class="d-flex gap-16">
-                <label class="form-check">
-                    <input type="radio" name="board-theme" value="brown" checked>
-                    <span class="form-check-label">Marrom (Lichess)</span>
-                </label>
-                <label class="form-check">
-                    <input type="radio" name="board-theme" value="blue">
-                    <span class="form-check-label">Azul</span>
-                </label>
-                <label class="form-check">
-                    <input type="radio" name="board-theme" value="green">
-                    <span class="form-check-label">Verde</span>
-                </label>
-            </div>
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label">Tema da Interface</label>
-            <div class="d-flex gap-16">
-                <label class="form-check">
-                    <input type="radio" name="ui-theme" value="dark" checked>
-                    <span class="form-check-label">Escuro</span>
-                </label>
-                <label class="form-check">
-                    <input type="radio" name="ui-theme" value="light">
-                    <span class="form-check-label">Claro</span>
-                </label>
-            </div>
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label">Conjunto de Peças</label>
-            <select class="form-control">
-                <option value="standard" selected>Padrão</option>
-                <option value="alpha">Alpha</option>
-                <option value="cburnett">CBurnett</option>
-                <option value="merida">Merida</option>
-            </select>
-        </div>
-        
-        <div class="form-check mb-16">
-            <input type="checkbox" id="show-coordinates" checked>
-            <label for="show-coordinates" class="form-check-label">Mostrar coordenadas</label>
-        </div>
-        
-        <div class="form-check mb-16">
-            <input type="checkbox" id="highlight-moves" checked>
-            <label for="highlight-moves" class="form-check-label">Destacar últimos lances</label>
-        </div>
-        
-        <div class="form-check mb-16">
-            <input type="checkbox" id="enable-sounds" checked>
-            <label for="enable-sounds" class="form-check-label">Ativar sons</label>
-        </div>
-        
-        <div class="form-check mb-16">
-            <input type="checkbox" id="enable-animations" checked>
-            <label for="enable-animations" class="form-check-label">Ativar animações</label>
-        </div>
-    </div>
-
-    <div class="card mb-24">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-gamepad"></i>
-                Configurações de Jogo
-            </h3>
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label">Controle de Tempo Padrão</label>
-            <select class="form-control">
-                <option value="unlimited">Sem limite</option>
-                <option value="bullet">Bullet (1+0)</option>
-                <option value="blitz" selected>Blitz (5+3)</option>
-                <option value="rapid">Rapid (15+10)</option>
-                <option value="classical">Classical (30+0)</option>
-            </select>
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label">Nível de Dificuldade Padrão</label>
-            <select class="form-control">
-                <option value="beginner">Iniciante (1200)</option>
-                <option value="intermediate">Intermediário (1400)</option>
-                <option value="advanced" selected>Avançado (1600)</option>
-                <option value="expert">Expert (1800)</option>
-                <option value="master">Mestre (2000+)</option>
-            </select>
-        </div>
-        
-        <div class="form-check mb-16">
-            <input type="checkbox" id="auto-queen" checked>
-            <label for="auto-queen" class="form-check-label">Promover automaticamente para Dama</label>
-        </div>
-        
-        <div class="form-check mb-16">
-            <input type="checkbox" id="auto-analysis">
-            <label for="auto-analysis" class="form-check-label">Análise automática após partidas</label>
-        </div>
-    </div>
-</div>
-
-<!-- Models Settings Tab -->
-<div id="models-tab" class="tab-content">
-    <div class="card mb-24">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-robot"></i>
-                Configuração de Modelos
-            </h3>
-        </div>
-        
-        <div class="table-container">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Modelo</th>
-                        <th>Status</th>
-                        <th>Temperatura</th>
-                        <th>Max Tokens</th>
-                        <th>Tempo de Resposta</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <div class="d-flex align-center gap-8">
-                                <div style="width: 24px; height: 24px; background: var(--lichess-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
-                                    <i class="fas fa-brain"></i>
-                                </div>
-                                <strong>GPT-4o</strong>
-                            </div>
-                        </td>
-                        <td><span class="badge badge-success">Ativo</span></td>
-                        <td>
-                            <input type="range" min="0" max="100" value="10" class="form-control">
-                        </td>
-                        <td>
-                            <input type="number" value="1024" min="256" max="4096" class="form-control">
-                        </td>
-                        <td>2.1s</td>
-                        <td>
-                            <button class="btn btn-sm">
-                                <i class="fas fa-cog"></i>
-                                Configurar
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="d-flex align-center gap-8">
-                                <div style="width: 24px; height: 24px; background: var(--lichess-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
-                                    <i class="fas fa-gem"></i>
-                                </div>
-                                <strong>Gemini-1.5-Pro</strong>
-                            </div>
-                        </td>
-                        <td><span class="badge badge-success">Ativo</span></td>
-                        <td>
-                            <input type="range" min="0" max="100" value="15" class="form-control">
-                        </td>
-                        <td>
-                            <input type="number" value="1024" min="256" max="4096" class="form-control">
-                        </td>
-                        <td>1.8s</td>
-                        <td>
-                            <button class="btn btn-sm">
-                                <i class="fas fa-cog"></i>
-                                Configurar
-                            </button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="d-flex align-center gap-8">
-                                <div style="width: 24px; height: 24px; background: var(--lichess-brown); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
-                                    <i class="fas fa-crown"></i>
-                                </div>
-                                <strong>Claude-3.5-Sonnet</strong>
-                            </div>
-                        </td>
-                        <td><span class="badge badge-success">Ativo</span></td>
-                        <td>
-                            <input type="range" min="0" max="100" value="10" class="form-control">
-                        </td>
-                        <td>
-                            <input type="number" value="1024" min="256" max="4096" class="form-control">
-                        </td>
-                        <td>2.4s</td>
-                        <td>
-                            <button class="btn btn-sm">
-                                <i class="fas fa-cog"></i>
-                                Configurar
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div class="card mb-24">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-plus-circle"></i>
-                Adicionar Novo Modelo
-            </h3>
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label">Nome do Modelo</label>
-            <input type="text" class="form-control" placeholder="Ex: Llama-3.1-70B">
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label">Provedor</label>
-            <select class="form-control">
-                <option value="openai">OpenAI</option>
-                <option value="google">Google AI</option>
-                <option value="anthropic">Anthropic</option>
-                <option value="deepseek">DeepSeek</option>
-                <option value="custom">Personalizado</option>
-            </select>
-        </div>
-        
-        <div class="form-group">
-            <label class="form-label">Endpoint da API</label>
-            <input type="text" class="form-control" placeholder="https://api.example.com/v1/chat/completions">
-        </div>
-        
-        <div class="d-flex gap-16">
-            <div class="form-group" style="flex: 1;">
-                <label class="form-label">Temperatura</label>
-                <input type="range" min="0" max="100" value="10" class="form-control">
-            </div>
-            <div class="form-group" style="flex: 1;">
-                <label class="form-label">Max Tokens</label>
-                <input type="number" value="1024" min="256" max="4096" class="form-control">
-            </div>
-        </div>
-        
-        <button class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 16px;">
-            <i class="fas fa-plus"></i>
-            Adicionar Modelo
+    <!-- Tabs de Navegação -->
+    <div class="tabs mb-24 d-flex gap-16 justify-center">
+        <button class="tab-btn active" data-tab="general">
+            <i class="fas fa-sliders-h"></i>
+            Geral
+        </button>
+        <button class="tab-btn" data-tab="models">
+            <i class="fas fa-robot"></i>
+            Modelos
+        </button>
+        <button class="tab-btn" data-tab="api">
+            <i class="fas fa-key"></i>
+            API Keys
+        </button>
+        <button class="tab-btn" data-tab="advanced">
+            <i class="fas fa-tools"></i>
+            Avançado
         </button>
     </div>
-</div>
 
-<!-- API Keys Tab -->
-<div id="api-tab" class="tab-content">
-    <div class="card mb-24">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-key"></i>
-                Gerenciar Chaves de API
-            </h3>
+    <!-- Conteúdo das Tabs -->
+    <div id="general-tab" class="tab-content active">
+        <div class="card mb-24">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-palette"></i>
+                    Aparência
+                </h3>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tema do Tabuleiro</label>
+                <div class="d-flex gap-16">
+                    <label class="form-check">
+                        <input type="radio" name="board-theme" value="brown" checked>
+                        <span class="form-check-label">Marrom (Lichess)</span>
+                    </label>
+                    <label class="form-check">
+                        <input type="radio" name="board-theme" value="blue">
+                        <span class="form-check-label">Azul</span>
+                    </label>
+                    <label class="form-check">
+                        <input type="radio" name="board-theme" value="green">
+                        <span class="form-check-label">Verde</span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Tema da Interface</label>
+                <div class="d-flex gap-16">
+                    <label class="form-check">
+                        <input type="radio" name="ui-theme" value="dark" checked>
+                        <span class="form-check-label">Escuro</span>
+                    </label>
+                    <label class="form-check">
+                        <input type="radio" name="ui-theme" value="light">
+                        <span class="form-check-label">Claro</span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Conjunto de Peças</label>
+                <select class="form-control">
+                    <option value="standard" selected>Padrão</option>
+                    <option value="alpha">Alpha</option>
+                    <option value="cburnett">CBurnett</option>
+                    <option value="merida">Merida</option>
+                </select>
+            </div>
+            <div class="form-check mb-16">
+                <input type="checkbox" id="show-coordinates" checked>
+                <label for="show-coordinates" class="form-check-label">Mostrar coordenadas</label>
+            </div>
+            <div class="form-check mb-16">
+                <input type="checkbox" id="highlight-moves" checked>
+                <label for="highlight-moves" class="form-check-label">Destacar últimos lances</label>
+            </div>
+            <div class="form-check mb-16">
+                <input type="checkbox" id="enable-sounds" checked>
+                <label for="enable-sounds" class="form-check-label">Ativar sons</label>
+            </div>
+            <div class="form-check mb-16">
+                <input type="checkbox" id="enable-animations" checked>
+                <label for="enable-animations" class="form-check-label">Ativar animações</label>
+            </div>
         </div>
-        
-        <div class="form-group">
-            <label for="openai-key" class="form-label">OpenAI API Key</label>
-            <input type="password" id="openai-key" class="form-control" placeholder="sk-...">
+        <div class="card mb-24">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-gamepad"></i>
+                    Configurações de Jogo
+                </h3>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Controle de Tempo Padrão</label>
+                <select class="form-control">
+                    <option value="unlimited">Sem limite</option>
+                    <option value="bullet">Bullet (1+0)</option>
+                    <option value="blitz" selected>Blitz (5+3)</option>
+                    <option value="rapid">Rapid (15+10)</option>
+                    <option value="classical">Classical (30+0)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nível de Dificuldade Padrão</label>
+                <select class="form-control">
+                    <option value="beginner">Iniciante (1200)</option>
+                    <option value="intermediate">Intermediário (1400)</option>
+                    <option value="advanced" selected>Avançado (1600)</option>
+                    <option value="expert">Expert (1800)</option>
+                    <option value="master">Mestre (2000+)</option>
+                </select>
+            </div>
+            <div class="form-check mb-16">
+                <input type="checkbox" id="auto-queen" checked>
+                <label for="auto-queen" class="form-check-label">Promover automaticamente para Dama</label>
+            </div>
+            <div class="form-check mb-16">
+                <input type="checkbox" id="auto-analysis">
+                <label for="auto-analysis" class="form-check-label">Análise automática após partidas</label>
+            </div>
         </div>
-        
-        <div class="form-group">
-            <label for="google-key" class="form-label">Google AI API Key</label>
-            <input type="password" id="google-key" class="form-control" placeholder="AIzaSy...">
-        </div>
-
-        <div class="form-group">
-            <label for="anthropic-key" class="form-label">Anthropic API Key</label>
-            <input type="password" id="anthropic-key" class="form-control" placeholder="sk-ant-...">
-        </div>
-
-        <div class="form-group">
-            <label for="deepseek-key" class="form-label">Deepseek API Key</label>
-            <input type="password" id="deepseek-key" class="form-control" placeholder="sk-...">
-        </div>
-
-        <button class="btn btn-primary" style="width: 100%; justify-content: center;">
-            <i class="fas fa-save"></i>
-            Salvar Chaves
-        </button>
     </div>
-</div>
 
-<!-- Advanced Settings Tab -->
-<div id="advanced-tab" class="tab-content">
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">
-                <i class="fas fa-cogs"></i>
-                Configurações Avançadas
-            </h3>
+    <div id="models-tab" class="tab-content">
+        <div class="card mb-24">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-robot"></i>
+                    Configuração de Modelos
+                </h3>
+            </div>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Modelo</th>
+                            <th>Status</th>
+                            <th>Temperatura</th>
+                            <th>Max Tokens</th>
+                            <th>Tempo de Resposta</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-center gap-8">
+                                    <div style="width: 24px; height: 24px; background: var(--lichess-green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                        <i class="fas fa-brain"></i>
+                                    </div>
+                                    <strong>GPT-4o</strong>
+                                </div>
+                            </td>
+                            <td><span class="badge badge-success">Ativo</span></td>
+                            <td>
+                                <input type="range" min="0" max="100" value="10" class="form-control">
+                            </td>
+                            <td>
+                                <input type="number" value="1024" min="256" max="4096" class="form-control">
+                            </td>
+                            <td>2.1s</td>
+                            <td>
+                                <button class="btn btn-sm">
+                                    <i class="fas fa-cog"></i>
+                                    Configurar
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-center gap-8">
+                                    <div style="width: 24px; height: 24px; background: var(--lichess-blue); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                        <i class="fas fa-gem"></i>
+                                    </div>
+                                    <strong>Gemini-1.5-Pro</strong>
+                                </div>
+                            </td>
+                            <td><span class="badge badge-success">Ativo</span></td>
+                            <td>
+                                <input type="range" min="0" max="100" value="15" class="form-control">
+                            </td>
+                            <td>
+                                <input type="number" value="1024" min="256" max="4096" class="form-control">
+                            </td>
+                            <td>1.8s</td>
+                            <td>
+                                <button class="btn btn-sm">
+                                    <i class="fas fa-cog"></i>
+                                    Configurar
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="d-flex align-center gap-8">
+                                    <div style="width: 24px; height: 24px; background: var(--lichess-brown); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px;">
+                                        <i class="fas fa-crown"></i>
+                                    </div>
+                                    <strong>Claude-3.5-Sonnet</strong>
+                                </div>
+                            </td>
+                            <td><span class="badge badge-success">Ativo</span></td>
+                            <td>
+                                <input type="range" min="0" max="100" value="10" class="form-control">
+                            </td>
+                            <td>
+                                <input type="number" value="1024" min="256" max="4096" class="form-control">
+                            </td>
+                            <td>2.4s</td>
+                            <td>
+                                <button class="btn btn-sm">
+                                    <i class="fas fa-cog"></i>
+                                    Configurar
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-        
-        <div class="form-group">
-            <label for="server-url" class="form-label">URL do Servidor</label>
-            <input type="text" id="server-url" class="form-control" value="http://localhost:3000">
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Cache</label>
-            <button class="btn btn-secondary">
-                <i class="fas fa-trash"></i>
-                Limpar Cache de Partidas
-            </button>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Resetar Configurações</label>
-            <button class="btn btn-danger">
-                <i class="fas fa-undo"></i>
-                Resetar para Padrão
+        <div class="card mb-24">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-plus-circle"></i>
+                    Adicionar Novo Modelo
+                </h3>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Nome do Modelo</label>
+                <input type="text" class="form-control" placeholder="Ex: Llama-3.1-70B">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Provedor</label>
+                <select class="form-control">
+                    <option value="openai">OpenAI</option>
+                    <option value="google">Google AI</option>
+                    <option value="anthropic">Anthropic</option>
+                    <option value="deepseek">DeepSeek</option>
+                    <option value="custom">Personalizado</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Endpoint da API</label>
+                <input type="text" class="form-control" placeholder="https://api.example.com/v1/chat/completions">
+            </div>
+            <div class="d-flex gap-16">
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">Temperatura</label>
+                    <input type="range" min="0" max="100" value="10" class="form-control">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">Max Tokens</label>
+                    <input type="number" value="1024" min="256" max="4096" class="form-control">
+                </div>
+            </div>
+            <button class="btn btn-primary w-full mt-16">
+                <i class="fas fa-plus"></i>
+                Adicionar Modelo
             </button>
         </div>
     </div>
+
+    <div id="api-tab" class="tab-content">
+        <div class="card mb-24">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-key"></i>
+                    Gerenciar Chaves de API
+                </h3>
+            </div>
+            <div class="form-group">
+                <label for="openai-key" class="form-label">OpenAI API Key</label>
+                <input type="password" id="openai-key" class="form-control" placeholder="sk-...">
+            </div>
+            <div class="form-group">
+                <label for="google-key" class="form-label">Google AI API Key</label>
+                <input type="password" id="google-key" class="form-control" placeholder="AIzaSy...">
+            </div>
+            <div class="form-group">
+                <label for="anthropic-key" class="form-label">Anthropic API Key</label>
+                <input type="password" id="anthropic-key" class="form-control" placeholder="sk-ant-...">
+            </div>
+            <div class="form-group">
+                <label for="deepseek-key" class="form-label">Deepseek API Key</label>
+                <input type="password" id="deepseek-key" class="form-control" placeholder="sk-...">
+            </div>
+            <button class="btn btn-primary w-full mt-16">
+                <i class="fas fa-save"></i>
+                Salvar Chaves
+            </button>
+        </div>
+    </div>
+
+    <div id="advanced-tab" class="tab-content">
+        <div class="card mb-24">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-cogs"></i>
+                    Configurações Avançadas
+                </h3>
+            </div>
+            <div class="form-group">
+                <label for="server-url" class="form-label">URL do Servidor</label>
+                <input type="text" id="server-url" class="form-control" value="http://localhost:3000">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Cache</label>
+                <button class="btn btn-secondary">
+                    <i class="fas fa-trash"></i>
+                    Limpar Cache de Partidas
+                </button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Resetar Configurações</label>
+                <button class="btn btn-danger">
+                    <i class="fas fa-undo"></i>
+                    Resetar para Padrão
+                </button>
+            </div>
+            <!-- Bloco de informações do servidor -->
+            <div class="form-group">
+                <div id="server-info" class="mt-16" style="max-width: 400px; margin: 0 auto;"></div>
+            </div>
+        </div>
+    </div>
 </div>
-
-<script>
-// Settings page JavaScript
-document.addEventListener('DOMContentLoaded', function() {
-    initializeSettingsPage();
-});
-
-function initializeSettingsPage() {
-    // Setup event listeners
-    setupSettingsTabs();
-    
-    // Load saved settings if available
-    loadSavedSettings();
-}
-
-function setupSettingsTabs() {
-    // Tab switching
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const tabId = this.dataset.tab;
-            switchSettingsTab(tabId);
-        });
-    });
-}
-
-function switchSettingsTab(tabId) {
-    // Update tab buttons
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
-    
-    // Update tab content
-    document.querySelectorAll('.tab-content').forEach(content => {
-        content.classList.remove('active');
-    });
-    
-    const targetTab = document.getElementById(`${tabId}-tab`);
-    if (targetTab) {
-        targetTab.classList.add('active');
-    }
-}
-
-function loadSavedSettings() {
-    // Load settings from localStorage if available
-    const savedSettings = localStorage.getItem('chessArenaSettings');
-    if (savedSettings) {
-        const settings = JSON.parse(savedSettings);
-        
-        // Apply saved settings
-        if (settings.boardTheme) {
-            document.querySelector(`input[name="board-theme"][value="${settings.boardTheme}"]`).checked = true;
-        }
-        
-        if (settings.uiTheme) {
-            document.querySelector(`input[name="ui-theme"][value="${settings.uiTheme}"]`).checked = true;
-        }
-        
-        if (settings.showCoordinates !== undefined) {
-            document.getElementById('show-coordinates').checked = settings.showCoordinates;
-        }
-        
-        if (settings.highlightMoves !== undefined) {
-            document.getElementById('highlight-moves').checked = settings.highlightMoves;
-        }
-        
-        if (settings.enableSounds !== undefined) {
-            document.getElementById('enable-sounds').checked = settings.enableSounds;
-        }
-        
-        if (settings.enableAnimations !== undefined) {
-            document.getElementById('enable-animations').checked = settings.enableAnimations;
-        }
-    }
-    
-    // Add event listeners to save settings
-    document.querySelectorAll('input[type="checkbox"], input[type="radio"], select').forEach(input => {
-        input.addEventListener('change', saveSettings);
-    });
-}
-
-function saveSettings() {
-    // Collect current settings
-    const settings = {
-        boardTheme: document.querySelector('input[name="board-theme"]:checked')?.value || 'brown',
-        uiTheme: document.querySelector('input[name="ui-theme"]:checked')?.value || 'dark',
-        showCoordinates: document.getElementById('show-coordinates')?.checked || true,
-        highlightMoves: document.getElementById('highlight-moves')?.checked || true,
-        enableSounds: document.getElementById('enable-sounds')?.checked || true,
-        enableAnimations: document.getElementById('enable-animations')?.checked || true
-    };
-    
-    // Save to localStorage
-    localStorage.setItem('chessArenaSettings', JSON.stringify(settings));
-    
-    // Show feedback
-    if (window.arena) {
-        window.arena.showToast('Configurações salvas', 'success');
-    }
-}
-</script>

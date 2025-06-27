@@ -248,3 +248,20 @@ function renderGameDetails(arena) {
     }
   }
 }
+
+async function loadArenaConfig() {
+  const models = await api.getAvailableModels();
+  renderModelSelectors(models);
+}
+
+async function startBattle(config) {
+  setLoading(true);
+  try {
+    const result = await api.playGameRealtime(config);
+    renderBattleResult(result);
+  } catch (error) {
+    showError("Erro ao iniciar batalha: " + error.message);
+  } finally {
+    setLoading(false);
+  }
+}

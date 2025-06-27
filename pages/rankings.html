@@ -1,5 +1,5 @@
 <!-- ♟️ Rankings Page -->
-<div class="text-center mb-32">
+<div id="rankings-page" class="text-center mb-32">
     <h1 style="font-size: 32px; font-weight: 700; margin-bottom: 8px;">
         <i class="fas fa-trophy" style="color: var(--lichess-brown-light);"></i>
         Rankings e Estatísticas
@@ -280,4 +280,18 @@
     </div>
 </div>
 
+<div id="pgn-viewer-container"></div>
+
+<script src="/js/api.js"></script>
 <script src="/js/rankings.js"></script>
+<script src="/js/pgn_viewer.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    window.smartAPI = new Api();
+    const rankings = new Rankings();
+    rankings.init();
+    if (window.PGNViewer) {
+        window.pgnViewer = new PGNViewer('pgn-viewer-container');
+    }
+});
+</script>

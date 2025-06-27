@@ -246,3 +246,22 @@ function getChartColors(numColors, isBorder = false) {
     (_, i) => selected[i % selected.length]
   );
 }
+
+async function loadDashboard() {
+  try {
+    setLoading(true);
+    const stats = await api.getGlobalStats();
+    const results = await api.getResultsByModel();
+    const winrate = await api.getWinrateData();
+    const recentGames = await api.getRecentGames();
+
+    renderStats(stats);
+    renderResultsChart(results);
+    renderWinratePie(winrate);
+    renderRecentGamesTable(recentGames);
+  } catch (error) {
+    showError("Erro ao carregar dashboard: " + error.message);
+  } finally {
+    setLoading(false);
+  }
+}

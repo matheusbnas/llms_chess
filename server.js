@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
@@ -233,6 +234,10 @@ Give your response in the following order:
   }
 
   async callOpenAI(modelConfig, prompt) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OpenAI API key not configured');
+    }
+    
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -246,21 +251,29 @@ Give your response in the following order:
           { role: "user", content: prompt },
         ],
         temperature: modelConfig.temperature,
-        max_tokens: 10,
+        max_tokens: 50,
       },
       {
         headers: {
           Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
           "Content-Type": "application/json",
         },
-        timeout: 10000,
+        timeout: process.env.API_TIMEOUT || 30000,
       }
     );
+
+    if (!response.data.choices || !response.data.choices[0]) {
+      throw new Error('Invalid response from OpenAI API');
+    }
 
     return response.data.choices[0].message.content.trim();
   }
 
   async callGoogle(modelConfig, prompt) {
+    if (!process.env.GOOGLE_API_KEY) {
+      throw new Error('Google API key not configured');
+    }
+    
     const response = await axios.post(
       `https://generativelanguage.googleapis.com/v1beta/models/${modelConfig.model}:generateContent?key=${process.env.GOOGLE_API_KEY}`,
       {
@@ -271,25 +284,34 @@ Give your response in the following order:
         ],
         generationConfig: {
           temperature: modelConfig.temperature,
-          maxOutputTokens: 10,
+          maxOutputTokens: 50,
         },
       },
       {
-        timeout: 10000,
+        timeout: process.env.API_TIMEOUT || 30000,
       }
     );
+
+    if (!response.data.candidates || !response.data.candidates[0] || 
+        !response.data.candidates[0].content || !response.data.candidates[0].content.parts[0]) {
+      throw new Error('Invalid response from Google API');
+    }
 
     return response.data.candidates[0].content.parts[0].text.trim();
   }
 
   async callAnthropic(modelConfig, prompt) {
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error('Anthropic API key not configured');
+    }
+    
     const response = await axios.post(
       "https://api.anthropic.com/v1/messages",
       {
         model: modelConfig.model,
         messages: [{ role: "user", content: prompt }],
         temperature: modelConfig.temperature,
-        max_tokens: 10,
+        max_tokens: 50,
       },
       {
         headers: {
@@ -297,14 +319,22 @@ Give your response in the following order:
           "Content-Type": "application/json",
           "anthropic-version": "2023-06-01",
         },
-        timeout: 10000,
+        timeout: process.env.API_TIMEOUT || 30000,
       }
     );
+
+    if (!response.data.content || !response.data.content[0]) {
+      throw new Error('Invalid response from Anthropic API');
+    }
 
     return response.data.content[0].text.trim();
   }
 
   async callDeepSeek(modelConfig, prompt) {
+    if (!process.env.DEEPSEEK_API_KEY) {
+      throw new Error('DeepSeek API key not configured');
+    }
+    
     const response = await axios.post(
       "https://api.deepseek.com/v1/chat/completions",
       {
@@ -318,16 +348,20 @@ Give your response in the following order:
           { role: "user", content: prompt },
         ],
         temperature: modelConfig.temperature,
-        max_tokens: 10,
+        max_tokens: 50,
       },
       {
         headers: {
           Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
           "Content-Type": "application/json",
         },
-        timeout: 10000,
+        timeout: process.env.API_TIMEOUT || 30000,
       }
     );
+
+    if (!response.data.choices || !response.data.choices[0]) {
+      throw new Error('Invalid response from DeepSeek API');
+    }
 
     return response.data.choices[0].message.content.trim();
   }
@@ -458,7 +492,7 @@ Give your response in the following order:
 
       moveCount++;
       // Add small delay between moves for better UX
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, process.env.MOVE_DELAY || 2000));
     }
 
     // Determine game result
@@ -1045,7 +1079,7 @@ app.post("/api/games/human/:id/move", async (req, res) => {
             console.error("AI move error:", error);
             io.to(id).emit("ai-error", { error: "AI move failed" });
           }
-        }, 2000); // 2 second delay for AI thinking
+        }, process.env.MOVE_DELAY || 2000); // Configurable delay for AI thinking
       }
     } else {
       game.status = "completed";
@@ -1140,6 +1174,163 @@ app.use((req, res) => {
     error: "Not found",
     message: `Route ${req.method} ${req.path} not found`,
   });
+});
+
+app.get("/api/data/dashboard", async (req, res) => {
+  try {
+    // Model stats
+    const modelStats = await (async () => {
+      const stats = {};
+      const gameDirs = await gameManager.getGameDirectories();
+      for (const dir of gameDirs) {
+        const pgnFiles = (await fs.readdir(path.join(__dirname, dir))).filter(
+          (f) => f.endsWith(".pgn")
+        );
+        for (const file of pgnFiles) {
+          const pgnPath = path.join(__dirname, dir, file);
+          const pgn = await fs.readFile(pgnPath, "utf-8");
+          const whiteMatch = pgn.match(/\[White \"(.*?)\"\]/);
+          const blackMatch = pgn.match(/\[Black \"(.*?)\"\]/);
+          const resultMatch = pgn.match(/\[Result \"(.*?)\"\]/);
+          if (whiteMatch && blackMatch && resultMatch) {
+            const white = whiteMatch[1];
+            const black = blackMatch[1];
+            const result = resultMatch[1];
+            if (!stats[white])
+              stats[white] = {
+                model: white,
+                wins: 0,
+                losses: 0,
+                draws: 0,
+                total: 0,
+              };
+            if (!stats[black])
+              stats[black] = {
+                model: black,
+                wins: 0,
+                losses: 0,
+                draws: 0,
+                total: 0,
+              };
+            stats[white].total++;
+            stats[black].total++;
+            if (result === "1-0") {
+              stats[white].wins++;
+              stats[black].losses++;
+            } else if (result === "0-1") {
+              stats[black].wins++;
+              stats[white].losses++;
+            } else if (result === "1/2-1/2") {
+              stats[white].draws++;
+              stats[black].draws++;
+            }
+          }
+        }
+      }
+      return Object.values(stats).sort((a, b) => b.wins - a.wins);
+    })();
+    const totalGames = modelStats.reduce((sum, m) => sum + m.total, 0) / 2;
+    const recentGames = await gameManager.getRecentGames(10);
+
+    // Matchup stats
+    const matchupStatsMap = {};
+    const gameDirs = await gameManager.getGameDirectories();
+    for (const dir of gameDirs) {
+      const pgnFiles = (await fs.readdir(path.join(__dirname, dir))).filter(
+        (f) => f.endsWith(".pgn")
+      );
+      let p1 = null,
+        p2 = null,
+        p1_wins = 0,
+        p2_wins = 0,
+        draws = 0,
+        total = 0;
+      for (const file of pgnFiles) {
+        const pgnPath = path.join(__dirname, dir, file);
+        const pgn = await fs.readFile(pgnPath, "utf-8");
+        const whiteMatch = pgn.match(/\[White \"(.*?)\"\]/);
+        const blackMatch = pgn.match(/\[Black \"(.*?)\"\]/);
+        const resultMatch = pgn.match(/\[Result \"(.*?)\"\]/);
+        if (whiteMatch && blackMatch && resultMatch) {
+          const white = whiteMatch[1];
+          const black = blackMatch[1];
+          const result = resultMatch[1];
+          if (!p1 || !p2) {
+            p1 = white;
+            p2 = black;
+          }
+          if (result === "1-0") p1_wins++;
+          else if (result === "0-1") p2_wins++;
+          else if (result === "1/2-1/2") draws++;
+          total++;
+        }
+      }
+      if (p1 && p2 && total > 0) {
+        matchupStatsMap[dir] = {
+          matchup: dir,
+          p1,
+          p2,
+          p1_wins,
+          p2_wins,
+          draws,
+          total,
+        };
+      }
+    }
+    const matchupStats = Object.values(matchupStatsMap);
+
+    res.json({
+      totalGames,
+      modelStats,
+      recentGames,
+      matchupStats,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch dashboard data" });
+  }
+});
+
+app.get("/api/data/database-stats", async (req, res) => {
+  try {
+    // Contar partidas e modelos únicos
+    const rootDir = __dirname;
+    const dirs = (await fs.readdir(rootDir, { withFileTypes: true }))
+      .filter((d) => d.isDirectory() && d.name.includes(" vs "))
+      .map((d) => d.name);
+    let totalGames = 0;
+    const modelsSet = new Set();
+    for (const dir of dirs) {
+      const files = (await fs.readdir(path.join(rootDir, dir))).filter((f) =>
+        f.endsWith(".pgn")
+      );
+      totalGames += files.length;
+      for (const file of files) {
+        const pgn = await fs.readFile(path.join(rootDir, dir, file), "utf8");
+        const white = (pgn.match(/\[White \"(.*?)\"\]/) || [])[1];
+        const black = (pgn.match(/\[Black \"(.*?)\"\]/) || [])[1];
+        if (white) modelsSet.add(white);
+        if (black) modelsSet.add(black);
+      }
+    }
+    // Calcular tamanho do diretório de dados
+    let dbSize = 0;
+    for (const dir of dirs) {
+      const files = await fs.readdir(path.join(rootDir, dir));
+      for (const file of files) {
+        const stats = await fs.stat(path.join(rootDir, dir, file));
+        dbSize += stats.size;
+      }
+    }
+    res.json({
+      total_games: totalGames,
+      unique_models: modelsSet.size,
+      db_size_mb: dbSize / 1024 / 1024,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch database stats" });
+  }
 });
 
 const PORT = process.env.PORT || 3000;

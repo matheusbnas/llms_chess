@@ -36,17 +36,15 @@ const Utils = {
   },
 
   formatDuration(seconds) {
-    if (seconds < 60) {
-      return `${seconds}s`;
-    } else if (seconds < 3600) {
-      const minutes = Math.floor(seconds / 60);
-      const remainingSeconds = seconds % 60;
-      return `${minutes}m ${remainingSeconds}s`;
-    } else {
-      const hours = Math.floor(seconds / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-      return `${hours}h ${minutes}m`;
-    }
+    seconds = Math.floor(seconds);
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    let str = "";
+    if (h > 0) str += `${h}h `;
+    if (m > 0) str += `${m}m `;
+    str += `${s}s`;
+    return str.trim();
   },
 
   getCurrentTimestamp() {

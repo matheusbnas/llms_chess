@@ -1,3 +1,7 @@
+if (typeof api === "undefined") {
+  window.api = new Api();
+}
+
 class Settings {
   constructor() {
     this.currentSettings = {};
@@ -5,8 +9,95 @@ class Settings {
 
   init() {
     this.loadSettings();
+    this.setupTabs();
     this.setupEventListeners();
     this.loadDatabaseStats();
+  }
+
+  setupTabs() {
+    this.tabs = document.querySelectorAll("#settings-page .tab-btn");
+    this.tabContents = document.querySelectorAll("#settings-page .tab-content");
+
+    // Limpa event listeners antigos (caso de re-render)
+    this.tabs.forEach((btn) => {
+      btn.replaceWith(btn.cloneNode(true));
+    });
+    this.tabs = document.querySelectorAll("#settings-page .tab-btn");
+
+    // Adiciona atributos ARIA
+    this.tabs.forEach((btn, idx) => {
+      btn.setAttribute("role", "tab");
+      btn.setAttribute("tabindex", idx === 0 ? "0" : "-1");
+      btn.setAttribute(
+        "aria-selected",
+        btn.classList.contains("active") ? "true" : "false"
+      );
+      btn.setAttribute("aria-controls", `${btn.dataset.tab}-tab`);
+    });
+    this.tabContents.forEach((content) => {
+      content.setAttribute("role", "tabpanel");
+      content.setAttribute(
+        "aria-labelledby",
+        `${content.id.replace("-tab", "")}-tab-btn`
+      );
+    });
+
+    // Clique do mouse
+    this.tabs.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        this.switchTab(btn.dataset.tab, true);
+      });
+    });
+
+    // Navegação por teclado
+    this.tabs.forEach((btn, idx) => {
+      btn.addEventListener("keydown", (e) => {
+        let newIdx = null;
+        if (e.key === "ArrowRight") {
+          newIdx = (idx + 1) % this.tabs.length;
+        } else if (e.key === "ArrowLeft") {
+          newIdx = (idx - 1 + this.tabs.length) % this.tabs.length;
+        } else if (e.key === "Home") {
+          newIdx = 0;
+        } else if (e.key === "End") {
+          newIdx = this.tabs.length - 1;
+        } else if (e.key === "Enter" || e.key === " ") {
+          this.switchTab(btn.dataset.tab, true);
+          return;
+        }
+        if (newIdx !== null) {
+          this.tabs[newIdx].focus();
+        }
+      });
+    });
+
+    // Inicializa aba pelo hash da URL
+    const hash = window.location.hash;
+    let initialTab = this.tabs[0]?.dataset.tab;
+    if (hash && hash.startsWith("#tab=")) {
+      const tabFromHash = hash.replace("#tab=", "");
+      if ([...this.tabs].some((btn) => btn.dataset.tab === tabFromHash)) {
+        initialTab = tabFromHash;
+      }
+    }
+    this.switchTab(initialTab, false);
+  }
+
+  switchTab(tabId, updateHash = false) {
+    this.tabs.forEach((tab, idx) => {
+      const isActive = tab.dataset.tab === tabId;
+      tab.classList.toggle("active", isActive);
+      tab.setAttribute("aria-selected", isActive ? "true" : "false");
+      tab.setAttribute("tabindex", isActive ? "0" : "-1");
+      if (isActive) tab.focus();
+    });
+    this.tabContents.forEach((content) => {
+      content.classList.toggle("active", content.id === `${tabId}-tab`);
+    });
+    if (updateHash) {
+      window.location.hash = `tab=${tabId}`;
+    }
   }
 
   setupEventListeners() {
@@ -81,6 +172,11 @@ class Settings {
       const settings = await api.getSettings();
       this.currentSettings = settings;
       this.populateSettingsForm(settings);
+
+      // Exibir informações do servidor se disponíveis
+      if (settings.server_info) {
+        this.displayServerInfo(settings.server_info);
+      }
 
       // Load available models for testing
       const models = await api.getAvailableModels();
@@ -159,6 +255,35 @@ class Settings {
         saveAnalysis.checked = settings.gameSettings.saveAnalysis !== false;
       }
     }
+  }
+
+  displayServerInfo(serverInfo) {
+    const serverInfoDiv = document.getElementById("server-info");
+    if (!serverInfoDiv) return;
+    serverInfoDiv.innerHTML = `
+      <div style="background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); padding: 24px 20px; margin-top: 8px; text-align: center;">
+        <div style="font-size: 2.2rem; margin-bottom: 8px; color: #764ba2;">
+          <i class="fas fa-server"></i>
+        </div>
+        <h4 style="font-weight: 700; color: #333; margin-bottom: 12px;">Informações do Servidor</h4>
+        <ul style="list-style: none; padding: 0; margin: 0; font-size: 1.08rem; color: #444;">
+          <li style="margin-bottom: 6px;"><i class='fab fa-node-js' style='color:#6cc24a; margin-right:6px;'></i><strong>Node.js:</strong> ${
+            serverInfo.node_version
+          }</li>
+          <li style="margin-bottom: 6px;"><i class='fas fa-desktop' style='color:#007bff; margin-right:6px;'></i><strong>Plataforma:</strong> ${
+            serverInfo.platform
+          }</li>
+          <li style="margin-bottom: 6px;"><i class='fas fa-clock' style='color:#ff9800; margin-right:6px;'></i><strong>Uptime:</strong> ${Utils.formatDuration(
+            serverInfo.uptime
+          )}</li>
+          <li><i class='fas fa-memory' style='color:#9c27b0; margin-right:6px;'></i><strong>Memória:</strong> ${(
+            serverInfo.memory_usage.rss /
+            1024 /
+            1024
+          ).toFixed(1)} MB</li>
+        </ul>
+      </div>
+    `;
   }
 
   updateTestModelSelector(models) {
@@ -530,3 +655,21 @@ class Settings {
 
 // Make Settings available globally
 window.Settings = Settings;
+
+document.addEventListener("DOMContentLoaded", function () {
+  const settings = new Settings();
+  settings.init();
+});
+
+async function importPgns() {
+  setLoading(true);
+  try {
+    const result = await api.importPgns();
+    showSuccess(`${result.count} partidas importadas!`);
+    renderSampleGame(result.sample);
+  } catch (error) {
+    showError("Erro ao importar PGNs: " + error.message);
+  } finally {
+    setLoading(false);
+  }
+}
