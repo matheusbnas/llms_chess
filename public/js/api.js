@@ -2,7 +2,7 @@
 
 class Api {
   constructor() {
-    this.baseURL = "";
+    this.baseURL = window.FASTAPI_BASE_URL || "";
     this.timeout = 30000;
     this.retryAttempts = 3;
     this.retryDelay = 1000;
@@ -201,11 +201,11 @@ const api = new Api();
 const app = {};
 
 async function loadDashboard() {
-  document.getElementById("dashboard-loading-overlay").style.display = "flex";
-  app.dashboardData = await api.getDashboardData();
-  initializeDashboardPage(app);
-  document.getElementById("dashboard-loading-overlay").style.display = "none";
+  const data = await api.getDashboardData();
+  // ... renderize os dados
 }
 
 // Chame isso ao ativar a aba do dashboard
 loadDashboard();
+
+export { Api };

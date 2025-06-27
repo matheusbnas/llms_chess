@@ -120,12 +120,12 @@ function updateMatchupResultsChart(dashboard, matchupStats) {
     labels: labels,
     datasets: [
       {
-        label: matchupStats[0]?.p1, // Assume first matchup is representative
+        label: matchupStats[0]?.p1 || "Jogador 1",
         data: p1Wins,
         backgroundColor: "rgba(54, 162, 235, 0.7)",
       },
       {
-        label: matchupStats[0]?.p2,
+        label: matchupStats[0]?.p2 || "Jogador 2",
         data: p2Wins,
         backgroundColor: "rgba(255, 99, 132, 0.7)",
       },
@@ -138,7 +138,6 @@ function updateMatchupResultsChart(dashboard, matchupStats) {
   };
 
   if (dashboard.charts.matchupChart) {
-    // This is a bit tricky since labels change. Let's just destroy and recreate.
     dashboard.charts.matchupChart.destroy();
   }
 

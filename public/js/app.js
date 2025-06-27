@@ -3,6 +3,8 @@
  * Professional Chess Application with AI Integration
  */
 
+import { Api } from "./api.js";
+
 class LLMChessArena {
   constructor() {
     this.currentPage = "dashboard";

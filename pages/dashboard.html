@@ -125,13 +125,14 @@
 
 <script>
 // Exemplo: buscar dados da API e preencher cards
-fetch('/api/global_stats')
-  .then(res => res.json())
-  .then(stats => {
-    document.getElementById('total-games-metric').innerHTML = stats.total_games;
-    document.getElementById('total-models-metric').innerHTML = stats.active_models;
-    document.getElementById('top-model-metric').innerHTML = stats.top_model ? stats.top_model : "N/A";
-  });
+const stats = await api.getGlobalStats();
+const results = await api.getResultsByModel();
+const winrate = await api.getWinrateData();
+const recentGames = await api.getRecentGames();
+
+document.getElementById('total-games-metric').innerHTML = stats.total_games;
+document.getElementById('total-models-metric').innerHTML = stats.active_models;
+document.getElementById('top-model-metric').innerHTML = stats.top_model ? stats.top_model : "N/A";
 
 // Exemplo: gráfico de resultados por modelo (usando Chart.js ou Plotly.js)
 fetch('/api/results_by_model')

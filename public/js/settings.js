@@ -1,6 +1,5 @@
-if (typeof api === "undefined") {
-  window.api = new Api();
-}
+import { Api } from "./api.js";
+window.api = new Api();
 
 class Settings {
   constructor() {
@@ -144,6 +143,13 @@ class Settings {
 
     // Range sliders
     this.setupRangeSliders();
+
+    document
+      .getElementById("lichess-token-form")
+      .addEventListener("submit", (e) => {
+        e.preventDefault();
+        // lógica de conexão aqui
+      });
   }
 
   setupRangeSliders() {

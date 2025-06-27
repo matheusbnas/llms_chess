@@ -1,5 +1,7 @@
 // Arena.js - Lógica para a página de visualização de partidas
 
+import { Api } from "./api.js";
+
 document.addEventListener("DOMContentLoaded", () => {
   // Early exit if required elements are not on the page
   if (!document.getElementById("arena-matchup-select")) {
