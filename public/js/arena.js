@@ -267,3 +267,232 @@ async function startBattle(config) {
     setLoading(false);
   }
 }
+
+// ♟️ Arena de Batalha LLMs - JS
+// Requer que o arquivo api.js já esteja carregado e a classe Api disponível
+
+(function () {
+  // Instância da API
+  const api = window.api || new Api();
+
+  // Elementos DOM
+  const whiteModelSelect = document.getElementById("white-model");
+  const blackModelSelect = document.getElementById("black-model");
+  const openingSelect = document.getElementById("opening");
+  const numGamesSlider = document.getElementById("num-games");
+  const numGamesValue = document.getElementById("num-games-value");
+  const realtimeSpeedSlider = document.getElementById("realtime-speed");
+  const realtimeSpeedValue = document.getElementById("realtime-speed-value");
+  const startBattleBtn = document.getElementById("start-battle");
+  const startRealtimeBattleBtn = document.getElementById(
+    "start-realtime-battle"
+  );
+  const tournamentModeCheckbox = document.getElementById("tournament-mode");
+  const tournamentConfig = document.getElementById("tournament-config");
+  const battleConfig = document.getElementById("battle-config");
+  const tournamentModelsSelect = document.getElementById("tournament-models");
+  const gamesPerPairSlider = document.getElementById("games-per-pair");
+  const gamesPerPairValue = document.getElementById("games-per-pair-value");
+  const startTournamentBtn = document.getElementById("start-tournament");
+  const battleStatusDiv = document.getElementById("battle-status");
+  const progressBar = document.getElementById("battle-progress");
+  const progressText = document.getElementById("progress-text");
+  const resultsTableBody = document.querySelector("#results-table tbody");
+  const savedGamesList = document.getElementById("saved-games-list");
+
+  // Atualiza valores dos sliders
+  numGamesSlider.addEventListener("input", () => {
+    numGamesValue.textContent = numGamesSlider.value;
+  });
+  realtimeSpeedSlider.addEventListener("input", () => {
+    realtimeSpeedValue.textContent = realtimeSpeedSlider.value;
+  });
+  gamesPerPairSlider.addEventListener("input", () => {
+    gamesPerPairValue.textContent = gamesPerPairSlider.value;
+  });
+
+  // Alterna entre modo torneio e individual
+  tournamentModeCheckbox.addEventListener("change", () => {
+    if (tournamentModeCheckbox.checked) {
+      tournamentConfig.style.display = "block";
+      battleConfig.style.display = "none";
+    } else {
+      tournamentConfig.style.display = "none";
+      battleConfig.style.display = "block";
+    }
+  });
+
+  // Popular dropdowns de modelos
+  async function loadModels() {
+    try {
+      const data = await api.getArenaModels();
+      const models = data.models || [];
+      // Limpa e popula selects individuais
+      [whiteModelSelect, blackModelSelect].forEach((select) => {
+        select.innerHTML = "";
+        models.forEach((model) => {
+          const opt = document.createElement("option");
+          opt.value = model;
+          opt.textContent = model;
+          select.appendChild(opt);
+        });
+      });
+      // Torneio (multiselect)
+      tournamentModelsSelect.innerHTML = "";
+      models.forEach((model) => {
+        const opt = document.createElement("option");
+        opt.value = model;
+        opt.textContent = model;
+        tournamentModelsSelect.appendChild(opt);
+      });
+    } catch (err) {
+      alert("Erro ao carregar modelos disponíveis.");
+    }
+  }
+
+  // Iniciar batalha individual
+  startBattleBtn.addEventListener("click", async () => {
+    const white_model = whiteModelSelect.value;
+    const black_model = blackModelSelect.value;
+    const opening = openingSelect.value;
+    const num_games = parseInt(numGamesSlider.value);
+    const realtime_speed = parseFloat(realtimeSpeedSlider.value);
+    if (!white_model || !black_model || white_model === black_model) {
+      alert("Selecione modelos diferentes para brancas e pretas.");
+      return;
+    }
+    try {
+      const res = await api.startArenaBattle({
+        white_model,
+        black_model,
+        opening,
+        num_games,
+        realtime_speed,
+      });
+      if (res.battle_id) {
+        loadBattleStatus(res.battle_id);
+      }
+    } catch (err) {
+      alert("Erro ao iniciar batalha.");
+    }
+  });
+
+  // Iniciar batalha em tempo real
+  startRealtimeBattleBtn.addEventListener("click", async () => {
+    // Pode ser igual ao startBattleBtn, mas pode ser customizado se necessário
+    startBattleBtn.click();
+  });
+
+  // Iniciar torneio
+  startTournamentBtn.addEventListener("click", async () => {
+    const selected = Array.from(tournamentModelsSelect.selectedOptions).map(
+      (opt) => opt.value
+    );
+    const games_per_pair = parseInt(gamesPerPairSlider.value);
+    if (selected.length < 2) {
+      alert("Selecione pelo menos dois modelos para o torneio.");
+      return;
+    }
+    try {
+      const res = await api.startArenaTournament({
+        models: selected,
+        games_per_pair,
+      });
+      if (res.tournament_id) {
+        loadBattleStatus(null, res.tournament_id);
+      }
+    } catch (err) {
+      alert("Erro ao iniciar torneio.");
+    }
+  });
+
+  // Carregar status da batalha/torneio
+  async function loadBattleStatus(battle_id = null, tournament_id = null) {
+    try {
+      const params = {};
+      if (battle_id) params.battle_id = battle_id;
+      if (tournament_id) params.tournament_id = tournament_id;
+      const status = await api.getArenaStatus(params);
+      // Atualiza status
+      battleStatusDiv.innerHTML = `🎮 ${status.white} vs ${status.black} | Partida ${status.current_game}/${status.total_games}`;
+      progressBar.value = status.current_game / status.total_games;
+      progressText.textContent = `Progresso: ${status.current_game} de ${status.total_games}`;
+      // Atualiza resultados
+      resultsTableBody.innerHTML = "";
+      (status.results || []).forEach((r) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td>${r.game}</td><td>${r.white}</td><td>${r.black}</td><td>${r.result}</td>`;
+        resultsTableBody.appendChild(tr);
+      });
+      // Atualiza tabuleiro (se houver FEN)
+      if (status.current_board) {
+        renderChessboard(status.current_board);
+      }
+    } catch (err) {
+      battleStatusDiv.innerHTML = "Erro ao carregar status da batalha.";
+    }
+  }
+
+  // Carregar partidas salvas
+  async function loadSavedGames() {
+    try {
+      const games = await api.getArenaSavedGames();
+      savedGamesList.innerHTML = "";
+      games.forEach((g) => {
+        const li = document.createElement("li");
+        li.textContent = `${g.white} vs ${g.black} (${g.date})`;
+        li.addEventListener("click", () => loadSavedGame(g.id));
+        savedGamesList.appendChild(li);
+      });
+    } catch (err) {
+      savedGamesList.innerHTML = "<li>Erro ao carregar partidas salvas.</li>";
+    }
+  }
+
+  // Carregar partida salva
+  async function loadSavedGame(gameId) {
+    try {
+      const game = await api.getArenaGame(gameId);
+      // Exibir detalhes, lances, etc.
+      alert(`Partida carregada: ${game.pgn}`);
+      // TODO: Integrar com visualizador de tabuleiro/lances
+    } catch (err) {
+      alert("Erro ao carregar partida.");
+    }
+  }
+
+  // Inicialização
+  loadModels();
+  loadSavedGames();
+  // Pode-se chamar loadBattleStatus() se quiser mostrar status ao abrir
+
+  // Expor funções para debug (opcional)
+  window.arenaPage = {
+    loadModels,
+    loadSavedGames,
+    loadBattleStatus,
+  };
+})();
+
+// Integração com chessboard.js
+let board = null;
+
+function renderChessboard(fen = "start") {
+  if (!window.Chessboard) {
+    console.error("Chessboard.js não carregado!");
+    return;
+  }
+  if (board) {
+    board.position(fen);
+  } else {
+    board = Chessboard("chessboard-container", {
+      position: fen,
+      draggable: false,
+      pieceTheme:
+        "https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/img/chesspieces/wikipedia/{piece}.png",
+    });
+  }
+}
+
+// Inicializar tabuleiro ao carregar a página
+renderChessboard();

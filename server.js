@@ -235,9 +235,9 @@ Give your response in the following order:
 
   async callOpenAI(modelConfig, prompt) {
     if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OpenAI API key not configured');
+      throw new Error("OpenAI API key not configured");
     }
-    
+
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -263,7 +263,7 @@ Give your response in the following order:
     );
 
     if (!response.data.choices || !response.data.choices[0]) {
-      throw new Error('Invalid response from OpenAI API');
+      throw new Error("Invalid response from OpenAI API");
     }
 
     return response.data.choices[0].message.content.trim();
@@ -271,9 +271,9 @@ Give your response in the following order:
 
   async callGoogle(modelConfig, prompt) {
     if (!process.env.GOOGLE_API_KEY) {
-      throw new Error('Google API key not configured');
+      throw new Error("Google API key not configured");
     }
-    
+
     const response = await axios.post(
       `https://generativelanguage.googleapis.com/v1beta/models/${modelConfig.model}:generateContent?key=${process.env.GOOGLE_API_KEY}`,
       {
@@ -292,9 +292,13 @@ Give your response in the following order:
       }
     );
 
-    if (!response.data.candidates || !response.data.candidates[0] || 
-        !response.data.candidates[0].content || !response.data.candidates[0].content.parts[0]) {
-      throw new Error('Invalid response from Google API');
+    if (
+      !response.data.candidates ||
+      !response.data.candidates[0] ||
+      !response.data.candidates[0].content ||
+      !response.data.candidates[0].content.parts[0]
+    ) {
+      throw new Error("Invalid response from Google API");
     }
 
     return response.data.candidates[0].content.parts[0].text.trim();
@@ -302,9 +306,9 @@ Give your response in the following order:
 
   async callAnthropic(modelConfig, prompt) {
     if (!process.env.ANTHROPIC_API_KEY) {
-      throw new Error('Anthropic API key not configured');
+      throw new Error("Anthropic API key not configured");
     }
-    
+
     const response = await axios.post(
       "https://api.anthropic.com/v1/messages",
       {
@@ -324,7 +328,7 @@ Give your response in the following order:
     );
 
     if (!response.data.content || !response.data.content[0]) {
-      throw new Error('Invalid response from Anthropic API');
+      throw new Error("Invalid response from Anthropic API");
     }
 
     return response.data.content[0].text.trim();
@@ -332,9 +336,9 @@ Give your response in the following order:
 
   async callDeepSeek(modelConfig, prompt) {
     if (!process.env.DEEPSEEK_API_KEY) {
-      throw new Error('DeepSeek API key not configured');
+      throw new Error("DeepSeek API key not configured");
     }
-    
+
     const response = await axios.post(
       "https://api.deepseek.com/v1/chat/completions",
       {
@@ -360,7 +364,7 @@ Give your response in the following order:
     );
 
     if (!response.data.choices || !response.data.choices[0]) {
-      throw new Error('Invalid response from DeepSeek API');
+      throw new Error("Invalid response from DeepSeek API");
     }
 
     return response.data.choices[0].message.content.trim();
@@ -492,7 +496,9 @@ Give your response in the following order:
 
       moveCount++;
       // Add small delay between moves for better UX
-      await new Promise((resolve) => setTimeout(resolve, process.env.MOVE_DELAY || 2000));
+      await new Promise((resolve) =>
+        setTimeout(resolve, process.env.MOVE_DELAY || 2000)
+      );
     }
 
     // Determine game result
@@ -1333,43 +1339,70 @@ app.get("/api/data/database-stats", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const DEFAULT_PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const MAX_PORT = DEFAULT_PORT + 10;
 
-server.listen(PORT, () => {
-  console.log(`\n🚀 LLM Chess Arena running on port ${PORT}`);
-  console.log(`📊 Dashboard: http://localhost:${PORT}`);
-  console.log(`\n🔑 Configure your API keys in environment variables:`);
-  console.log(
-    `   - OPENAI_API_KEY: ${
-      !!process.env.OPENAI_API_KEY ? "✅ Set" : "❌ Not set"
-    }`
-  );
-  console.log(
-    `   - GOOGLE_API_KEY: ${
-      !!process.env.GOOGLE_API_KEY ? "✅ Set" : "❌ Not set"
-    }`
-  );
-  console.log(
-    `   - ANTHROPIC_API_KEY: ${
-      !!process.env.ANTHROPIC_API_KEY ? "✅ Set" : "❌ Not set"
-    }`
-  );
-  console.log(
-    `   - DEEPSEEK_API_KEY: ${
-      !!process.env.DEEPSEEK_API_KEY ? "✅ Set" : "❌ Not set"
-    }`
-  );
+function startServer(port) {
+  server.listen(port, () => {
+    console.log(`\n🚀 LLM Chess Arena running on port ${port}`);
+    console.log(`📊 Dashboard: http://localhost:${port}`);
+    console.log(`\n🔑 Configure your API keys in environment variables:`);
+    console.log(
+      `   - OPENAI_API_KEY: ${
+        !!process.env.OPENAI_API_KEY ? "✅ Set" : "❌ Not set"
+      }`
+    );
+    console.log(
+      `   - GOOGLE_API_KEY: ${
+        !!process.env.GOOGLE_API_KEY ? "✅ Set" : "❌ Not set"
+      }`
+    );
+    console.log(
+      `   - ANTHROPIC_API_KEY: ${
+        !!process.env.ANTHROPIC_API_KEY ? "✅ Set" : "❌ Not set"
+      }`
+    );
+    console.log(
+      `   - DEEPSEEK_API_KEY: ${
+        !!process.env.DEEPSEEK_API_KEY ? "✅ Set" : "❌ Not set"
+      }`
+    );
 
-  const activeModels = Object.values(gameManager.modelClients).filter(
-    (m) => m.active
-  ).length;
-  console.log(
-    `\n🤖 Active AI models: ${activeModels}/${
-      Object.keys(gameManager.modelClients).length
-    }`
-  );
-  console.log(`\n🏁 Ready to battle! Use Ctrl+C to stop.\n`);
-});
+    const activeModels = Object.values(gameManager.modelClients).filter(
+      (m) => m.active
+    ).length;
+    console.log(
+      `\n🤖 Active AI models: ${activeModels}/$${
+        Object.keys(gameManager.modelClients).length
+      }`
+    );
+    console.log(`\n🏁 Ready to battle! Use Ctrl+C to stop.\n`);
+  });
+}
+
+let currentPort = DEFAULT_PORT;
+function tryListen(port) {
+  server.once("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      if (port < MAX_PORT) {
+        console.warn(`⚠️  Porta ${port} em uso. Tentando porta ${port + 1}...`);
+        currentPort = port + 1;
+        tryListen(currentPort);
+      } else {
+        console.error(
+          `❌ Nenhuma porta disponível entre ${DEFAULT_PORT} e ${MAX_PORT}`
+        );
+        process.exit(1);
+      }
+    } else {
+      console.error("Erro ao iniciar o servidor:", err);
+      process.exit(1);
+    }
+  });
+  startServer(port);
+}
+
+tryListen(currentPort);
 
 // Graceful shutdown
 process.on("SIGTERM", () => {

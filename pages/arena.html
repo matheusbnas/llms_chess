@@ -1,126 +1,113 @@
-<!-- Arena de Visualização de Partidas - HTML Clean -->
-<link rel="stylesheet" href="/css/arena.css">
-
-<div class="arena-container">
-  <!-- Header da Arena -->
-  <header class="arena-header">
-    <div class="arena-title">
-      <i class="fas fa-chess-board"></i>
-      <h1>Arena de Partidas</h1>
-    </div>
-    <div class="arena-subtitle">
-      Visualize partidas entre modelos de IA com navegação interativa
-    </div>
-  </header>
-
-  <!-- Seletor de Partidas -->
-  <section class="game-selector">
-    <div class="selector-card">
-      <div class="selector-header">
-        <h3>Selecionar Partida</h3>
-      </div>
-      
-      <div class="selector-controls">
-        <div class="selector-group">
-          <label for="arena-matchup-select">Confronto</label>
-          <select id="arena-matchup-select" class="selector-input">
-            <option value="">Carregando confrontos...</option>
-          </select>
-        </div>
-        
-        <div class="selector-group">
-          <label for="arena-game-select">Partida</label>
-          <select id="arena-game-select" class="selector-input" disabled>
-            <option value="">Selecione um confronto</option>
-          </select>
-        </div>
-        
-        <button id="arena-load-game-btn" class="load-game-btn" disabled>
-          <i class="fas fa-eye"></i>
-          Visualizar Partida
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- Área Principal da Arena (inicialmente oculta) -->
-  <main class="arena-main" id="arena-main-content" style="display: none;">
-
-    <div class="game-info-bar">
-        <div class="player-info">
-          <i class="fas fa-robot player-icon"></i>
-          <span id="white-player-name">Brancas</span>
-        </div>
-        <div class="game-result" id="game-result-display">*</div>
-        <div class="player-info">
-          <i class="fas fa-robot player-icon"></i>
-          <span id="black-player-name">Pretas</span>
-        </div>
-    </div>
-
-    <!-- Layout Principal: Tabuleiro + Histórico -->
-    <div class="arena-layout">
-      
-      <!-- Área do Tabuleiro -->
-      <div class="board-area">
-        <div class="chessboard-container">
-          <div id="arena-chessboard" class="chessboard"></div>
-        </div>
-        
-        <div class="navigation-controls">
-          <button id="arena-pgn-start" class="nav-btn" title="Primeiro lance"><i class="fas fa-fast-backward"></i></button>
-          <button id="arena-pgn-back" class="nav-btn" title="Lance anterior"><i class="fas fa-step-backward"></i></button>
-          <button id="arena-pgn-play" class="nav-btn play-btn" title="Auto-play"><i class="fas fa-play"></i></button>
-          <button id="arena-pgn-next" class="nav-btn" title="Próximo lance"><i class="fas fa-step-forward"></i></button>
-          <button id="arena-pgn-end" class="nav-btn" title="Último lance"><i class="fas fa-fast-forward"></i></button>
-          <div class="nav-spacer"></div>
-          <button id="arena-pgn-flip" class="nav-btn" title="Virar tabuleiro"><i class="fas fa-sync-alt"></i></button>
-        </div>
-        
-        <div class="position-slider-container">
-          <span class="slider-label-ext">Início</span>
-          <input type="range" id="arena-position-slider" min="0" max="0" value="0" class="slider">
-          <span class="slider-label-ext">Fim</span>
-        </div>
-         <div id="current-position-display" class="slider-label">Lance 0 / 0</div>
-      </div>
-      
-      <!-- Painel Lateral: Histórico de Lances -->
-      <div class="side-panel">
-        <div class="panel-section">
-          <div class="panel-header">
-            <h4><i class="fas fa-history"></i> Histórico</h4>
-          </div>
-          <div class="moves-list" id="arena-moves-list">
-             <div class="empty-state">
-              <i class="fas fa-chess-pawn"></i>
-              <p>Carregue uma partida.</p>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Arena de Batalha LLMs</title>
+    <link rel="stylesheet" href="/public/css/arena.css">
+    <!-- Chessboard.js CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    <script src="/public/js/arena.js" defer></script>
+    <!-- Chessboard.js JS -->
+    <script src="https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+</head>
+<body>
+    <div class="arena-container">
+        <div class="arena-card arena-config-card">
+            <div class="arena-card-header">
+                <i class="fas fa-chess-knight"></i>
+                <h2>Configuração da Batalha</h2>
             </div>
-          </div>
+            <div class="arena-form-vertical">
+                <div class="form-group">
+                    <label><input type="checkbox" id="tournament-mode"> Modo Torneio (todos vs todos)</label>
+                </div>
+                <div id="tournament-config" style="display:none;">
+                    <h3>🏆 Configuração do Torneio</h3>
+                    <label>Modelos participantes:</label>
+                    <select id="tournament-models" multiple></select>
+                    <label>Partidas por confronto:</label>
+                    <input type="range" id="games-per-pair" min="1" max="10" value="3">
+                    <span id="games-per-pair-value">3</span>
+                    <button id="start-tournament">🚀 Iniciar Torneio</button>
+                </div>
+                <div id="battle-config">
+                    <h3>🥊 Batalha Individual</h3>
+                    <div class="form-row">
+                        <label>Modelo das Brancas:</label>
+                        <select id="white-model"></select>
+                    </div>
+                    <div class="form-row">
+                        <label>Modelo das Pretas:</label>
+                        <select id="black-model"></select>
+                    </div>
+                    <div class="form-row">
+                        <label>Abertura:</label>
+                        <select id="opening">
+                            <option>1. e4</option>
+                            <option>1. d4</option>
+                            <option>1. c4</option>
+                            <option>1. Nf3</option>
+                            <option>1. b3</option>
+                            <option>1. c3</option>
+                            <option>1. e3</option>
+                            <option>1. d3</option>
+                            <option>1. g3</option>
+                            <option>1. Nc3</option>
+                        </select>
+                    </div>
+                    <div class="form-row">
+                        <label>Número de partidas:</label>
+                        <input type="range" id="num-games" min="1" max="20" value="5">
+                        <span id="num-games-value">5</span>
+                    </div>
+                    <div class="form-row">
+                        <label>Velocidade dos lances (s):</label>
+                        <input type="range" id="realtime-speed" min="0.1" max="3.0" step="0.1" value="1.0">
+                        <span id="realtime-speed-value">1.0</span>
+                    </div>
+                    <div class="form-row form-actions">
+                        <button id="start-battle">⚔️ Iniciar Batalha</button>
+                        <button id="start-realtime-battle">⚡ Batalha em Tempo Real</button>
+                    </div>
+                </div>
+            </div>
         </div>
-        
-        <div class="panel-section">
-          <div class="panel-header">
-            <h4><i class="fas fa-info-circle"></i> Detalhes</h4>
-          </div>
-          <div class="game-details" id="game-details-list">
-             <!-- Detalhes serão populados via JS -->
-          </div>
+
+        <div class="arena-card arena-status-card">
+            <div class="arena-card-header">
+                <i class="fas fa-gamepad"></i>
+                <h2>Status da Batalha</h2>
+            </div>
+            <div id="battle-status"></div>
+            <div id="chessboard-container">
+                <!-- Tabuleiro de xadrez será renderizado aqui pelo JS -->
+            </div>
+            <div id="progress-container">
+                <progress id="battle-progress" value="0" max="1"></progress>
+                <span id="progress-text"></span>
+            </div>
         </div>
-      </div>
 
-    </div>
-  </main>
-  
-  <!-- Estado de Carregamento -->
-  <div class="loading-overlay" id="arena-loading-overlay" style="display: none;">
-    <div class="loading-content">
-      <div class="loading-spinner"></div>
-      <p>Carregando partida...</p>
-    </div>
-  </div>
-</div>
+        <div class="arena-card arena-results-card">
+            <div class="arena-card-header">
+                <i class="fas fa-chart-bar"></i>
+                <h3>Resultados Parciais</h3>
+            </div>
+            <table id="results-table">
+                <thead>
+                    <tr><th>Partida</th><th>Brancas</th><th>Pretas</th><th>Resultado</th></tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
 
-<!-- Scripts -->
-<script src="/js/pgn_viewer.js"></script>
-<script src="/js/arena.js"></script>
+        <div class="arena-card arena-saved-card">
+            <div class="arena-card-header">
+                <i class="fas fa-save"></i>
+                <h3>Partidas Salvas</h3>
+            </div>
+            <ul id="saved-games-list"></ul>
+        </div>
+    </div>
+</body>
+</html>

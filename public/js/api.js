@@ -195,10 +195,34 @@ class Api {
   async getImportedGames() {
     return this.get("/api/imported-games");
   }
+
+  async getArenaModels() {
+    return this.get("/api/arena/models");
+  }
+
+  async startArenaBattle(data) {
+    return this.post("/api/arena/battle", data);
+  }
+
+  async startArenaTournament(data) {
+    return this.post("/api/arena/tournament", data);
+  }
+
+  async getArenaStatus(params) {
+    return this.get("/api/arena/status", params);
+  }
+
+  async getArenaSavedGames() {
+    return this.get("/api/arena/saved_games");
+  }
+
+  async getArenaGame(gameId) {
+    return this.get(`/api/arena/game/${gameId}`);
+  }
 }
 
-const api = new Api();
-const app = {};
+window.Api = Api;
+window.api = new Api();
 
 async function loadDashboard() {
   const data = await api.getDashboardData();
@@ -207,5 +231,3 @@ async function loadDashboard() {
 
 // Chame isso ao ativar a aba do dashboard
 loadDashboard();
-
-export { Api };
