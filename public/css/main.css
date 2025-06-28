@@ -1,78 +1,10 @@
-/* ♟️ LLM Chess Arena - Main CSS with Professional Chessboard */
+/* ♟️ LLM Chess Arena - Main CSS (Cleaned) */
 
-/* CSS Custom Properties */
-:root {
-    /* Lichess Color Palette */
-    --lichess-brown: #8b4513;
-    --lichess-brown-dark: #654321;
-    --lichess-brown-light: #b8860b;
-    --lichess-green: #759900;
-    --lichess-green-dark: #5e7700;
-    --lichess-blue: #3893e8;
-    --lichess-blue-dark: #2980b9;
-    --lichess-red: #e74c3c;
-    --lichess-orange: #f39c12;
-    --lichess-purple: #9b59b6;
-    
-    /* Board Colors */
-    --board-light: #f0d9b5;
-    --board-dark: #b58863;
-    --board-border: #8b7355;
-    --board-coords: #8b7355;
-    
-    /* UI Colors */
-    --bg-primary: #262421;
-    --bg-secondary: #2f2b28;
-    --bg-tertiary: #3c3936;
-    --text-primary: #ffffff;
-    --text-secondary: #d0d0d0;
-    --text-muted: #999999;
-    --border-color: #3c3936;
-    --hover-bg: #3c3936;
-    --active-bg: #4a4540;
-    
-    /* Semantic Colors */
-    --success: #27ae60;
-    --warning: #f39c12;
-    --error: #e74c3c;
-    --info: #3893e8;
-    
-    /* Typography */
-    --font-primary: 'Segoe UI', system-ui, sans-serif;
-    --font-mono: 'Roboto Mono', monospace;
-    
-    /* Piece shadow */
-    --piece-shadow: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
-    
-    /* Highlight colors */
-    --highlight-move: #f4f669;
-    --highlight-check: #ff6b6b;
-    --highlight-selected: #20b2aa;
-    --highlight-target: #9bc53d;
-    --highlight-capture: #dc143c;
-    
-    /* Sizes */
-    --border-radius: 4px;
-    --border-radius-lg: 8px;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
-    --transition-fast: 0.15s cubic-bezier(0.23, 1, 0.32, 1);
-    --transition-normal: 0.25s cubic-bezier(0.23, 1, 0.32, 1);
-    
-    /* Z-Index Scale */
-    --z-dropdown: 1000;
-    --z-sticky: 1020;
-    --z-fixed: 1030;
-    --z-modal-backdrop: 1040;
-    --z-modal: 1050;
-    --z-popover: 1060;
-    --z-tooltip: 1070;
-    --z-toast: 1080;
-}
+/* ==========================================
+   RESET AND BASE STYLES
+   ========================================== */
 
-/* Reset and Base */
-* {
+   * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -93,7 +25,10 @@ body {
     overflow-x: hidden;
 }
 
-/* Typography */
+/* ==========================================
+   TYPOGRAPHY
+   ========================================== */
+
 h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
     line-height: 1.2;
@@ -121,7 +56,10 @@ a:hover {
     color: var(--lichess-blue-dark);
 }
 
-/* Header */
+/* ==========================================
+   HEADER AND NAVIGATION
+   ========================================== */
+
 .header {
     background: var(--bg-secondary);
     border-bottom: 1px solid var(--border-color);
@@ -156,7 +94,6 @@ a:hover {
     color: var(--text-primary);
 }
 
-/* Navigation */
 .nav {
     display: flex;
     gap: 4px;
@@ -175,6 +112,7 @@ a:hover {
     display: flex;
     align-items: center;
     gap: 6px;
+    font-family: inherit;
 }
 
 .nav-btn:hover {
@@ -187,7 +125,10 @@ a:hover {
     color: white;
 }
 
-/* Main Content */
+/* ==========================================
+   MAIN CONTENT AND LAYOUT
+   ========================================== */
+
 .main {
     max-width: 1200px;
     margin: 0 auto;
@@ -195,7 +136,6 @@ a:hover {
     min-height: calc(100vh - 60px);
 }
 
-/* Page Management */
 .page {
     display: none;
     animation: fadeIn 0.3s ease-out;
@@ -217,417 +157,9 @@ a:hover {
 }
 
 /* ==========================================
-   PROFESSIONAL CHESSBOARD STYLES
-   ========================================== */
-
-/* Professional Chessboard Wrapper */
-.chessboard-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    padding: 30px;
-    background: var(--bg-secondary);
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--border-color);
-    margin: 0 auto;
-    width: fit-content;
-}
-
-.board-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--lichess-brown-light);
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-/* Container principal do tabuleiro com coordenadas */
-.chessboard-container {
-    position: relative;
-    display: inline-block;
-    padding: 30px; /* Espaço para coordenadas externas */
-}
-
-/* Coordenadas externas */
-.coordinates-external {
-    position: absolute;
-    font-family: 'Courier New', monospace;
-    font-weight: 700;
-    font-size: 14px;
-    color: var(--board-coords);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    user-select: none;
-}
-
-/* Coordenadas dos arquivos (a-h) - parte superior e inferior */
-.coord-files-top {
-    top: 8px;
-    left: 30px;
-    right: 30px;
-    height: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.coord-files-bottom {
-    bottom: 8px;
-    left: 30px;
-    right: 30px;
-    height: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-/* Coordenadas das fileiras (1-8) - lados esquerdo e direito */
-.coord-ranks-left {
-    left: 8px;
-    top: 30px;
-    bottom: 30px;
-    width: 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.coord-ranks-right {
-    right: 8px;
-    top: 30px;
-    bottom: 30px;
-    width: 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.coord-label {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-}
-
-/* Tabuleiro principal */
-.chessboard {
-    width: 512px;
-    height: 512px;
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    grid-template-rows: repeat(8, 1fr);
-    border: 2px solid var(--board-border);
-    border-radius: 4px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-    position: relative;
-}
-
-/* Casas do tabuleiro */
-.square {
-    width: 64px;
-    height: 64px;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
-    user-select: none;
-}
-
-.square.light {
-    background-color: var(--board-light);
-}
-
-.square.dark {
-    background-color: var(--board-dark);
-}
-
-/* Estados das casas */
-.square:hover {
-    box-shadow: inset 0 0 0 3px rgba(56, 147, 232, 0.6);
-    z-index: 10;
-}
-
-.square.selected {
-    background-color: var(--highlight-selected) !important;
-    box-shadow: inset 0 0 0 3px rgba(32, 178, 170, 0.8);
-    z-index: 15;
-}
-
-.square.last-move {
-    background-color: var(--highlight-move) !important;
-    box-shadow: inset 0 0 0 2px rgba(244, 246, 105, 0.8);
-}
-
-.square.check {
-    background-color: var(--highlight-check) !important;
-    animation: checkBlink 1s ease-in-out infinite;
-    z-index: 20;
-}
-
-@keyframes checkBlink {
-    0%, 100% { 
-        background-color: var(--highlight-check) !important; 
-        box-shadow: 0 0 15px rgba(255, 107, 107, 0.6);
-    }
-    50% { 
-        background-color: var(--highlight-check) !important; 
-        box-shadow: 0 0 25px rgba(255, 107, 107, 0.9);
-    }
-}
-
-/* Movimentos possíveis */
-.square.possible-move::before {
-    content: '';
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    background: var(--highlight-target);
-    border-radius: 50%;
-    opacity: 0.8;
-    z-index: 5;
-}
-
-.square.possible-capture::before {
-    content: '';
-    position: absolute;
-    width: calc(100% - 8px);
-    height: calc(100% - 8px);
-    background: transparent;
-    border: 4px solid var(--highlight-capture);
-    border-radius: 4px;
-    opacity: 0.9;
-    z-index: 5;
-}
-
-/* Peças de xadrez */
-.piece {
-    font-size: 52px;
-    line-height: 1;
-    cursor: grab;
-    transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
-    filter: var(--piece-shadow);
-    z-index: 10;
-    position: relative;
-    font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', serif;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-}
-
-/* Cores das peças */
-.piece.white {
-    color: #ffffff;
-    text-shadow: 
-        1px 1px 0 #000,
-        -1px -1px 0 #000,
-        1px -1px 0 #000,
-        -1px 1px 0 #000,
-        2px 2px 4px rgba(0, 0, 0, 0.6);
-}
-
-.piece.black {
-    color: #333333;
-    text-shadow: 
-        1px 1px 0 #fff,
-        -1px -1px 0 #fff,
-        1px -1px 0 #fff,
-        -1px 1px 0 #fff,
-        2px 2px 4px rgba(0, 0, 0, 0.4);
-}
-
-.piece:hover {
-    transform: scale(1.08);
-    z-index: 25;
-    filter: var(--piece-shadow) brightness(1.15);
-}
-
-.piece:active {
-    cursor: grabbing;
-    transform: scale(1.12);
-}
-
-.piece.dragging {
-    opacity: 0.8;
-    z-index: 1000;
-    transform: scale(1.2) rotate(5deg);
-    filter: var(--piece-shadow) brightness(1.3);
-}
-
-/* Animações */
-.piece.moving {
-    animation: pieceMove 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-@keyframes pieceMove {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-}
-
-.piece.captured {
-    animation: pieceCaptured 0.3s ease-out forwards;
-}
-
-@keyframes pieceCaptured {
-    0% {
-        transform: scale(1) rotate(0deg);
-        opacity: 1;
-    }
-    100% {
-        transform: scale(0.2) rotate(180deg);
-        opacity: 0;
-    }
-}
-
-/* Controles do tabuleiro */
-.board-controls {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    padding: 16px 24px;
-    background: var(--bg-tertiary);
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.control-btn {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-    width: 40px;
-    height: 40px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    font-size: 16px;
-}
-
-.control-btn:hover {
-    background: var(--hover-bg);
-    color: var(--text-primary);
-    border-color: var(--lichess-brown);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.control-btn:active {
-    transform: translateY(0);
-}
-
-/* Status do jogo */
-.game-status {
-    padding: 16px 24px;
-    border-radius: 8px;
-    text-align: center;
-    font-weight: 600;
-    font-size: 16px;
-    border: 1px solid var(--border-color);
-    background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 512px;
-}
-
-.status-playing {
-    color: var(--lichess-green);
-    border-color: rgba(117, 153, 0, 0.3);
-}
-
-.status-check {
-    color: var(--lichess-red);
-    border-color: rgba(231, 76, 60, 0.3);
-    animation: statusPulse 1.5s ease-in-out infinite;
-}
-
-@keyframes statusPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.02); }
-}
-
-/* Seletor de tema */
-.theme-selector {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    margin-top: 16px;
-}
-
-.theme-label {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    margin-right: 8px;
-}
-
-.theme-option {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.15s ease;
-    display: flex;
-    position: relative;
-    overflow: hidden;
-}
-
-.theme-option::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 50%;
-    height: 100%;
-}
-
-.theme-option::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 50%;
-    height: 100%;
-}
-
-.theme-option.brown::before { background: var(--board-light); }
-.theme-option.brown::after { background: var(--board-dark); }
-
-.theme-option.blue::before { background: #dee3e6; }
-.theme-option.blue::after { background: #8ca2ad; }
-
-.theme-option.green::before { background: #ffffdd; }
-.theme-option.green::after { background: #86a666; }
-
-.theme-option.active {
-    border-color: var(--lichess-brown);
-    box-shadow: 0 0 0 1px var(--lichess-brown);
-}
-
-.theme-option:hover {
-    transform: scale(1.1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* ==========================================
    CARDS AND COMPONENTS
    ========================================== */
 
-/* Cards */
 .card {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
@@ -660,7 +192,10 @@ a:hover {
     gap: 8px;
 }
 
-/* Buttons */
+/* ==========================================
+   BUTTONS
+   ========================================== */
+
 .btn {
     background: var(--lichess-brown);
     color: white;
@@ -696,6 +231,7 @@ a:hover {
     transform: none !important;
 }
 
+/* Button Variants */
 .btn-primary {
     background: var(--lichess-blue);
 }
@@ -738,6 +274,7 @@ a:hover {
     color: var(--text-primary);
 }
 
+/* Button Sizes */
 .btn-sm {
     padding: 6px 12px;
     font-size: 12px;
@@ -748,7 +285,10 @@ a:hover {
     font-size: 16px;
 }
 
-/* Forms */
+/* ==========================================
+   FORMS
+   ========================================== */
+
 .form-group {
     margin-bottom: 16px;
 }
@@ -759,6 +299,8 @@ a:hover {
     font-weight: 500;
     color: var(--text-secondary);
     margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .form-control {
@@ -810,7 +352,10 @@ a:hover {
     margin: 0;
 }
 
-/* Tables */
+/* ==========================================
+   TABLES
+   ========================================== */
+
 .table-container {
     background: var(--bg-secondary);
     border: 1px solid var(--border-color);
@@ -850,62 +395,10 @@ a:hover {
     border-bottom: none;
 }
 
-/* Metrics Cards */
-.metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-    margin-bottom: 32px;
-}
+/* ==========================================
+   STATUS INDICATORS
+   ========================================== */
 
-.metric-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-lg);
-    padding: 20px;
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-fast);
-    display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.metric-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-.metric-icon {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    color: white;
-    flex-shrink: 0;
-}
-
-.metric-content {
-    flex: 1;
-}
-
-.metric-value {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--lichess-brown-light);
-    line-height: 1;
-    margin-bottom: 4px;
-}
-
-.metric-label {
-    font-size: 14px;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-/* Status Indicators */
 .status {
     display: inline-flex;
     align-items: center;
@@ -945,7 +438,15 @@ a:hover {
     animation: statusPulse 1s infinite;
 }
 
-/* Badges */
+@keyframes statusPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+/* ==========================================
+   BADGES
+   ========================================== */
+
 .badge {
     display: inline-flex;
     align-items: center;
@@ -982,7 +483,10 @@ a:hover {
     color: var(--text-secondary);
 }
 
-/* Progress Bar */
+/* ==========================================
+   PROGRESS BAR
+   ========================================== */
+
 .progress {
     background: var(--bg-tertiary);
     border-radius: var(--border-radius);
@@ -1021,7 +525,10 @@ a:hover {
     100% { transform: translateX(100%); }
 }
 
-/* Loading */
+/* ==========================================
+   LOADING AND OVERLAYS
+   ========================================== */
+
 .loading-overlay {
     position: fixed;
     top: 0;
@@ -1056,7 +563,10 @@ a:hover {
     100% { transform: rotate(360deg); }
 }
 
-/* Toast Notifications */
+/* ==========================================
+   TOAST NOTIFICATIONS
+   ========================================== */
+
 .toast-container {
     position: fixed;
     top: 20px;
@@ -1110,202 +620,123 @@ a:hover {
 }
 
 /* ==========================================
-   RESPONSIVE DESIGN
+   MODAL
    ========================================== */
 
-@media (max-width: 1200px) {
-    .main {
-        max-width: none;
-        padding: 20px 16px;
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(38, 36, 33, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal);
+    backdrop-filter: blur(4px);
+}
+
+.modal {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-xl);
+    box-shadow: var(--shadow-2xl);
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+@keyframes modalSlideIn {
+    from { 
+        opacity: 0; 
+        transform: scale(0.9) translateY(-20px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: scale(1) translateY(0); 
     }
 }
 
-@media (max-width: 768px) {
-    .header-content {
-        padding: 0 12px;
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-    
-    .main {
-        padding: 16px 12px;
-    }
-    
-    .nav {
-        gap: 2px;
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .nav-btn {
-        padding: 6px 10px;
-        font-size: 12px;
-        flex: 1;
-        justify-content: center;
-    }
-    
-    .nav-btn span {
-        display: none;
-    }
-    
-    /* Chessboard responsive */
-    .chessboard {
-        width: 400px;
-        height: 400px;
-    }
-    
-    .square {
-        width: 50px;
-        height: 50px;
-    }
-    
-    .piece {
-        font-size: 40px;
-    }
-    
-    .coordinates-external {
-        font-size: 12px;
-    }
-    
-    .chessboard-container {
-        padding: 25px;
-    }
-    
-    .chessboard-wrapper {
-        padding: 20px;
-    }
-    
-    /* Fix for chessboard display */
-    .chessboard-wrapper {
-        width: 100%;
-        max-width: 450px;
-        margin: 0 auto;
-    }
-    
-    .chessboard {
-        width: 100%;
-        height: auto;
-        aspect-ratio: 1/1;
-    }
-    
-    .square {
-        width: 12.5%;
-        height: 0;
-        padding-bottom: 12.5%;
-        position: relative;
-    }
-    
-    .piece {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    /* Cards */
-    .card {
-        padding: 16px;
-    }
-    
-    /* Metrics Grid */
-    .metrics-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-    
-    .metric-card {
-        padding: 16px;
-        gap: 12px;
-    }
-    
-    .metric-icon {
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
-    }
-    
-    .metric-value {
-        font-size: 24px;
-    }
+/* ==========================================
+   TABS
+   ========================================== */
+
+.tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+    background: var(--bg-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 4px;
 }
 
-@media (max-width: 480px) {
-    .chessboard {
-        width: 320px;
-        height: 320px;
-    }
-    
-    .square {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .piece {
-        font-size: 32px;
-    }
-    
-    .coordinates-external {
-        font-size: 10px;
-    }
-    
-    .chessboard-container {
-        padding: 20px;
-    }
-    
-    .chessboard-wrapper {
-        padding: 15px;
-    }
-    
-    .board-title {
-        font-size: 20px;
-    }
-    
-    /* Typography */
-    h1 { font-size: 1.75rem; }
-    h2 { font-size: 1.5rem; }
-    h3 { font-size: 1.25rem; }
-    
-    /* Buttons */
-    .btn {
-        padding: 8px 12px;
-        font-size: 13px;
-    }
-    
-    .btn-lg {
-        padding: 10px 16px;
-        font-size: 14px;
-    }
-    
-    /* Forms */
-    .form-control {
-        padding: 10px 12px;
-        font-size: 16px; /* Prevent zoom on iOS */
-    }
-    
-    /* Metrics */
-    .metric-card {
-        flex-direction: column;
-        text-align: center;
-        padding: 16px 12px;
-    }
-    
-    .metric-icon {
-        width: 40px;
-        height: 40px;
-        font-size: 18px;
-    }
-    
-    .metric-value {
-        font-size: 20px;
-    }
-    
-    .metric-label {
-        font-size: 12px;
-    }
+.tab-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    padding: 12px 20px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: inherit;
+    flex: 1;
+    justify-content: center;
+}
+
+.tab-btn:hover {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+.tab-btn.active {
+    background: var(--lichess-brown);
+    color: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease-out;
 }
 
 /* ==========================================
@@ -1367,7 +798,10 @@ a:hover {
 .w-full { width: 100%; }
 .h-full { height: 100%; }
 
-/* Scrollbar Styling */
+/* ==========================================
+   SCROLLBAR STYLING
+   ========================================== */
+
 ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -1386,7 +820,10 @@ a:hover {
     background: var(--text-muted);
 }
 
-/* Selection */
+/* ==========================================
+   SELECTION AND FOCUS
+   ========================================== */
+
 ::selection {
     background: var(--lichess-brown);
     color: white;
@@ -1397,7 +834,6 @@ a:hover {
     color: white;
 }
 
-/* Focus styles */
 :focus {
     outline: 2px solid var(--lichess-blue);
     outline-offset: 2px;
@@ -1407,7 +843,10 @@ a:hover {
     outline: none;
 }
 
-/* Print styles */
+/* ==========================================
+   PRINT STYLES
+   ========================================== */
+
 @media print {
     .header,
     .nav,

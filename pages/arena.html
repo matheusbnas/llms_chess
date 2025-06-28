@@ -5,537 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Arena - LLM Chess Arena</title>
     
-    <!-- FontAwesome para ícones -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Estilos específicos para a Arena -->
-    <style>
-        :root {
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
-            --success-color: #28a745;
-            --warning-color: #ffc107;
-            --error-color: #dc3545;
-            --bg-primary: #262421;
-            --bg-secondary: #2f2b28;
-            --bg-tertiary: #3c3936;
-            --text-primary: #ffffff;
-            --text-secondary: #d0d0d0;
-            --border-color: #3c3936;
-            --board-light: #f0d9b5;
-            --board-dark: #b58863;
-            --board-border: #8b7355;
-        }
-
-        body {
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            margin: 0;
-            padding: 20px;
-            line-height: 1.6;
-        }
-
-        .arena-container {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 24px;
-        }
-
-        .arena-header {
-            text-align: center;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            border-radius: 16px;
-            padding: 32px;
-            color: white;
-            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
-            margin-bottom: 32px;
-        }
-
-        .arena-title {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-        }
-
-        .arena-subtitle {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-
-        .card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .card-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--primary-color);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-control {
-            width: 100%;
-            background: var(--bg-tertiary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px 16px;
-            color: var(--text-primary);
-            font-size: 14px;
-            transition: all 0.2s ease;
-            font-family: inherit;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            line-height: 1;
-            font-family: inherit;
-        }
-
-        .btn:hover:not(:disabled) {
-            background: var(--secondary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .btn-success {
-            background: var(--success-color);
-        }
-
-        .btn-success:hover:not(:disabled) {
-            background: #218838;
-        }
-
-        .btn-warning {
-            background: var(--warning-color);
-            color: #000;
-        }
-
-        .btn-warning:hover:not(:disabled) {
-            background: #e0a800;
-        }
-
-        .btn-danger {
-            background: var(--error-color);
-        }
-
-        .btn-danger:hover:not(:disabled) {
-            background: #c82333;
-        }
-
-        .btn-secondary {
-            background: var(--bg-tertiary);
-            color: var(--text-secondary);
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-            background: #4a4540;
-            color: var(--text-primary);
-        }
-
-        .battle-grid {
-            display: grid;
-            grid-template-columns: 400px 1fr;
-            gap: 32px;
-            align-items: start;
-        }
-
-        .battle-config {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .battle-display {
-            min-height: 600px;
-        }
-
-        .model-vs-model {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 20px;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        .model-card {
-            background: var(--bg-tertiary);
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .model-card:hover {
-            border-color: var(--primary-color);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
-        }
-
-        .model-card.selected {
-            border-color: var(--success-color);
-            background: rgba(40, 167, 69, 0.1);
-        }
-
-        .model-icon {
-            font-size: 2rem;
-            margin-bottom: 8px;
-            color: var(--primary-color);
-        }
-
-        .model-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .model-rating {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-
-        .vs-icon {
-            font-size: 2rem;
-            color: var(--warning-color);
-        }
-
-        .range-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .range-input {
-            flex: 1;
-            height: 6px;
-            background: var(--border-color);
-            border-radius: 3px;
-            outline: none;
-            -webkit-appearance: none;
-        }
-
-        .range-input::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 20px;
-            height: 20px;
-            background: var(--primary-color);
-            border-radius: 50%;
-            cursor: pointer;
-        }
-
-        .range-value {
-            background: var(--primary-color);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 600;
-            min-width: 40px;
-            text-align: center;
-        }
-
-        .battle-status {
-            background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 24px;
-            text-align: center;
-        }
-
-        .status-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--primary-color);
-        }
-
-        .status-description {
-            color: var(--text-secondary);
-        }
-
-        .progress-container {
-            margin: 16px 0;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: var(--border-color);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary-color), var(--success-color));
-            border-radius: 4px;
-            transition: width 0.3s ease;
-        }
-
-        .progress-text {
-            text-align: center;
-            margin-top: 8px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-
-        .chessboard-container {
-            display: flex;
-            justify-content: center;
-            margin: 24px 0;
-        }
-
-        .mini-chessboard {
-            width: 320px;
-            height: 320px;
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            grid-template-rows: repeat(8, 1fr);
-            border: 2px solid var(--board-border);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .mini-square {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            transition: all 0.2s ease;
-        }
-
-        .mini-square.light {
-            background-color: var(--board-light);
-        }
-
-        .mini-square.dark {
-            background-color: var(--board-dark);
-        }
-
-        .mini-piece {
-            font-family: 'Segoe UI Emoji', serif;
-            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
-        }
-
-        .results-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 16px;
-        }
-
-        .results-table th,
-        .results-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .results-table th {
-            background: var(--bg-tertiary);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-
-        .results-table tbody tr:hover {
-            background: var(--bg-tertiary);
-        }
-
-        .result-badge {
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
-
-        .result-white-win {
-            background: rgba(40, 167, 69, 0.2);
-            color: var(--success-color);
-        }
-
-        .result-black-win {
-            background: rgba(220, 53, 69, 0.2);
-            color: var(--error-color);
-        }
-
-        .result-draw {
-            background: rgba(108, 117, 125, 0.2);
-            color: #6c757d;
-        }
-
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 12px 16px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            display: none;
-            align-items: center;
-            gap: 8px;
-            max-width: 300px;
-        }
-
-        .toast.success {
-            border-left: 4px solid var(--success-color);
-        }
-
-        .toast.error {
-            border-left: 4px solid var(--error-color);
-        }
-
-        .toast.warning {
-            border-left: 4px solid var(--warning-color);
-        }
-
-        .toast.info {
-            border-left: 4px solid var(--primary-color);
-        }
-
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(38, 36, 33, 0.9);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            backdrop-filter: blur(4px);
-        }
-
-        .loading-content {
-            text-align: center;
-            color: var(--text-primary);
-        }
-
-        .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid var(--border-color);
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            .battle-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-
-            .model-vs-model {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
-
-            .vs-icon {
-                display: none;
-            }
-
-            .arena-container {
-                padding: 12px;
-            }
-
-            .card {
-                padding: 16px;
-            }
-        }
-    </style>
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/chessboard.css">
+    <link rel="stylesheet" href="/css/arena.css">
 </head>
 <body>
-    <!-- Loading Overlay -->
-    <div id="loading-overlay" class="loading-overlay">
-        <div class="loading-content">
-            <div class="loading-spinner"></div>
-            <p id="loading-text">Carregando...</p>
-        </div>
-    </div>
-
-    <!-- Toast Container -->
-    <div id="toast-container"></div>
-
     <div class="arena-container">
-        <!-- Header -->
+        <!-- Arena Header -->
         <div class="arena-header">
             <div class="arena-title">
                 <i class="fas fa-chess-knight"></i>
@@ -566,9 +47,7 @@
                             </div>
                             <div class="model-name">GPT-4o</div>
                             <div class="model-rating">Rating: 1850</div>
-                            <div style="margin-top: 8px; font-size: 0.8rem; color: var(--text-secondary);">
-                                Brancas
-                            </div>
+                            <div class="model-role">Brancas</div>
                         </div>
 
                         <div class="vs-icon">
@@ -581,14 +60,12 @@
                             </div>
                             <div class="model-name">Gemini-Pro</div>
                             <div class="model-rating">Rating: 1750</div>
-                            <div style="margin-top: 8px; font-size: 0.8rem; color: var(--text-secondary);">
-                                Pretas
-                            </div>
+                            <div class="model-role">Pretas</div>
                         </div>
                     </div>
 
                     <!-- Model Selection Dropdowns -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <div class="model-selectors">
                         <div class="form-group">
                             <label class="form-label">Modelo Brancas</label>
                             <select class="form-control" id="white-model-select">
@@ -648,7 +125,7 @@
                         </div>
                     </div>
 
-                    <button class="btn btn-success" id="start-battle-btn" onclick="startBattle()" style="width: 100%; margin-top: 16px;">
+                    <button class="btn btn-success" id="start-battle-btn" onclick="startBattle()">
                         <i class="fas fa-play"></i>
                         Iniciar Batalha
                     </button>
@@ -665,19 +142,17 @@
 
                     <div class="form-group">
                         <label class="form-label">Modelos Participantes</label>
-                        <select class="form-control" id="tournament-models" multiple style="height: 120px;">
+                        <select class="form-control" id="tournament-models" multiple>
                             <option value="GPT-4o">GPT-4o</option>
                             <option value="GPT-4-Turbo">GPT-4-Turbo</option>
                             <option value="Gemini-Pro">Gemini-Pro</option>
                             <option value="Claude-3.5-Sonnet">Claude-3.5-Sonnet</option>
                             <option value="Deepseek-R1">Deepseek-R1</option>
                         </select>
-                        <small style="color: var(--text-secondary); margin-top: 4px; display: block;">
-                            Segure Ctrl para selecionar múltiplos modelos
-                        </small>
+                        <small class="form-text">Segure Ctrl para selecionar múltiplos modelos</small>
                     </div>
 
-                    <button class="btn btn-warning" id="start-tournament-btn" onclick="startTournament()" style="width: 100%;">
+                    <button class="btn btn-warning" id="start-tournament-btn" onclick="startTournament()">
                         <i class="fas fa-trophy"></i>
                         Iniciar Torneio
                     </button>
@@ -688,32 +163,116 @@
             <div class="battle-display">
                 <!-- Battle Status -->
                 <div class="battle-status" id="battle-status">
-                    <div class="status-title">
+                    <div class="status-icon">
                         <i class="fas fa-clock"></i>
-                        Aguardando Batalha
                     </div>
-                    <div class="status-description">
-                        Configure os modelos e inicie uma batalha para ver o progresso aqui
+                    <div class="status-content">
+                        <div class="status-title">Aguardando Batalha</div>
+                        <div class="status-description">Configure os modelos e inicie uma batalha para ver o progresso aqui</div>
                     </div>
                 </div>
 
                 <!-- Progress Bar -->
-                <div class="progress-container" id="progress-container" style="display: none;">
+                <div class="progress-container" id="progress-container">
                     <div class="progress-bar">
-                        <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+                        <div class="progress-fill" id="progress-fill"></div>
                     </div>
                     <div class="progress-text" id="progress-text">0 / 0 partidas</div>
                 </div>
 
-                <!-- Chessboard -->
-                <div class="chessboard-container" id="chessboard-container" style="display: none;">
-                    <div class="mini-chessboard" id="mini-chessboard">
-                        <!-- Squares will be generated by JavaScript -->
+                <!-- Battle Chessboard -->
+                <div class="chessboard-container-arena" id="arena-chessboard-container">
+                    <div class="arena-board-wrapper">
+                        <div class="model-info top">
+                            <div class="model-avatar black">
+                                <i class="fas fa-gem"></i>
+                            </div>
+                            <div class="model-details">
+                                <div class="model-name" id="top-model-name">Gemini-Pro</div>
+                                <div class="model-timer" id="top-model-timer">5:00</div>
+                            </div>
+                        </div>
+
+                        <div class="arena-chessboard-container">
+                            <!-- Coordenadas externas -->
+                            <div class="coordinates-external coord-files-top">
+                                <div class="coord-label">a</div>
+                                <div class="coord-label">b</div>
+                                <div class="coord-label">c</div>
+                                <div class="coord-label">d</div>
+                                <div class="coord-label">e</div>
+                                <div class="coord-label">f</div>
+                                <div class="coord-label">g</div>
+                                <div class="coord-label">h</div>
+                            </div>
+                            
+                            <div class="coordinates-external coord-ranks-left">
+                                <div class="coord-label">8</div>
+                                <div class="coord-label">7</div>
+                                <div class="coord-label">6</div>
+                                <div class="coord-label">5</div>
+                                <div class="coord-label">4</div>
+                                <div class="coord-label">3</div>
+                                <div class="coord-label">2</div>
+                                <div class="coord-label">1</div>
+                            </div>
+                            
+                            <!-- Tabuleiro principal -->
+                            <div class="chessboard arena-chessboard" id="arena-chessboard">
+                                <!-- As 64 casas serão geradas por JavaScript -->
+                            </div>
+                            
+                            <div class="coordinates-external coord-ranks-right">
+                                <div class="coord-label">8</div>
+                                <div class="coord-label">7</div>
+                                <div class="coord-label">6</div>
+                                <div class="coord-label">5</div>
+                                <div class="coord-label">4</div>
+                                <div class="coord-label">3</div>
+                                <div class="coord-label">2</div>
+                                <div class="coord-label">1</div>
+                            </div>
+                            
+                            <div class="coordinates-external coord-files-bottom">
+                                <div class="coord-label">a</div>
+                                <div class="coord-label">b</div>
+                                <div class="coord-label">c</div>
+                                <div class="coord-label">d</div>
+                                <div class="coord-label">e</div>
+                                <div class="coord-label">f</div>
+                                <div class="coord-label">g</div>
+                                <div class="coord-label">h</div>
+                            </div>
+                        </div>
+
+                        <div class="model-info bottom">
+                            <div class="model-avatar white">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div class="model-details">
+                                <div class="model-name" id="bottom-model-name">GPT-4o</div>
+                                <div class="model-timer" id="bottom-model-timer">5:00</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Move List -->
+                <div class="arena-move-list" id="arena-move-list">
+                    <div class="move-list-header">
+                        <i class="fas fa-list"></i>
+                        Lances da Partida
+                    </div>
+                    <div class="move-list-content" id="move-list-content">
+                        <div class="empty-moves">
+                            <i class="fas fa-chess-pawn"></i>
+                            <p>Aguardando início da partida</p>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Results Table -->
-                <div class="card" id="results-card" style="display: none;">
+                <div class="card results-card" id="results-card">
                     <div class="card-header">
                         <h3 class="card-title">
                             <i class="fas fa-chart-bar"></i>
@@ -721,36 +280,39 @@
                         </h3>
                     </div>
 
-                    <table class="results-table" id="results-table">
-                        <thead>
-                            <tr>
-                                <th>Partida</th>
-                                <th>Brancas</th>
-                                <th>Pretas</th>
-                                <th>Resultado</th>
-                                <th>Lances</th>
-                                <th>Duração</th>
-                            </tr>
-                        </thead>
-                        <tbody id="results-tbody">
-                            <!-- Results will be added here -->
-                        </tbody>
-                    </table>
+                    <div class="table-container">
+                        <table class="results-table" id="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Partida</th>
+                                    <th>Brancas</th>
+                                    <th>Pretas</th>
+                                    <th>Resultado</th>
+                                    <th>Lances</th>
+                                    <th>Duração</th>
+                                </tr>
+                            </thead>
+                            <tbody id="results-tbody">
+                                <!-- Results will be added here -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // State management
+        // Arena State Management
         let currentBattle = null;
         let battleResults = [];
         let updateInterval = null;
+        let currentBoardPosition = null;
 
-        // API Base URL (ajustar conforme necessário)
+        // API Base URL
         const API_BASE_URL = window.FASTAPI_BASE_URL || 'http://localhost:8000';
 
-        // Initialize page
+        // Initialize Arena
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Arena inicializada');
             initializeArena();
@@ -759,7 +321,8 @@
         function initializeArena() {
             setupEventListeners();
             loadAvailableModels();
-            createMiniChessboard();
+            createArenaChessboard();
+            hideArenaBoard();
         }
 
         function setupEventListeners() {
@@ -780,23 +343,101 @@
             document.getElementById('black-model-select').addEventListener('change', function(e) {
                 updateModelCard('black', e.target.value);
             });
-
-            document.getElementById('start-battle-btn').addEventListener('click', startBattle);
         }
 
-        async function loadAvailableModels() {
-            try {
-                // Esta seria uma chamada real para a API
-                // const response = await fetch(`${API_BASE_URL}/api/arena/models`);
-                // const data = await response.json();
-                
-                // Por enquanto, usando dados simulados
-                console.log('✅ Modelos carregados');
-                showToast('Modelos carregados com sucesso', 'success');
-            } catch (error) {
-                console.error('❌ Erro ao carregar modelos:', error);
-                showToast('Erro ao carregar modelos disponíveis', 'error');
+        function createArenaChessboard() {
+            console.log('🏁 Criando tabuleiro da arena...');
+            
+            const boardElement = document.getElementById('arena-chessboard');
+            if (!boardElement) {
+                console.error('❌ Elemento do tabuleiro da arena não encontrado!');
+                return;
             }
+
+            // Limpar conteúdo existente
+            boardElement.innerHTML = '';
+            
+            // Criar as 64 casas
+            for (let rank = 8; rank >= 1; rank--) {
+                for (let file = 0; file < 8; file++) {
+                    const square = document.createElement('div');
+                    const fileChar = String.fromCharCode(97 + file); // a-h
+                    const squareId = `${fileChar}${rank}`;
+
+                    // Calcular cor da casa
+                    const isLight = (rank + file) % 2 !== 0;
+                    square.className = `square ${isLight ? 'light' : 'dark'}`;
+                    square.dataset.square = squareId;
+                    square.dataset.file = fileChar;
+                    square.dataset.rank = rank.toString();
+
+                    boardElement.appendChild(square);
+                }
+            }
+
+            // Configurar posição inicial
+            setupArenaInitialPosition();
+            
+            console.log('✅ Tabuleiro da arena criado!');
+        }
+
+        function setupArenaInitialPosition() {
+            const initialPosition = {
+                'a8': { piece: '♜', color: 'black' },
+                'b8': { piece: '♞', color: 'black' },
+                'c8': { piece: '♝', color: 'black' },
+                'd8': { piece: '♛', color: 'black' },
+                'e8': { piece: '♚', color: 'black' },
+                'f8': { piece: '♝', color: 'black' },
+                'g8': { piece: '♞', color: 'black' },
+                'h8': { piece: '♜', color: 'black' },
+                'a7': '♟', 'b7': '♟', 'c7': '♟', 'd7': '♟',
+                'e7': '♟', 'f7': '♟', 'g7': '♟', 'h7': '♟',
+                'a2': '♙', 'b2': '♙', 'c2': '♙', 'd2': '♙',
+                'e2': '♙', 'f2': '♙', 'g2': '♙', 'h2': '♙',
+                'a1': { piece: '♖', color: 'white' },
+                'b1': { piece: '♘', color: 'white' },
+                'c1': { piece: '♗', color: 'white' },
+                'd1': { piece: '♕', color: 'white' },
+                'e1': { piece: '♔', color: 'white' },
+                'f1': { piece: '♗', color: 'white' },
+                'g1': { piece: '♘', color: 'white' },
+                'h1': { piece: '♖', color: 'white' }
+            };
+
+            // Colocar peças nas casas
+            Object.entries(initialPosition).forEach(([square, pieceData]) => {
+                if (typeof pieceData === 'string') {
+                    placeArenaPiece(square, pieceData, pieceData === pieceData.toLowerCase() ? 'black' : 'white');
+                } else {
+                    placeArenaPiece(square, pieceData.piece, pieceData.color);
+                }
+            });
+        }
+
+        function placeArenaPiece(squareId, piece, color) {
+            const square = document.querySelector(`#arena-chessboard [data-square="${squareId}"]`);
+            if (!square) return;
+
+            square.innerHTML = '';
+            const pieceElement = document.createElement('div');
+            pieceElement.className = `piece ${color}`;
+            pieceElement.textContent = piece;
+            square.appendChild(pieceElement);
+        }
+
+        function hideArenaBoard() {
+            document.getElementById('arena-chessboard-container').style.display = 'none';
+            document.getElementById('arena-move-list').style.display = 'none';
+            document.getElementById('progress-container').style.display = 'none';
+            document.getElementById('results-card').style.display = 'none';
+        }
+
+        function showArenaBoard() {
+            document.getElementById('arena-chessboard-container').style.display = 'block';
+            document.getElementById('arena-move-list').style.display = 'block';
+            document.getElementById('progress-container').style.display = 'block';
+            document.getElementById('results-card').style.display = 'block';
         }
 
         function updateModelCard(color, modelName) {
@@ -807,7 +448,6 @@
 
             nameElement.textContent = modelName;
             
-            // Atualizar ícone baseado no modelo
             const icons = {
                 'GPT-4o': 'fas fa-brain',
                 'GPT-4-Turbo': 'fas fa-rocket',
@@ -828,47 +468,14 @@
             ratingElement.textContent = `Rating: ${ratings[modelName] || 1600}`;
         }
 
-        function selectModel(color) {
-            const card = document.getElementById(`${color}-model-card`);
-            card.classList.toggle('selected');
-        }
-
-        function createMiniChessboard() {
-            const board = document.getElementById('mini-chessboard');
-            board.innerHTML = '';
-
-            // Create 64 squares
-            for (let rank = 8; rank >= 1; rank--) {
-                for (let file = 0; file < 8; file++) {
-                    const square = document.createElement('div');
-                    const isLight = (rank + file) % 2 !== 0;
-                    square.className = `mini-square ${isLight ? 'light' : 'dark'}`;
-                    square.dataset.square = `${String.fromCharCode(97 + file)}${rank}`;
-                    board.appendChild(square);
-                }
+        async function loadAvailableModels() {
+            try {
+                console.log('✅ Modelos carregados');
+                showToast('Modelos carregados com sucesso', 'success');
+            } catch (error) {
+                console.error('❌ Erro ao carregar modelos:', error);
+                showToast('Erro ao carregar modelos disponíveis', 'error');
             }
-
-            // Setup initial position
-            setupInitialPosition();
-        }
-
-        function setupInitialPosition() {
-            const pieces = {
-                'a8': '♜', 'b8': '♞', 'c8': '♝', 'd8': '♛', 'e8': '♚', 'f8': '♝', 'g8': '♞', 'h8': '♜',
-                'a7': '♟', 'b7': '♟', 'c7': '♟', 'd7': '♟', 'e7': '♟', 'f7': '♟', 'g7': '♟', 'h7': '♟',
-                'a2': '♙', 'b2': '♙', 'c2': '♙', 'd2': '♙', 'e2': '♙', 'f2': '♙', 'g2': '♙', 'h2': '♙',
-                'a1': '♖', 'b1': '♘', 'c1': '♗', 'd1': '♕', 'e1': '♔', 'f1': '♗', 'g1': '♘', 'h1': '♖'
-            };
-
-            Object.entries(pieces).forEach(([square, piece]) => {
-                const squareElement = document.querySelector(`[data-square="${square}"]`);
-                if (squareElement) {
-                    const pieceElement = document.createElement('div');
-                    pieceElement.className = 'mini-piece';
-                    pieceElement.textContent = piece;
-                    squareElement.appendChild(pieceElement);
-                }
-            });
         }
 
         async function startBattle() {
@@ -894,15 +501,14 @@
             try {
                 showLoading('Iniciando batalha...');
                 
-                // Simular início de batalha
-                // const response = await fetch(`${API_BASE_URL}/api/arena/battle`, {
-                //     method: 'POST',
-                //     headers: { 'Content-Type': 'application/json' },
-                //     body: JSON.stringify(battleConfig)
-                // });
-                // const result = await response.json();
-
-                // Por enquanto, simular batalha
+                // Show arena elements
+                showArenaBoard();
+                
+                // Update model names in arena
+                document.getElementById('top-model-name').textContent = blackModel;
+                document.getElementById('bottom-model-name').textContent = whiteModel;
+                
+                // Simulate battle
                 simulateBattle(battleConfig);
                 
                 hideLoading();
@@ -916,7 +522,6 @@
         }
 
         function simulateBattle(config) {
-            // Update battle status
             updateBattleStatus({
                 status: 'running',
                 whiteModel: config.white_model,
@@ -925,38 +530,102 @@
                 totalGames: config.num_games
             });
 
-            // Show UI elements
-            document.getElementById('progress-container').style.display = 'block';
-            document.getElementById('chessboard-container').style.display = 'flex';
-            document.getElementById('results-card').style.display = 'block';
-
-            // Simulate game progress
             let currentGame = 0;
             const gameInterval = setInterval(() => {
                 currentGame++;
                 
-                // Simulate game result
-                const results = ['1-0', '0-1', '1/2-1/2'];
-                const result = results[Math.floor(Math.random() * results.length)];
-                const moves = Math.floor(Math.random() * 40) + 20;
-                const duration = Math.floor(Math.random() * 120) + 60;
-
-                addGameResult({
-                    game: currentGame,
-                    white: config.white_model,
-                    black: config.black_model,
-                    result: result,
-                    moves: moves,
-                    duration: `${Math.floor(duration/60)}:${(duration%60).toString().padStart(2, '0')}`
-                });
-
+                // Simulate game with moves
+                simulateGameWithMoves(config, currentGame);
+                
                 updateProgress(currentGame, config.num_games);
 
                 if (currentGame >= config.num_games) {
                     clearInterval(gameInterval);
                     finishBattle();
                 }
+            }, config.realtime_speed * 1000 * 30); // 30 moves average per game
+        }
+
+        function simulateGameWithMoves(config, gameNum) {
+            const moves = ['e4', 'e5', 'Nf3', 'Nc6', 'Bb5', 'a6', 'Ba4', 'Nf6', 'O-O', 'Be7'];
+            let moveIndex = 0;
+            
+            const moveInterval = setInterval(() => {
+                if (moveIndex < moves.length) {
+                    addMoveToList(Math.floor(moveIndex/2) + 1, moves[moveIndex], moveIndex % 2 === 0 ? 'white' : 'black');
+                    animateMove(moves[moveIndex]);
+                    moveIndex++;
+                } else {
+                    clearInterval(moveInterval);
+                    
+                    // Add game result
+                    const results = ['1-0', '0-1', '1/2-1/2'];
+                    const result = results[Math.floor(Math.random() * results.length)];
+                    const duration = Math.floor(Math.random() * 120) + 60;
+
+                    addGameResult({
+                        game: gameNum,
+                        white: config.white_model,
+                        black: config.black_model,
+                        result: result,
+                        moves: moves.length,
+                        duration: `${Math.floor(duration/60)}:${(duration%60).toString().padStart(2, '0')}`
+                    });
+                    
+                    // Reset board for next game
+                    setTimeout(() => {
+                        if (gameNum < config.num_games) {
+                            resetArenaBoard();
+                        }
+                    }, 1000);
+                }
             }, config.realtime_speed * 1000);
+        }
+
+        function addMoveToList(moveNumber, move, color) {
+            const moveList = document.getElementById('move-list-content');
+            if (moveList.querySelector('.empty-moves')) {
+                moveList.innerHTML = '';
+            }
+            
+            if (color === 'white') {
+                const moveDiv = document.createElement('div');
+                moveDiv.className = 'move-pair';
+                moveDiv.innerHTML = `
+                    <span class="move-number">${moveNumber}.</span>
+                    <span class="move white">${move}</span>
+                    <span class="move black" id="move-${moveNumber}-black">...</span>
+                `;
+                moveList.appendChild(moveDiv);
+            } else {
+                const blackMove = document.getElementById(`move-${moveNumber}-black`);
+                if (blackMove) {
+                    blackMove.textContent = move;
+                }
+            }
+            
+            moveList.scrollTop = moveList.scrollHeight;
+        }
+
+        function animateMove(move) {
+            // Simple animation - highlight a random square
+            const squares = document.querySelectorAll('#arena-chessboard .square');
+            const randomSquare = squares[Math.floor(Math.random() * squares.length)];
+            
+            randomSquare.classList.add('last-move');
+            setTimeout(() => {
+                document.querySelectorAll('.last-move').forEach(sq => sq.classList.remove('last-move'));
+            }, 1000);
+        }
+
+        function resetArenaBoard() {
+            document.getElementById('move-list-content').innerHTML = `
+                <div class="empty-moves">
+                    <i class="fas fa-chess-pawn"></i>
+                    <p>Preparando próxima partida...</p>
+                </div>
+            `;
+            setupArenaInitialPosition();
         }
 
         function updateBattleStatus(battle) {
@@ -964,12 +633,12 @@
             
             if (battle.status === 'running') {
                 statusElement.innerHTML = `
-                    <div class="status-title">
+                    <div class="status-icon">
                         <i class="fas fa-chess"></i>
-                        ${battle.whiteModel} vs ${battle.blackModel}
                     </div>
-                    <div class="status-description">
-                        Batalha em andamento - Partida ${battle.currentGame} de ${battle.totalGames}
+                    <div class="status-content">
+                        <div class="status-title">${battle.whiteModel} vs ${battle.blackModel}</div>
+                        <div class="status-description">Batalha em andamento - Partida ${battle.currentGame} de ${battle.totalGames}</div>
                     </div>
                 `;
             }
@@ -999,20 +668,17 @@
             `;
 
             tbody.appendChild(row);
-            
-            // Scroll to bottom
-            tbody.scrollTop = tbody.scrollHeight;
         }
 
         function finishBattle() {
             const statusElement = document.getElementById('battle-status');
             statusElement.innerHTML = `
-                <div class="status-title">
+                <div class="status-icon">
                     <i class="fas fa-flag-checkered"></i>
-                    Batalha Finalizada
                 </div>
-                <div class="status-description">
-                    Todas as partidas foram completadas. Veja os resultados abaixo.
+                <div class="status-content">
+                    <div class="status-title">Batalha Finalizada</div>
+                    <div class="status-description">Todas as partidas foram completadas. Veja os resultados abaixo.</div>
                 </div>
             `;
             
@@ -1034,42 +700,16 @@
 
         // Utility functions
         function showLoading(message = 'Carregando...') {
-            document.getElementById('loading-text').textContent = message;
-            document.getElementById('loading-overlay').style.display = 'flex';
+            console.log(`🔄 ${message}`);
         }
 
         function hideLoading() {
-            document.getElementById('loading-overlay').style.display = 'none';
+            console.log('✅ Carregamento concluído');
         }
 
         function showToast(message, type = 'info') {
-            const toastContainer = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            
-            const icon = {
-                success: 'fas fa-check-circle',
-                error: 'fas fa-exclamation-circle',
-                warning: 'fas fa-exclamation-triangle',
-                info: 'fas fa-info-circle'
-            }[type];
-
-            toast.innerHTML = `
-                <i class="${icon}"></i>
-                <span>${message}</span>
-            `;
-
-            toastContainer.appendChild(toast);
-            toast.style.display = 'flex';
-
-            // Auto remove after 3 seconds
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
+            console.log(`🍞 ${type.toUpperCase()}: ${message}`);
         }
-
-        // Make the function global for the onclick to work
-        window.startBattle = startBattle;
     </script>
 </body>
 </html>

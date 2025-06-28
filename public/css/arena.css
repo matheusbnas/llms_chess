@@ -1,0 +1,762 @@
+/* ♟️ LLM Chess Arena - Arena Specific Styles */
+
+/* ==========================================
+   ARENA LAYOUT
+   ========================================== */
+
+.arena-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.arena-header {
+    text-align: center;
+    background: linear-gradient(135deg, var(--lichess-purple), var(--lichess-blue));
+    border-radius: 16px;
+    padding: 32px;
+    color: white;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    margin-bottom: 32px;
+}
+
+.arena-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.arena-subtitle {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+.battle-grid {
+    display: grid;
+    grid-template-columns: 400px 1fr;
+    gap: 32px;
+    align-items: start;
+}
+
+.battle-config {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.battle-display {
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ==========================================
+   MODEL SELECTION
+   ========================================== */
+
+.model-vs-model {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.model-card {
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.model-card:hover {
+    border-color: var(--lichess-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+}
+
+.model-card.selected {
+    border-color: var(--lichess-green);
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.model-icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    color: var(--lichess-blue);
+}
+
+.model-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text-primary);
+}
+
+.model-rating {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.model-role {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.vs-icon {
+    font-size: 2rem;
+    color: var(--lichess-orange);
+}
+
+.model-selectors {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* ==========================================
+   BATTLE CONTROLS
+   ========================================== */
+
+.range-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.range-input {
+    flex: 1;
+    height: 6px;
+    background: var(--border-color);
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.range-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--lichess-blue);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.range-value {
+    background: var(--lichess-blue);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 40px;
+    text-align: center;
+}
+
+.form-text {
+    color: var(--text-secondary);
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+}
+
+/* ==========================================
+   BATTLE STATUS
+   ========================================== */
+
+.battle-status {
+    background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.status-icon {
+    font-size: 24px;
+    color: var(--lichess-blue);
+}
+
+.status-content {
+    flex: 1;
+    text-align: left;
+}
+
+.status-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+}
+
+.status-description {
+    color: var(--text-secondary);
+}
+
+/* ==========================================
+   PROGRESS BAR
+   ========================================== */
+
+.progress-container {
+    margin: 16px 0;
+    display: none;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--lichess-blue), var(--lichess-green));
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.progress-text {
+    text-align: center;
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* ==========================================
+   ARENA CHESSBOARD
+   ========================================== */
+
+.chessboard-container-arena {
+    display: none;
+    justify-content: center;
+    margin: 24px 0;
+}
+
+.arena-board-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+}
+
+.arena-chessboard-container {
+    position: relative;
+    display: inline-block;
+    padding: 25px;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    border: 2px solid var(--board-border);
+}
+
+.arena-chessboard {
+    width: 400px !important;
+    height: 400px !important;
+    display: grid !important;
+    grid-template-columns: repeat(8, 1fr) !important;
+    grid-template-rows: repeat(8, 1fr) !important;
+    border: 2px solid var(--board-border);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.arena-chessboard .square {
+    width: 50px !important;
+    height: 50px !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: default;
+    transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+    user-select: none;
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+.arena-chessboard .piece {
+    font-size: 38px !important;
+    line-height: 1 !important;
+    cursor: default;
+    transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+    z-index: 10;
+    position: relative;
+    font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', serif !important;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    user-select: none !important;
+    margin: 0;
+    padding: 0;
+}
+
+/* ==========================================
+   MODEL INFO DISPLAY
+   ========================================== */
+
+.model-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    min-width: 200px;
+}
+
+.model-info.top {
+    order: -1;
+}
+
+.model-info.bottom {
+    order: 1;
+}
+
+.model-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: white;
+}
+
+.model-avatar.white {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.model-avatar.black {
+    background: #333;
+    color: #fff;
+}
+
+.model-details {
+    flex: 1;
+}
+
+.model-details .model-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.model-timer {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--lichess-green);
+    font-weight: 600;
+}
+
+/* ==========================================
+   MOVE LIST
+   ========================================== */
+
+.arena-move-list {
+    display: none;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.move-list-header {
+    background: var(--bg-tertiary);
+    padding: 12px 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.move-list-content {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 12px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+}
+
+.move-pair {
+    display: flex;
+    align-items: center;
+    padding: 4px 0;
+    margin-bottom: 2px;
+}
+
+.move-number {
+    color: var(--text-secondary);
+    width: 32px;
+    font-weight: 500;
+}
+
+.move {
+    color: var(--text-primary);
+    margin-right: 12px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    min-width: 50px;
+    text-align: center;
+}
+
+.move.white {
+    background: rgba(240, 240, 240, 0.1);
+}
+
+.move.black {
+    background: rgba(51, 51, 51, 0.1);
+}
+
+.empty-moves {
+    color: #999;
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+}
+
+.empty-moves i {
+    font-size: 24px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* ==========================================
+   RESULTS TABLE
+   ========================================== */
+
+.results-card {
+    display: none;
+}
+
+.results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+}
+
+.results-table th,
+.results-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.results-table th {
+    background: var(--bg-tertiary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.results-table tbody tr:hover {
+    background: var(--bg-tertiary);
+}
+
+.result-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.result-white-win {
+    background: rgba(40, 167, 69, 0.2);
+    color: var(--lichess-green);
+}
+
+.result-black-win {
+    background: rgba(220, 53, 69, 0.2);
+    color: var(--lichess-red);
+}
+
+.result-draw {
+    background: rgba(108, 117, 125, 0.2);
+    color: #6c757d;
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+@media (max-width: 1200px) {
+    .battle-grid {
+        grid-template-columns: 350px 1fr;
+        gap: 24px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .battle-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .battle-config {
+        order: 2;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 16px;
+    }
+    
+    .battle-display {
+        order: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .arena-container {
+        padding: 16px;
+    }
+    
+    .arena-header {
+        padding: 24px 16px;
+    }
+    
+    .arena-title {
+        font-size: 2rem;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .model-vs-model {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .vs-icon {
+        display: none;
+    }
+    
+    .model-selectors {
+        grid-template-columns: 1fr;
+    }
+    
+    .arena-chessboard {
+        width: 320px !important;
+        height: 320px !important;
+    }
+    
+    .arena-chessboard .square {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .arena-chessboard .piece {
+        font-size: 30px !important;
+    }
+    
+    .arena-chessboard-container {
+        padding: 20px;
+    }
+    
+    .arena-board-wrapper {
+        padding: 16px;
+    }
+    
+    .model-info {
+        min-width: 150px;
+        padding: 8px 12px;
+    }
+    
+    .model-avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+    }
+    
+    .battle-config {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .arena-container {
+        padding: 12px;
+    }
+    
+    .arena-header {
+        padding: 20px 12px;
+    }
+    
+    .arena-title {
+        font-size: 1.75rem;
+    }
+    
+    .arena-subtitle {
+        font-size: 1rem;
+    }
+    
+    .card {
+        padding: 16px;
+    }
+    
+    .model-card {
+        padding: 16px 12px;
+    }
+    
+    .range-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .range-input {
+        width: 100%;
+    }
+    
+    .model-info {
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+}
+
+/* ==========================================
+   TOURNAMENT STYLES
+   ========================================== */
+
+.tournament-bracket {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.tournament-round {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg-tertiary);
+    border-radius: 8px;
+}
+
+.tournament-match {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: var(--bg-primary);
+    border-radius: 6px;
+    min-width: 200px;
+}
+
+.tournament-participant {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.tournament-score {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    color: var(--lichess-blue);
+}
+
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
+
+@keyframes battlePulse {
+    0%, 100% { 
+        transform: scale(1); 
+        opacity: 1; 
+    }
+    50% { 
+        transform: scale(1.05); 
+        opacity: 0.8; 
+    }
+}
+
+.battle-active .model-card {
+    animation: battlePulse 2s ease-in-out infinite;
+}
+
+.arena-chessboard .square.last-move {
+    box-shadow: inset 0 0 0 3px #f4f669 !important;
+    animation: moveHighlight 1s ease-out;
+}
+
+@keyframes moveHighlight {
+    0% { 
+        box-shadow: inset 0 0 0 3px #f4f669 !important;
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: inset 0 0 0 4px #f4f669 !important;
+        transform: scale(1.02);
+    }
+    100% { 
+        box-shadow: inset 0 0 0 3px #f4f669 !important;
+        transform: scale(1);
+    }
+}
+
+/* ==========================================
+   LOADING STATES
+   ========================================== */
+
+.battle-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: var(--text-secondary);
+}
+
+.battle-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--border-color);
+    border-top: 3px solid var(--lichess-blue);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 12px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

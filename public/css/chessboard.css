@@ -1,0 +1,821 @@
+/* ♟️ LLM Chess Arena - Professional Chessboard Styles */
+
+/* ==========================================
+   CHESSBOARD LAYOUT AND STRUCTURE
+   ========================================== */
+
+/* Play Page Layout */
+.play-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.page-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.page-subtitle {
+    color: var(--text-secondary);
+    font-size: 16px;
+    margin: 0;
+}
+
+.game-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr 300px;
+    gap: 24px;
+    align-items: start;
+}
+
+.game-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.game-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.game-info {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ==========================================
+   GAME CONTROLS AND UI
+   ========================================== */
+
+.game-controls-card {
+    display: none;
+}
+
+.control-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.btn-start-game {
+    width: 100%;
+    justify-content: center;
+    padding: 12px;
+}
+
+.color-selection {
+    display: flex;
+    gap: 8px;
+}
+
+.color-option {
+    flex: 1;
+    cursor: pointer;
+}
+
+.color-option input {
+    display: none;
+}
+
+.color-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-tertiary);
+    transition: all 0.2s ease;
+}
+
+.color-option input:checked + .color-display {
+    border-color: var(--lichess-blue);
+    background: rgba(56, 147, 232, 0.1);
+}
+
+.piece-icon {
+    font-size: 24px;
+    margin-bottom: 4px;
+}
+
+.color-label {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ==========================================
+   GAME STATUS
+   ========================================== */
+
+.game-status {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 24px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+    border: 2px solid var(--border-color);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 512px;
+    margin-bottom: 20px;
+}
+
+.status-icon {
+    font-size: 24px;
+    color: var(--lichess-blue);
+}
+
+.status-content {
+    flex: 1;
+}
+
+.status-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.status-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.game-status.status-playing {
+    border-color: rgba(117, 153, 0, 0.3);
+}
+
+.game-status.status-playing .status-icon {
+    color: var(--lichess-green);
+}
+
+/* ==========================================
+   PROFESSIONAL CHESSBOARD
+   ========================================== */
+
+.chessboard-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 30px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+    margin: 0 auto;
+    width: fit-content;
+    max-width: 90vw;
+}
+
+.chessboard-container {
+    position: relative;
+    display: inline-block;
+    padding: 30px;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    border: 2px solid var(--board-border);
+}
+
+/* ==========================================
+   CHESSBOARD COORDINATES
+   ========================================== */
+
+.coordinates-external {
+    position: absolute;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--board-coords);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    user-select: none;
+    pointer-events: none;
+}
+
+.coord-files-top {
+    top: 8px;
+    left: 30px;
+    right: 30px;
+    height: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.coord-files-bottom {
+    bottom: 8px;
+    left: 30px;
+    right: 30px;
+    height: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.coord-ranks-left {
+    left: 8px;
+    top: 30px;
+    bottom: 30px;
+    width: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.coord-ranks-right {
+    right: 8px;
+    top: 30px;
+    bottom: 30px;
+    width: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.coord-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* ==========================================
+   CHESSBOARD SQUARES
+   ========================================== */
+
+.chessboard {
+    width: 512px !important;
+    height: 512px !important;
+    display: grid !important;
+    grid-template-columns: repeat(8, 1fr) !important;
+    grid-template-rows: repeat(8, 1fr) !important;
+    border: 2px solid var(--board-border);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+.square {
+    width: 64px !important;
+    height: 64px !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer;
+    transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+    user-select: none;
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* CRITICAL: Fixed square colors - this was the main bug */
+.square.light {
+    background-color: #f0d9b5 !important; /* Lichess light squares */
+}
+
+.square.dark {
+    background-color: #b58863 !important; /* Lichess dark squares */
+}
+
+/* ==========================================
+   SQUARE STATES AND INTERACTIONS
+   ========================================== */
+
+.square:hover {
+    box-shadow: inset 0 0 0 3px rgba(56, 147, 232, 0.6) !important;
+    z-index: 10;
+}
+
+.square.selected {
+    background-color: #20b2aa !important;
+    box-shadow: inset 0 0 0 3px rgba(32, 178, 170, 0.8) !important;
+    z-index: 15;
+}
+
+.square.last-move {
+    box-shadow: inset 0 0 0 3px #f4f669 !important;
+}
+
+.square.check {
+    background-color: #ff6b6b !important;
+    animation: checkBlink 1s ease-in-out infinite;
+    z-index: 20;
+}
+
+@keyframes checkBlink {
+    0%, 100% { 
+        box-shadow: 0 0 15px rgba(255, 107, 107, 0.6) !important;
+    }
+    50% { 
+        box-shadow: 0 0 25px rgba(255, 107, 107, 0.9) !important;
+    }
+}
+
+/* Possible moves indicators */
+.square.possible-move::before {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background: #9bc53d;
+    border-radius: 50%;
+    opacity: 0.8;
+    z-index: 5;
+}
+
+.square.possible-capture::before {
+    content: '';
+    position: absolute;
+    width: calc(100% - 8px);
+    height: calc(100% - 8px);
+    background: transparent;
+    border: 4px solid #dc143c;
+    border-radius: 4px;
+    opacity: 0.9;
+    z-index: 5;
+}
+
+/* ==========================================
+   CHESS PIECES
+   ========================================== */
+
+.piece {
+    font-size: 48px !important;
+    line-height: 1 !important;
+    cursor: grab;
+    transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+    z-index: 10;
+    position: relative;
+    font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', serif !important;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    user-select: none !important;
+    margin: 0;
+    padding: 0;
+}
+
+.piece.white {
+    color: #ffffff !important;
+    text-shadow: 
+        1px 1px 0 #000,
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        2px 2px 4px rgba(0, 0, 0, 0.6) !important;
+}
+
+.piece.black {
+    color: #333333 !important;
+    text-shadow: 
+        1px 1px 0 #fff,
+        -1px -1px 0 #fff,
+        1px -1px 0 #fff,
+        -1px 1px 0 #fff,
+        2px 2px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+.piece:hover {
+    transform: scale(1.08);
+    z-index: 25;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4)) brightness(1.15);
+}
+
+.piece:active {
+    cursor: grabbing;
+    transform: scale(1.12);
+}
+
+.piece.dragging {
+    opacity: 0.8;
+    z-index: 1000;
+    transform: scale(1.2) rotate(5deg);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4)) brightness(1.3);
+}
+
+/* ==========================================
+   BOARD CONTROLS
+   ========================================== */
+
+.board-controls {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 16px 24px;
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    margin-top: 16px;
+}
+
+.control-btn {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 16px;
+}
+
+.control-btn:hover:not(:disabled) {
+    background: #8b4513;
+    color: white;
+    border-color: #8b4513;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+}
+
+.control-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.control-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ==========================================
+   PLAYER DISPLAY
+   ========================================== */
+
+.player-display {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.player-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.player-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: white;
+}
+
+.player-avatar.human {
+    background: var(--bg-tertiary);
+}
+
+.player-avatar.ai {
+    background: #3893e8;
+}
+
+.player-details {
+    flex: 1;
+}
+
+.player-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.player-color {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.player-rating {
+    text-align: right;
+}
+
+.rating-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.rating-label {
+    color: var(--text-secondary);
+    font-size: 10px;
+}
+
+.vs-divider {
+    text-align: center;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin: 8px 0;
+}
+
+/* ==========================================
+   MOVE HISTORY
+   ========================================== */
+
+.move-history {
+    max-height: 200px;
+    overflow-y: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    background: var(--bg-primary);
+    border-radius: 6px;
+    padding: 8px;
+}
+
+.empty-moves {
+    color: #999;
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+}
+
+.empty-moves i {
+    font-size: 24px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* ==========================================
+   ANALYSIS DISPLAY
+   ========================================== */
+
+.analysis-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.evaluation-bar {
+    width: 20px;
+    height: 80px;
+    background: linear-gradient(to top, #2c2c2c 50%, #eeeeee 50%);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    position: relative;
+}
+
+.eval-indicator {
+    position: absolute;
+    width: 100%;
+    height: 3px;
+    background: #3893e8;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 1px;
+    transition: top 0.3s ease;
+}
+
+.evaluation-info {
+    flex: 1;
+}
+
+.eval-score {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
+.eval-label {
+    color: var(--text-secondary);
+    font-size: 12px;
+}
+
+.analysis-details {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.best-move {
+    font-family: 'Courier New', monospace;
+    color: var(--text-primary);
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+@media (max-width: 1200px) {
+    .game-layout {
+        grid-template-columns: 280px 1fr 280px;
+        gap: 20px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .game-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .game-sidebar,
+    .game-info {
+        order: 2;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 16px;
+    }
+    
+    .game-center {
+        order: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .play-container {
+        padding: 16px;
+    }
+    
+    .chessboard-wrapper {
+        padding: 20px;
+    }
+
+    .chessboard-container {
+        padding: 25px;
+    }
+
+    .chessboard {
+        width: 400px !important;
+        height: 400px !important;
+    }
+    
+    .square {
+        width: 50px !important;
+        height: 50px !important;
+    }
+    
+    .piece {
+        font-size: 38px !important;
+    }
+    
+    .coord-label {
+        font-size: 10px;
+    }
+    
+    .page-title {
+        font-size: 28px;
+    }
+    
+    .game-sidebar,
+    .game-info {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .play-container {
+        padding: 12px;
+    }
+    
+    .chessboard {
+        width: 320px !important;
+        height: 320px !important;
+    }
+    
+    .square {
+        width: 40px !important;
+        height: 40px !important;
+    }
+    
+    .piece {
+        font-size: 30px !important;
+    }
+    
+    .chessboard-container {
+        padding: 20px;
+    }
+    
+    .chessboard-wrapper {
+        padding: 15px;
+        max-width: 100%;
+    }
+    
+    .page-title {
+        font-size: 24px;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .color-selection {
+        flex-direction: column;
+    }
+    
+    .player-display {
+        gap: 12px;
+    }
+    
+    .analysis-display {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .evaluation-bar {
+        width: 80px;
+        height: 20px;
+        background: linear-gradient(to right, #2c2c2c 50%, #eeeeee 50%);
+    }
+    
+    .eval-indicator {
+        width: 3px;
+        height: 100%;
+        left: 50%;
+        top: 0;
+        transform: translateX(-50%);
+    }
+}
+
+/* ==========================================
+   BOARD THEME VARIANTS
+   ========================================== */
+
+[data-board-theme="blue"] .square.light {
+    background-color: #dee3e6 !important;
+}
+
+[data-board-theme="blue"] .square.dark {
+    background-color: #8ca2ad !important;
+}
+
+[data-board-theme="green"] .square.light {
+    background-color: #ffffdd !important;
+}
+
+[data-board-theme="green"] .square.dark {
+    background-color: #86a666 !important;
+}
+
+[data-board-theme="purple"] .square.light {
+    background-color: #f0d0ff !important;
+}
+
+[data-board-theme="purple"] .square.dark {
+    background-color: #b794c8 !important;
+}
+
+/* ==========================================
+   ANIMATIONS
+   ========================================== */
+
+@keyframes pieceMove {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes pieceCaptured {
+    0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.2) rotate(180deg);
+        opacity: 0;
+    }
+}
+
+.piece.moving {
+    animation: pieceMove 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.piece.captured {
+    animation: pieceCaptured 0.3s ease-out forwards;
+}
+
+/* ==========================================
+   UTILITIES
+   ========================================== */
+
+.mb-24 { margin-bottom: 24px; }

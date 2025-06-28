@@ -1,0 +1,602 @@
+/* ♟️ LLM Chess Arena - Rankings Specific Styles */
+
+/* ==========================================
+   RANKINGS LAYOUT
+   ========================================== */
+
+.rankings-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px;
+}
+
+.rankings-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.rankings-title {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.rankings-subtitle {
+    color: var(--text-secondary);
+    font-size: 16px;
+    margin: 0;
+}
+
+/* ==========================================
+   ELO RANKINGS
+   ========================================== */
+
+.elo-rankings-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    margin-bottom: 32px;
+}
+
+.rankings-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.rankings-table th {
+    background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 16px 20px;
+    text-align: left;
+    border-bottom: 2px solid var(--border-color);
+    font-size: 12px;
+}
+
+.rankings-table td {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    vertical-align: middle;
+}
+
+.rankings-table tbody tr {
+    transition: background 0.2s ease;
+}
+
+.rankings-table tbody tr:hover {
+    background: var(--bg-tertiary);
+}
+
+.rankings-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Position indicators */
+.position-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.position-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.position-badge.gold {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #b8860b;
+}
+
+.position-badge.silver {
+    background: linear-gradient(135deg, #c0c0c0, #e5e5e5);
+    color: #666;
+}
+
+.position-badge.bronze {
+    background: linear-gradient(135deg, #cd7f32, #d4a574);
+    color: #8b4513;
+}
+
+.position-badge.default {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+/* Model display */
+.model-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.model-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: white;
+}
+
+.model-avatar.gpt { background: var(--lichess-green); }
+.model-avatar.gemini { background: var(--lichess-blue); }
+.model-avatar.claude { background: var(--lichess-brown); }
+.model-avatar.deepseek { background: var(--lichess-purple); }
+
+.model-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* ELO rating display */
+.elo-rating {
+    font-family: var(--font-mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--lichess-blue);
+}
+
+/* Win rate display */
+.win-rate {
+    font-weight: 600;
+}
+
+.win-rate.high { color: var(--lichess-green); }
+.win-rate.medium { color: var(--lichess-orange); }
+.win-rate.low { color: var(--lichess-red); }
+
+/* Trend indicators */
+.trend-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.trend-indicator.up {
+    color: var(--lichess-green);
+}
+
+.trend-indicator.down {
+    color: var(--lichess-red);
+}
+
+.trend-indicator.stable {
+    color: var(--text-secondary);
+}
+
+/* ==========================================
+   ELO EVOLUTION CHART
+   ========================================== */
+
+.elo-chart-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    margin-bottom: 32px;
+}
+
+.chart-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.chart-container {
+    padding: 24px;
+    height: 400px;
+    position: relative;
+}
+
+.chart-container canvas {
+    max-height: 100%;
+    width: 100% !important;
+    height: auto !important;
+}
+
+/* ==========================================
+   PERFORMANCE METRICS
+   ========================================== */
+
+.performance-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+.performance-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+}
+
+.performance-chart {
+    padding: 20px;
+    height: 300px;
+}
+
+/* ==========================================
+   HEAD-TO-HEAD STATS
+   ========================================== */
+
+.head-to-head-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    margin-bottom: 32px;
+}
+
+.head-to-head-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.head-to-head-table th,
+.head-to-head-table td {
+    padding: 12px 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.head-to-head-table th {
+    background: var(--bg-tertiary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.score-display {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.score-wins { color: var(--lichess-green); }
+.score-draws { color: var(--lichess-orange); }
+.score-losses { color: var(--lichess-red); }
+
+/* ==========================================
+   DETAILED STATS
+   ========================================== */
+
+.detailed-stats-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    margin-bottom: 32px;
+}
+
+.stats-selector {
+    margin-bottom: 24px;
+}
+
+.model-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stat-metric {
+    background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-primary));
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stat-metric:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    font-family: var(--font-mono);
+}
+
+.stat-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* ==========================================
+   FILTERS AND CONTROLS
+   ========================================== */
+
+.rankings-filters {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.filter-select {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: var(--text-primary);
+    font-size: 13px;
+    min-width: 120px;
+}
+
+.filter-btn {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.filter-btn:hover {
+    background: var(--lichess-blue);
+    color: white;
+    border-color: var(--lichess-blue);
+}
+
+.filter-btn.active {
+    background: var(--lichess-brown);
+    color: white;
+    border-color: var(--lichess-brown);
+}
+
+/* ==========================================
+   OPENINGS SECTION
+   ========================================== */
+
+.openings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.opening-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s ease;
+}
+
+.opening-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    border-color: var(--lichess-brown-light);
+}
+
+.opening-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+}
+
+.opening-moves {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.opening-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.opening-win-rate {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.opening-games {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+@media (max-width: 1200px) {
+    .performance-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .model-metrics {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .rankings-container {
+        padding: 16px;
+    }
+    
+    .rankings-title {
+        font-size: 28px;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .rankings-table th,
+    .rankings-table td {
+        padding: 12px 16px;
+        font-size: 12px;
+    }
+    
+    .model-display {
+        gap: 8px;
+    }
+    
+    .model-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    
+    .elo-rating {
+        font-size: 14px;
+    }
+    
+    .chart-container {
+        height: 300px;
+        padding: 16px;
+    }
+    
+    .performance-chart {
+        height: 250px;
+        padding: 16px;
+    }
+    
+    .rankings-filters {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+    
+    .filter-group {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+    }
+    
+    .filter-select,
+    .filter-btn {
+        width: 100%;
+    }
+    
+    .openings-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .model-metrics {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .rankings-container {
+        padding: 12px;
+    }
+    
+    .rankings-title {
+        font-size: 24px;
+    }
+    
+    .rankings-table th,
+    .rankings-table td {
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+    
+    .position-badge {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+    }
+    
+    .model-display {
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        text-align: center;
+    }
+    
+    .chart-container {
+        height: 250px;
+        padding: 12px;
+    }
+    
+    .detailed-stats-card {
+        padding: 16px;
+    }
+    
+    .stat-metric {
+        padding: 16px;
+    }
+    
+    .stat-icon {
+        font-size: 1.5rem;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .model-metrics {
+        grid-template-columns: 1fr;
+    }
+    
+    .opening-card {
+        padding: 16px;
+    }
+}

@@ -1,0 +1,262 @@
+/* ♟️ LLM Chess Arena - CSS Variables */
+
+:root {
+    /* === COLORS === */
+    
+    /* Lichess Color Palette */
+    --lichess-brown: #8b4513;
+    --lichess-brown-dark: #654321;
+    --lichess-brown-light: #b8860b;
+    --lichess-green: #759900;
+    --lichess-green-dark: #5e7700;
+    --lichess-blue: #3893e8;
+    --lichess-blue-dark: #2980b9;
+    --lichess-red: #e74c3c;
+    --lichess-orange: #f39c12;
+    --lichess-purple: #9b59b6;
+    
+    /* Board Colors */
+    --board-light: #f0d9b5;
+    --board-dark: #b58863;
+    --board-border: #8b7355;
+    --board-coords: #8b7355;
+    
+    /* UI Theme - Dark */
+    --bg-primary: #262421;
+    --bg-secondary: #2f2b28;
+    --bg-tertiary: #3c3936;
+    --bg-quaternary: #4a4540;
+    
+    /* Text Colors */
+    --text-primary: #ffffff;
+    --text-secondary: #d0d0d0;
+    --text-muted: #999999;
+    --text-disabled: #666666;
+    
+    /* Border Colors */
+    --border-color: #3c3936;
+    --border-color-light: #4a4540;
+    --border-color-dark: #2f2b28;
+    
+    /* State Colors */
+    --success: #27ae60;
+    --warning: #f39c12;
+    --error: #e74c3c;
+    --info: #3893e8;
+    
+    /* Hover/Active States */
+    --hover-bg: #3c3936;
+    --active-bg: #4a4540;
+    --selected-bg: #20b2aa;
+    
+    /* Chess Board Highlights */
+    --highlight-move: #f4f669;
+    --highlight-check: #ff6b6b;
+    --highlight-selected: #20b2aa;
+    --highlight-target: #9bc53d;
+    --highlight-capture: #dc143c;
+    
+    /* === TYPOGRAPHY === */
+    --font-primary: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-mono: 'Roboto Mono', 'Consolas', 'Monaco', monospace;
+    --font-chess: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', serif;
+    
+    /* Font Sizes */
+    --font-xs: 0.75rem;      /* 12px */
+    --font-sm: 0.875rem;     /* 14px */
+    --font-base: 1rem;       /* 16px */
+    --font-lg: 1.125rem;     /* 18px */
+    --font-xl: 1.25rem;      /* 20px */
+    --font-2xl: 1.5rem;      /* 24px */
+    --font-3xl: 1.875rem;    /* 30px */
+    --font-4xl: 2.25rem;     /* 36px */
+    --font-5xl: 3rem;        /* 48px */
+    
+    /* Font Weights */
+    --font-light: 300;
+    --font-normal: 400;
+    --font-medium: 500;
+    --font-semibold: 600;
+    --font-bold: 700;
+    --font-extrabold: 800;
+    
+    /* Line Heights */
+    --leading-tight: 1.25;
+    --leading-snug: 1.375;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.625;
+    --leading-loose: 2;
+    
+    /* === SPACING === */
+    --space-1: 0.25rem;      /* 4px */
+    --space-2: 0.5rem;       /* 8px */
+    --space-3: 0.75rem;      /* 12px */
+    --space-4: 1rem;         /* 16px */
+    --space-5: 1.25rem;      /* 20px */
+    --space-6: 1.5rem;       /* 24px */
+    --space-8: 2rem;         /* 32px */
+    --space-10: 2.5rem;      /* 40px */
+    --space-12: 3rem;        /* 48px */
+    --space-16: 4rem;        /* 64px */
+    --space-20: 5rem;        /* 80px */
+    --space-24: 6rem;        /* 96px */
+    --space-32: 8rem;        /* 128px */
+    
+    /* === BORDERS === */
+    --border-radius: 4px;
+    --border-radius-sm: 2px;
+    --border-radius-md: 6px;
+    --border-radius-lg: 8px;
+    --border-radius-xl: 12px;
+    --border-radius-2xl: 16px;
+    --border-radius-full: 9999px;
+    
+    --border-width: 1px;
+    --border-width-2: 2px;
+    --border-width-4: 4px;
+    
+    /* === SHADOWS === */
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.1);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.2);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.4);
+    --shadow-2xl: 0 25px 50px rgba(0, 0, 0, 0.5);
+    --shadow-inner: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    
+    /* Board Shadows */
+    --board-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --piece-shadow: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+    
+    /* === TRANSITIONS === */
+    --transition-fast: 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+    --transition-normal: 0.25s cubic-bezier(0.23, 1, 0.32, 1);
+    --transition-slow: 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+    
+    /* === Z-INDEX SCALE === */
+    --z-auto: auto;
+    --z-0: 0;
+    --z-10: 10;
+    --z-20: 20;
+    --z-30: 30;
+    --z-40: 40;
+    --z-50: 50;
+    --z-dropdown: 1000;
+    --z-sticky: 1020;
+    --z-fixed: 1030;
+    --z-modal-backdrop: 1040;
+    --z-modal: 1050;
+    --z-popover: 1060;
+    --z-tooltip: 1070;
+    --z-toast: 1080;
+    
+    /* === CHESSBOARD === */
+    --board-size: 512px;
+    --board-size-mobile: 320px;
+    --board-size-tablet: 400px;
+    --square-size: 64px;
+    --square-size-mobile: 40px;
+    --square-size-tablet: 50px;
+    --piece-size: 52px;
+    --piece-size-mobile: 30px;
+    --piece-size-tablet: 38px;
+    
+    /* === LAYOUT === */
+    --header-height: 60px;
+    --sidebar-width: 300px;
+    --content-max-width: 1400px;
+    --container-padding: var(--space-6);
+    --container-padding-mobile: var(--space-4);
+    
+    /* === GRID === */
+    --grid-gap: var(--space-6);
+    --grid-gap-sm: var(--space-4);
+    --grid-gap-lg: var(--space-8);
+    
+    /* === COMPONENT SIZES === */
+    --btn-height: 40px;
+    --btn-height-sm: 32px;
+    --btn-height-lg: 48px;
+    --input-height: 40px;
+    --input-height-sm: 32px;
+    --input-height-lg: 48px;
+    
+    /* === BREAKPOINTS (for JS) === */
+    --breakpoint-sm: 480px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-xl: 1200px;
+    --breakpoint-2xl: 1400px;
+}
+
+/* === DARK/LIGHT THEME VARIANTS === */
+[data-theme="light"] {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --bg-tertiary: #e9ecef;
+    --bg-quaternary: #dee2e6;
+    
+    --text-primary: #212529;
+    --text-secondary: #495057;
+    --text-muted: #6c757d;
+    --text-disabled: #adb5bd;
+    
+    --border-color: #dee2e6;
+    --border-color-light: #f8f9fa;
+    --border-color-dark: #e9ecef;
+    
+    --hover-bg: #f8f9fa;
+    --active-bg: #e9ecef;
+}
+
+/* === BOARD THEME VARIANTS === */
+[data-board-theme="blue"] {
+    --board-light: #dee3e6;
+    --board-dark: #8ca2ad;
+    --board-border: #7a8b94;
+    --board-coords: #7a8b94;
+}
+
+[data-board-theme="green"] {
+    --board-light: #ffffdd;
+    --board-dark: #86a666;
+    --board-border: #759654;
+    --board-coords: #759654;
+}
+
+[data-board-theme="purple"] {
+    --board-light: #f0d0ff;
+    --board-dark: #b794c8;
+    --board-border: #9c7fb5;
+    --board-coords: #9c7fb5;
+}
+
+/* === HIGH CONTRAST MODE === */
+[data-contrast="high"] {
+    --text-primary: #ffffff;
+    --text-secondary: #ffffff;
+    --border-color: #ffffff;
+    --bg-secondary: #000000;
+    --bg-tertiary: #333333;
+}
+
+/* === REDUCED MOTION === */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --transition-fast: 0.01ms;
+        --transition-normal: 0.01ms;
+        --transition-slow: 0.01ms;
+    }
+}
+
+/* === PRINT STYLES === */
+@media print {
+    :root {
+        --bg-primary: #ffffff;
+        --bg-secondary: #ffffff;
+        --bg-tertiary: #ffffff;
+        --text-primary: #000000;
+        --text-secondary: #000000;
+        --border-color: #000000;
+    }
+}
