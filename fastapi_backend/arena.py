@@ -10,6 +10,8 @@ from datetime import datetime
 import sqlite3
 import threading
 from enum import Enum
+from pathlib import Path
+from pgn_utils import parse_pgn
 
 router = APIRouter(prefix="/api/arena", tags=["arena"])
 
@@ -777,3 +779,81 @@ async def create_sample_data():
         save_game_to_db(game)
 
     return {"message": f"Criados {len(sample_games)} jogos de exemplo"}
+
+
+@router.get("/matchups")
+async def list_matchups():
+    """
+    Lista todos os confrontos disponíveis (pastas de PGN).
+    """
+    base_dir = Path(__file__).resolve().parent.parent
+    pgn_dirs = [d for d in base_dir.iterdir() if d.is_dir() and "vs" in d.name]
+    matchups = [d.name for d in pgn_dirs]
+    return {"matchups": matchups}
+
+
+@router.get("/matchups/{matchup}/games")
+async def list_games_for_matchup(matchup: str):
+    """
+    Lista todos os arquivos .pgn de um confronto.
+    """
+    base_dir = Path(__file__).resolve().parent.parent
+    matchup_dir = base_dir / matchup
+    if not matchup_dir.exists() or not matchup_dir.is_dir():
+        return {"games": []}
+    games = [f.name for f in matchup_dir.glob("*.pgn")]
+    return {"games": games}
+
+
+@router.get("/matchups/{matchup}/games/{game_file}")
+async def get_pgn_for_game(matchup: str, game_file: str):
+    """
+    Retorna o conteúdo do PGN de um jogo específico.
+    """
+    base_dir = Path(__file__).resolve().parent.parent
+    game_path = base_dir / matchup / game_file
+    if not game_path.exists():
+        return {"error": "Arquivo não encontrado"}
+    with open(game_path, "r", encoding="utf-8") as f:
+        pgn_text = f.read()
+    parsed = parse_pgn(pgn_text)
+    return parsed
+
+
+@router.get("/status")
+async def get_status(battle_id: Optional[str] = None, tournament_id: Optional[str] = None):
+    """Obtém o status de uma batalha ou torneio, conforme o parâmetro passado."""
+    if battle_id:
+        with battles_lock:
+            battle = active_battles.get(battle_id)
+        if not battle:
+            raise HTTPException(
+                status_code=404, detail="Batalha não encontrada")
+        return battle.to_dict()
+    elif tournament_id:
+        # Exemplo: buscar status do torneio (ajuste conforme sua lógica de torneio)
+        # Aqui, apenas retorna um placeholder, pois a lógica real depende de como os torneios são armazenados
+        # Se você tiver um dicionário active_tournaments, use-o aqui
+        try:
+            from arena_engine import _tournaments, _tournaments_lock
+        except ImportError:
+            raise HTTPException(
+                status_code=501, detail="Suporte a torneio não implementado")
+        with _tournaments_lock:
+            tournament = _tournaments.get(tournament_id)
+        if not tournament:
+            raise HTTPException(
+                status_code=404, detail="Torneio não encontrado")
+        # Montar resposta compatível com o frontend
+        return {
+            "tournament_id": tournament.id,
+            "models": tournament.models,
+            "games_per_pair": tournament.games_per_pair,
+            "current_match": tournament.current_match,
+            "total_matches": tournament.total_matches,
+            "results": tournament.results,
+            "status": tournament.status
+        }
+    else:
+        raise HTTPException(
+            status_code=400, detail="É necessário informar battle_id ou tournament_id")

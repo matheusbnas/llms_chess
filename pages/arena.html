@@ -41,7 +41,7 @@
                     </div>
 
                     <div class="model-vs-model">
-                        <div class="model-card" id="white-model-card" onclick="selectModel('white')">
+                        <div class="model-card" id="white-model-card">
                             <div class="model-icon">
                                 <i class="fas fa-brain"></i>
                             </div>
@@ -54,7 +54,7 @@
                             <i class="fas fa-sword"></i>
                         </div>
 
-                        <div class="model-card" id="black-model-card" onclick="selectModel('black')">
+                        <div class="model-card" id="black-model-card">
                             <div class="model-icon">
                                 <i class="fas fa-gem"></i>
                             </div>
@@ -68,7 +68,7 @@
                     <div class="model-selectors">
                         <div class="form-group">
                             <label class="form-label">Modelo Brancas</label>
-                            <select class="form-control" id="white-model-select">
+                            <select class="form-control" id="white-model">
                                 <option value="GPT-4o" selected>GPT-4o</option>
                                 <option value="GPT-4-Turbo">GPT-4-Turbo</option>
                                 <option value="Gemini-Pro">Gemini-Pro</option>
@@ -78,7 +78,7 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label">Modelo Pretas</label>
-                            <select class="form-control" id="black-model-select">
+                            <select class="form-control" id="black-model">
                                 <option value="GPT-4o">GPT-4o</option>
                                 <option value="GPT-4-Turbo">GPT-4-Turbo</option>
                                 <option value="Gemini-Pro" selected>Gemini-Pro</option>
@@ -100,7 +100,7 @@
 
                     <div class="form-group">
                         <label class="form-label">Abertura</label>
-                        <select class="form-control" id="opening-select">
+                        <select class="form-control" id="opening">
                             <option value="1. e4">1. e4 (Rei)</option>
                             <option value="1. d4">1. d4 (Dama)</option>
                             <option value="1. c4">1. c4 (Inglesa)</option>
@@ -112,7 +112,7 @@
                     <div class="form-group">
                         <label class="form-label">Número de Partidas</label>
                         <div class="range-group">
-                            <input type="range" class="range-input" id="num-games-range" min="1" max="10" value="3">
+                            <input type="range" class="range-input" id="num-games" min="1" max="10" value="3">
                             <span class="range-value" id="num-games-value">3</span>
                         </div>
                     </div>
@@ -120,12 +120,12 @@
                     <div class="form-group">
                         <label class="form-label">Velocidade (segundos por lance)</label>
                         <div class="range-group">
-                            <input type="range" class="range-input" id="speed-range" min="0.5" max="5" step="0.5" value="2">
-                            <span class="range-value" id="speed-value">2.0s</span>
+                            <input type="range" class="range-input" id="realtime-speed" min="0.5" max="5" step="0.5" value="2">
+                            <span class="range-value" id="realtime-speed-value">2.0s</span>
                         </div>
                     </div>
 
-                    <button class="btn btn-success" id="start-battle-btn" onclick="startBattle()">
+                    <button class="btn btn-success" id="start-battle">
                         <i class="fas fa-play"></i>
                         Iniciar Batalha
                     </button>
@@ -152,7 +152,7 @@
                         <small class="form-text">Segure Ctrl para selecionar múltiplos modelos</small>
                     </div>
 
-                    <button class="btn btn-warning" id="start-tournament-btn" onclick="startTournament()">
+                    <button class="btn btn-warning" id="start-tournament-btn">
                         <i class="fas fa-trophy"></i>
                         Iniciar Torneio
                     </button>
@@ -302,414 +302,6 @@
         </div>
     </div>
 
-    <script>
-        // Arena State Management
-        let currentBattle = null;
-        let battleResults = [];
-        let updateInterval = null;
-        let currentBoardPosition = null;
-
-        // API Base URL
-        const API_BASE_URL = window.FASTAPI_BASE_URL || 'http://localhost:8000';
-
-        // Initialize Arena
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Arena inicializada');
-            initializeArena();
-        });
-
-        function initializeArena() {
-            setupEventListeners();
-            loadAvailableModels();
-            createArenaChessboard();
-            hideArenaBoard();
-        }
-
-        function setupEventListeners() {
-            // Range sliders
-            document.getElementById('num-games-range').addEventListener('input', function(e) {
-                document.getElementById('num-games-value').textContent = e.target.value;
-            });
-
-            document.getElementById('speed-range').addEventListener('input', function(e) {
-                document.getElementById('speed-value').textContent = e.target.value + 's';
-            });
-
-            // Model selection changes
-            document.getElementById('white-model-select').addEventListener('change', function(e) {
-                updateModelCard('white', e.target.value);
-            });
-
-            document.getElementById('black-model-select').addEventListener('change', function(e) {
-                updateModelCard('black', e.target.value);
-            });
-        }
-
-        function createArenaChessboard() {
-            console.log('🏁 Criando tabuleiro da arena...');
-            
-            const boardElement = document.getElementById('arena-chessboard');
-            if (!boardElement) {
-                console.error('❌ Elemento do tabuleiro da arena não encontrado!');
-                return;
-            }
-
-            // Limpar conteúdo existente
-            boardElement.innerHTML = '';
-            
-            // Criar as 64 casas
-            for (let rank = 8; rank >= 1; rank--) {
-                for (let file = 0; file < 8; file++) {
-                    const square = document.createElement('div');
-                    const fileChar = String.fromCharCode(97 + file); // a-h
-                    const squareId = `${fileChar}${rank}`;
-
-                    // Calcular cor da casa
-                    const isLight = (rank + file) % 2 !== 0;
-                    square.className = `square ${isLight ? 'light' : 'dark'}`;
-                    square.dataset.square = squareId;
-                    square.dataset.file = fileChar;
-                    square.dataset.rank = rank.toString();
-
-                    boardElement.appendChild(square);
-                }
-            }
-
-            // Configurar posição inicial
-            setupArenaInitialPosition();
-            
-            console.log('✅ Tabuleiro da arena criado!');
-        }
-
-        function setupArenaInitialPosition() {
-            const initialPosition = {
-                'a8': { piece: '♜', color: 'black' },
-                'b8': { piece: '♞', color: 'black' },
-                'c8': { piece: '♝', color: 'black' },
-                'd8': { piece: '♛', color: 'black' },
-                'e8': { piece: '♚', color: 'black' },
-                'f8': { piece: '♝', color: 'black' },
-                'g8': { piece: '♞', color: 'black' },
-                'h8': { piece: '♜', color: 'black' },
-                'a7': '♟', 'b7': '♟', 'c7': '♟', 'd7': '♟',
-                'e7': '♟', 'f7': '♟', 'g7': '♟', 'h7': '♟',
-                'a2': '♙', 'b2': '♙', 'c2': '♙', 'd2': '♙',
-                'e2': '♙', 'f2': '♙', 'g2': '♙', 'h2': '♙',
-                'a1': { piece: '♖', color: 'white' },
-                'b1': { piece: '♘', color: 'white' },
-                'c1': { piece: '♗', color: 'white' },
-                'd1': { piece: '♕', color: 'white' },
-                'e1': { piece: '♔', color: 'white' },
-                'f1': { piece: '♗', color: 'white' },
-                'g1': { piece: '♘', color: 'white' },
-                'h1': { piece: '♖', color: 'white' }
-            };
-
-            // Colocar peças nas casas
-            Object.entries(initialPosition).forEach(([square, pieceData]) => {
-                if (typeof pieceData === 'string') {
-                    placeArenaPiece(square, pieceData, pieceData === pieceData.toLowerCase() ? 'black' : 'white');
-                } else {
-                    placeArenaPiece(square, pieceData.piece, pieceData.color);
-                }
-            });
-        }
-
-        function placeArenaPiece(squareId, piece, color) {
-            const square = document.querySelector(`#arena-chessboard [data-square="${squareId}"]`);
-            if (!square) return;
-
-            square.innerHTML = '';
-            const pieceElement = document.createElement('div');
-            pieceElement.className = `piece ${color}`;
-            pieceElement.textContent = piece;
-            square.appendChild(pieceElement);
-        }
-
-        function hideArenaBoard() {
-            document.getElementById('arena-chessboard-container').style.display = 'none';
-            document.getElementById('arena-move-list').style.display = 'none';
-            document.getElementById('progress-container').style.display = 'none';
-            document.getElementById('results-card').style.display = 'none';
-        }
-
-        function showArenaBoard() {
-            document.getElementById('arena-chessboard-container').style.display = 'block';
-            document.getElementById('arena-move-list').style.display = 'block';
-            document.getElementById('progress-container').style.display = 'block';
-            document.getElementById('results-card').style.display = 'block';
-        }
-
-        function updateModelCard(color, modelName) {
-            const card = document.getElementById(`${color}-model-card`);
-            const nameElement = card.querySelector('.model-name');
-            const iconElement = card.querySelector('.model-icon i');
-            const ratingElement = card.querySelector('.model-rating');
-
-            nameElement.textContent = modelName;
-            
-            const icons = {
-                'GPT-4o': 'fas fa-brain',
-                'GPT-4-Turbo': 'fas fa-rocket',
-                'Gemini-Pro': 'fas fa-gem',
-                'Claude-3.5-Sonnet': 'fas fa-crown',
-                'Deepseek-R1': 'fas fa-microscope'
-            };
-            
-            const ratings = {
-                'GPT-4o': 1850,
-                'GPT-4-Turbo': 1780,
-                'Gemini-Pro': 1750,
-                'Claude-3.5-Sonnet': 1820,
-                'Deepseek-R1': 1680
-            };
-
-            iconElement.className = icons[modelName] || 'fas fa-robot';
-            ratingElement.textContent = `Rating: ${ratings[modelName] || 1600}`;
-        }
-
-        async function loadAvailableModels() {
-            try {
-                console.log('✅ Modelos carregados');
-                showToast('Modelos carregados com sucesso', 'success');
-            } catch (error) {
-                console.error('❌ Erro ao carregar modelos:', error);
-                showToast('Erro ao carregar modelos disponíveis', 'error');
-            }
-        }
-
-        async function startBattle() {
-            const whiteModel = document.getElementById('white-model-select').value;
-            const blackModel = document.getElementById('black-model-select').value;
-            const opening = document.getElementById('opening-select').value;
-            const numGames = parseInt(document.getElementById('num-games-range').value);
-            const speed = parseFloat(document.getElementById('speed-range').value);
-
-            if (whiteModel === blackModel) {
-                showToast('Selecione modelos diferentes para brancas e pretas', 'warning');
-                return;
-            }
-
-            const battleConfig = {
-                white_model: whiteModel,
-                black_model: blackModel,
-                opening: opening,
-                num_games: numGames,
-                realtime_speed: speed
-            };
-
-            try {
-                showLoading('Iniciando batalha...');
-                
-                // Show arena elements
-                showArenaBoard();
-                
-                // Update model names in arena
-                document.getElementById('top-model-name').textContent = blackModel;
-                document.getElementById('bottom-model-name').textContent = whiteModel;
-                
-                // Simulate battle
-                simulateBattle(battleConfig);
-                
-                hideLoading();
-                showToast('Batalha iniciada com sucesso!', 'success');
-                
-            } catch (error) {
-                hideLoading();
-                console.error('❌ Erro ao iniciar batalha:', error);
-                showToast('Erro ao iniciar batalha', 'error');
-            }
-        }
-
-        function simulateBattle(config) {
-            updateBattleStatus({
-                status: 'running',
-                whiteModel: config.white_model,
-                blackModel: config.black_model,
-                currentGame: 0,
-                totalGames: config.num_games
-            });
-
-            let currentGame = 0;
-            const gameInterval = setInterval(() => {
-                currentGame++;
-                
-                // Simulate game with moves
-                simulateGameWithMoves(config, currentGame);
-                
-                updateProgress(currentGame, config.num_games);
-
-                if (currentGame >= config.num_games) {
-                    clearInterval(gameInterval);
-                    finishBattle();
-                }
-            }, config.realtime_speed * 1000 * 30); // 30 moves average per game
-        }
-
-        function simulateGameWithMoves(config, gameNum) {
-            const moves = ['e4', 'e5', 'Nf3', 'Nc6', 'Bb5', 'a6', 'Ba4', 'Nf6', 'O-O', 'Be7'];
-            let moveIndex = 0;
-            
-            const moveInterval = setInterval(() => {
-                if (moveIndex < moves.length) {
-                    addMoveToList(Math.floor(moveIndex/2) + 1, moves[moveIndex], moveIndex % 2 === 0 ? 'white' : 'black');
-                    animateMove(moves[moveIndex]);
-                    moveIndex++;
-                } else {
-                    clearInterval(moveInterval);
-                    
-                    // Add game result
-                    const results = ['1-0', '0-1', '1/2-1/2'];
-                    const result = results[Math.floor(Math.random() * results.length)];
-                    const duration = Math.floor(Math.random() * 120) + 60;
-
-                    addGameResult({
-                        game: gameNum,
-                        white: config.white_model,
-                        black: config.black_model,
-                        result: result,
-                        moves: moves.length,
-                        duration: `${Math.floor(duration/60)}:${(duration%60).toString().padStart(2, '0')}`
-                    });
-                    
-                    // Reset board for next game
-                    setTimeout(() => {
-                        if (gameNum < config.num_games) {
-                            resetArenaBoard();
-                        }
-                    }, 1000);
-                }
-            }, config.realtime_speed * 1000);
-        }
-
-        function addMoveToList(moveNumber, move, color) {
-            const moveList = document.getElementById('move-list-content');
-            if (moveList.querySelector('.empty-moves')) {
-                moveList.innerHTML = '';
-            }
-            
-            if (color === 'white') {
-                const moveDiv = document.createElement('div');
-                moveDiv.className = 'move-pair';
-                moveDiv.innerHTML = `
-                    <span class="move-number">${moveNumber}.</span>
-                    <span class="move white">${move}</span>
-                    <span class="move black" id="move-${moveNumber}-black">...</span>
-                `;
-                moveList.appendChild(moveDiv);
-            } else {
-                const blackMove = document.getElementById(`move-${moveNumber}-black`);
-                if (blackMove) {
-                    blackMove.textContent = move;
-                }
-            }
-            
-            moveList.scrollTop = moveList.scrollHeight;
-        }
-
-        function animateMove(move) {
-            // Simple animation - highlight a random square
-            const squares = document.querySelectorAll('#arena-chessboard .square');
-            const randomSquare = squares[Math.floor(Math.random() * squares.length)];
-            
-            randomSquare.classList.add('last-move');
-            setTimeout(() => {
-                document.querySelectorAll('.last-move').forEach(sq => sq.classList.remove('last-move'));
-            }, 1000);
-        }
-
-        function resetArenaBoard() {
-            document.getElementById('move-list-content').innerHTML = `
-                <div class="empty-moves">
-                    <i class="fas fa-chess-pawn"></i>
-                    <p>Preparando próxima partida...</p>
-                </div>
-            `;
-            setupArenaInitialPosition();
-        }
-
-        function updateBattleStatus(battle) {
-            const statusElement = document.getElementById('battle-status');
-            
-            if (battle.status === 'running') {
-                statusElement.innerHTML = `
-                    <div class="status-icon">
-                        <i class="fas fa-chess"></i>
-                    </div>
-                    <div class="status-content">
-                        <div class="status-title">${battle.whiteModel} vs ${battle.blackModel}</div>
-                        <div class="status-description">Batalha em andamento - Partida ${battle.currentGame} de ${battle.totalGames}</div>
-                    </div>
-                `;
-            }
-        }
-
-        function updateProgress(current, total) {
-            const percentage = (current / total) * 100;
-            document.getElementById('progress-fill').style.width = `${percentage}%`;
-            document.getElementById('progress-text').textContent = `${current} / ${total} partidas`;
-        }
-
-        function addGameResult(game) {
-            const tbody = document.getElementById('results-tbody');
-            const row = document.createElement('tr');
-            
-            let resultClass = 'result-draw';
-            if (game.result === '1-0') resultClass = 'result-white-win';
-            else if (game.result === '0-1') resultClass = 'result-black-win';
-
-            row.innerHTML = `
-                <td>${game.game}</td>
-                <td>${game.white}</td>
-                <td>${game.black}</td>
-                <td><span class="result-badge ${resultClass}">${game.result}</span></td>
-                <td>${game.moves}</td>
-                <td>${game.duration}</td>
-            `;
-
-            tbody.appendChild(row);
-        }
-
-        function finishBattle() {
-            const statusElement = document.getElementById('battle-status');
-            statusElement.innerHTML = `
-                <div class="status-icon">
-                    <i class="fas fa-flag-checkered"></i>
-                </div>
-                <div class="status-content">
-                    <div class="status-title">Batalha Finalizada</div>
-                    <div class="status-description">Todas as partidas foram completadas. Veja os resultados abaixo.</div>
-                </div>
-            `;
-            
-            showToast('Batalha finalizada com sucesso!', 'success');
-        }
-
-        async function startTournament() {
-            const selectedModels = Array.from(document.getElementById('tournament-models').selectedOptions)
-                .map(option => option.value);
-
-            if (selectedModels.length < 2) {
-                showToast('Selecione pelo menos 2 modelos para o torneio', 'warning');
-                return;
-            }
-
-            showToast(`Torneio iniciado com ${selectedModels.length} modelos`, 'info');
-            console.log('🏆 Iniciando torneio com modelos:', selectedModels);
-        }
-
-        // Utility functions
-        function showLoading(message = 'Carregando...') {
-            console.log(`🔄 ${message}`);
-        }
-
-        function hideLoading() {
-            console.log('✅ Carregamento concluído');
-        }
-
-        function showToast(message, type = 'info') {
-            console.log(`🍞 ${type.toUpperCase()}: ${message}`);
-        }
-    </script>
+    <script src="../public/js/arena.js" defer></script>
 </body>
 </html>

@@ -37,6 +37,20 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   initializeArena(arena);
+
+  const startBattleBtn = document.getElementById("start-battle");
+  if (startBattleBtn) {
+    startBattleBtn.addEventListener("click", async () => {
+      const whiteModel = document.getElementById("white-model");
+      const blackModel = document.getElementById("black-model");
+      const opening = document.getElementById("opening");
+      const numGames = document.getElementById("num-games");
+      const realtimeSpeed = document.getElementById("realtime-speed");
+      console.log("whiteModel", whiteModel, "value", whiteModel?.value);
+      console.log("blackModel", blackModel, "value", blackModel?.value);
+      // ... repita para os outros
+    });
+  }
 });
 
 async function initializeArena(arena) {
@@ -308,7 +322,7 @@ async function startBattle(config) {
   const tournamentModelsSelect = document.getElementById("tournament-models");
   const gamesPerPairSlider = document.getElementById("games-per-pair");
   const gamesPerPairValue = document.getElementById("games-per-pair-value");
-  const startTournamentBtn = document.getElementById("start-tournament");
+  const startTournamentBtn = document.getElementById("start-tournament-btn");
   const battleStatusDiv = document.getElementById("battle-status");
   const progressBar = document.getElementById("battle-progress");
   const progressText = document.getElementById("progress-text");
@@ -616,8 +630,10 @@ if (document.getElementById("start-battle")) {
     .getElementById("start-battle")
     .addEventListener("click", startBattle);
 }
-if (document.getElementById("start-tournament")) {
+if (document.getElementById("start-tournament-btn")) {
   document
-    .getElementById("start-tournament")
+    .getElementById("start-tournament-btn")
     .addEventListener("click", startTournament);
 }
+
+window.startTournament = startTournament;
