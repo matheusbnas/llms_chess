@@ -44,8 +44,8 @@ async function initializeArena(arena) {
   setupEventListeners(arena);
 
   try {
-    const matchups = await arena.api.listMatchups();
-    arena.state.matchups = matchups;
+    const res = await arena.api.get("/api/arena/matchups");
+    arena.state.matchups = res.matchups || [];
     populateMatchupSelector(arena);
     console.log("✅ Matchups loaded");
   } catch (error) {
@@ -119,7 +119,10 @@ async function handleMatchupChange(arena) {
   }
 
   try {
-    const games = await arena.api.listGamesInMatchup(selectedMatchup);
+    const res = await arena.api.get(
+      `/api/arena/matchups/${selectedMatchup}/games`
+    );
+    const games = res.games || [];
     arena.state.games = games;
 
     gameSelect.innerHTML = '<option value="">Selecione uma partida</option>';
@@ -161,7 +164,9 @@ async function loadSelectedGame(arena) {
   setLoadingState(arena, true);
 
   try {
-    const pgnData = await arena.api.getPgnData(matchup, gameFile);
+    const pgnData = await arena.api.get(
+      `/api/arena/matchups/${matchup}/games/${gameFile}`
+    );
     if (!pgnData || !pgnData.pgn) {
       throw new Error("Dados da partida inválidos.");
     }
@@ -180,7 +185,7 @@ async function loadSelectedGame(arena) {
 
 function renderGame(arena) {
   const { elements, state } = arena;
-  const { headers } = state.currentPgn;
+  const { headers, moves, pgn } = state.currentPgn;
 
   // Show main content
   elements.mainContent.style.display = "block";
@@ -194,14 +199,24 @@ function renderGame(arena) {
   if (!arena.pgnViewer) {
     arena.pgnViewer = new PgnViewer({
       element: elements.chessboard,
-      pgn: state.currentPgn.pgn,
+      pgn: pgn,
       movesElement: elements.movesList,
       showCoordinates: true,
       showFEN: false,
-      theme: "default",
     });
   } else {
-    arena.pgnViewer.loadPgn(state.currentPgn.pgn);
+    arena.pgnViewer.loadPgn(pgn);
+  }
+  // Exibir descrições dos lances (se houver)
+  if (moves && elements.movesList) {
+    elements.movesList.innerHTML = moves
+      .map(
+        (m, i) =>
+          `<li><b>${i + 1}.</b> ${m.move} <span style='color:#aaa'>${
+            m.description || ""
+          }</span></li>`
+      )
+      .join("");
   }
 
   // Update UI based on viewer state
@@ -325,7 +340,7 @@ async function startBattle(config) {
   // Popular dropdowns de modelos
   async function loadModels() {
     try {
-      const data = await api.getArenaModels();
+      const data = await api.get("/api/arena/models/static");
       const models = data.models || [];
       // Limpa e popula selects individuais
       [whiteModelSelect, blackModelSelect].forEach((select) => {
@@ -496,3 +511,113 @@ function renderChessboard(fen = "start") {
 
 // Inicializar tabuleiro ao carregar a página
 renderChessboard();
+
+// Adicionar integração para iniciar batalhas e polling de status
+
+// Função para iniciar batalha individual
+async function startBattle() {
+  const whiteModel = document.getElementById("white-model").value;
+  const blackModel = document.getElementById("black-model").value;
+  const opening = document.getElementById("opening").value;
+  const numGames = parseInt(document.getElementById("num-games").value, 10);
+  const realtimeSpeed = parseFloat(
+    document.getElementById("realtime-speed").value
+  );
+
+  const config = {
+    white_model: whiteModel,
+    black_model: blackModel,
+    opening,
+    num_games: numGames,
+    realtime_speed: realtimeSpeed,
+  };
+
+  try {
+    const res = await arena.api.post("/api/arena/battle", config);
+    if (res.battle_id) {
+      pollBattleStatus(res.battle_id);
+    } else {
+      alert("Erro ao iniciar batalha");
+    }
+  } catch (e) {
+    alert("Erro ao iniciar batalha: " + e.message);
+  }
+}
+
+// Função para iniciar torneio
+async function startTournament() {
+  const models = Array.from(
+    document.getElementById("tournament-models").selectedOptions
+  ).map((opt) => opt.value);
+  const gamesPerPair = parseInt(
+    document.getElementById("games-per-pair").value,
+    10
+  );
+  const config = { models, games_per_pair: gamesPerPair };
+  try {
+    const res = await arena.api.post("/api/arena/tournament", config);
+    if (res.tournament_id) {
+      pollBattleStatus(null, res.tournament_id);
+    } else {
+      alert("Erro ao iniciar torneio");
+    }
+  } catch (e) {
+    alert("Erro ao iniciar torneio: " + e.message);
+  }
+}
+
+// Polling de status da batalha/torneio
+let battleStatusInterval = null;
+function pollBattleStatus(battleId, tournamentId) {
+  clearInterval(battleStatusInterval);
+  async function fetchStatus() {
+    try {
+      const params = {};
+      if (battleId) params.battle_id = battleId;
+      if (tournamentId) params.tournament_id = tournamentId;
+      const status = await arena.api.get("/api/arena/status", params);
+      renderBattleStatus(status);
+      if (status.status === "finished" || status.status === "error") {
+        clearInterval(battleStatusInterval);
+      }
+    } catch (e) {
+      clearInterval(battleStatusInterval);
+      alert("Erro ao buscar status da batalha: " + e.message);
+    }
+  }
+  fetchStatus();
+  battleStatusInterval = setInterval(fetchStatus, 2000);
+}
+
+// Renderizar status da batalha na interface
+function renderBattleStatus(status) {
+  const battleStatusDiv = document.getElementById("battle-status");
+  const progressBar = document.getElementById("battle-progress");
+  const progressText = document.getElementById("progress-text");
+  const resultsTableBody = document.querySelector("#results-table tbody");
+  if (!status) return;
+  battleStatusDiv.innerHTML = `🎮 Batalha em Andamento<br>${status.white} vs ${status.black}<br>Partida ${status.current_game}/${status.total_games}`;
+  progressBar.value = status.current_game / status.total_games;
+  progressText.textContent = `${status.current_game} / ${status.total_games}`;
+  // Resultados parciais
+  if (status.results && Array.isArray(status.results)) {
+    resultsTableBody.innerHTML = status.results
+      .map(
+        (r) =>
+          `<tr><td>${r.game}</td><td>${r.white}</td><td>${r.black}</td><td>${r.result}</td></tr>`
+      )
+      .join("");
+  }
+}
+
+// Adicionar listeners aos botões
+if (document.getElementById("start-battle")) {
+  document
+    .getElementById("start-battle")
+    .addEventListener("click", startBattle);
+}
+if (document.getElementById("start-tournament")) {
+  document
+    .getElementById("start-tournament")
+    .addEventListener("click", startTournament);
+}
