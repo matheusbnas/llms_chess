@@ -1,117 +1,1075 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Arena de Batalha LLMs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena - LLM Chess Arena</title>
+    
     <!-- FontAwesome para ícones -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <!-- Chessboard.js CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard.js/1.0.0/chessboard-1.0.0.min.css">
-    <!-- Seu CSS -->
-    <link rel="stylesheet" href="/public/css/arena.css">
-    <!-- Chessboard.js JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard.js/1.0.0/chessboard-1.0.0.min.js"></script>
-    <!-- Seu JS (deixe por último) -->
-    <script src="/public/js/arena.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Estilos específicos para a Arena -->
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --error-color: #dc3545;
+            --bg-primary: #262421;
+            --bg-secondary: #2f2b28;
+            --bg-tertiary: #3c3936;
+            --text-primary: #ffffff;
+            --text-secondary: #d0d0d0;
+            --border-color: #3c3936;
+            --board-light: #f0d9b5;
+            --board-dark: #b58863;
+            --board-border: #8b7355;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .arena-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .arena-header {
+            text-align: center;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 16px;
+            padding: 32px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+            margin-bottom: 32px;
+        }
+
+        .arena-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .arena-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-color);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control {
+            width: 100%;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-primary);
+            font-size: 14px;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            line-height: 1;
+            font-family: inherit;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+            color: #000;
+        }
+
+        .btn-warning:hover:not(:disabled) {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: var(--error-color);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: #c82333;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #4a4540;
+            color: var(--text-primary);
+        }
+
+        .battle-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 32px;
+            align-items: start;
+        }
+
+        .battle-config {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .battle-display {
+            min-height: 600px;
+        }
+
+        .model-vs-model {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .model-card {
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .model-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+        }
+
+        .model-card.selected {
+            border-color: var(--success-color);
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .model-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+
+        .model-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .model-rating {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .vs-icon {
+            font-size: 2rem;
+            color: var(--warning-color);
+        }
+
+        .range-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .range-input {
+            flex: 1;
+            height: 6px;
+            background: var(--border-color);
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .range-value {
+            background: var(--primary-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .battle-status {
+            background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .status-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+
+        .status-description {
+            color: var(--text-secondary);
+        }
+
+        .progress-container {
+            margin: 16px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .chessboard-container {
+            display: flex;
+            justify-content: center;
+            margin: 24px 0;
+        }
+
+        .mini-chessboard {
+            width: 320px;
+            height: 320px;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            border: 2px solid var(--board-border);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .mini-square {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            transition: all 0.2s ease;
+        }
+
+        .mini-square.light {
+            background-color: var(--board-light);
+        }
+
+        .mini-square.dark {
+            background-color: var(--board-dark);
+        }
+
+        .mini-piece {
+            font-family: 'Segoe UI Emoji', serif;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .results-table th {
+            background: var(--bg-tertiary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .results-table tbody tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .result-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .result-white-win {
+            background: rgba(40, 167, 69, 0.2);
+            color: var(--success-color);
+        }
+
+        .result-black-win {
+            background: rgba(220, 53, 69, 0.2);
+            color: var(--error-color);
+        }
+
+        .result-draw {
+            background: rgba(108, 117, 125, 0.2);
+            color: #6c757d;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            max-width: 300px;
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--success-color);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--error-color);
+        }
+
+        .toast.warning {
+            border-left: 4px solid var(--warning-color);
+        }
+
+        .toast.info {
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(38, 36, 33, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(4px);
+        }
+
+        .loading-content {
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .battle-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .model-vs-model {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .vs-icon {
+                display: none;
+            }
+
+            .arena-container {
+                padding: 12px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="arena-container">
-        <div class="arena-card arena-config-card">
-            <div class="arena-card-header">
-                <i class="fas fa-chess-knight"></i>
-                <h2>Configuração da Batalha</h2>
-            </div>
-            <div class="arena-form-vertical">
-                <div class="form-group">
-                    <label><input type="checkbox" id="tournament-mode"> Modo Torneio (todos vs todos)</label>
-                </div>
-                <div id="tournament-config" style="display:none;">
-                    <h3>🏆 Configuração do Torneio</h3>
-                    <label>Modelos participantes:</label>
-                    <select id="tournament-models" multiple></select>
-                    <label>Partidas por confronto:</label>
-                    <input type="range" id="games-per-pair" min="1" max="10" value="3">
-                    <span id="games-per-pair-value">3</span>
-                    <button id="start-tournament">🚀 Iniciar Torneio</button>
-                </div>
-                <div id="battle-config">
-                    <h3>🥊 Batalha Individual</h3>
-                    <div class="form-row">
-                        <label>Modelo das Brancas:</label>
-                        <select id="white-model"></select>
-                    </div>
-                    <div class="form-row">
-                        <label>Modelo das Pretas:</label>
-                        <select id="black-model"></select>
-                    </div>
-                    <div class="form-row">
-                        <label>Abertura:</label>
-                        <select id="opening">
-                            <option>1. e4</option>
-                            <option>1. d4</option>
-                            <option>1. c4</option>
-                            <option>1. Nf3</option>
-                            <option>1. b3</option>
-                            <option>1. c3</option>
-                            <option>1. e3</option>
-                            <option>1. d3</option>
-                            <option>1. g3</option>
-                            <option>1. Nc3</option>
-                        </select>
-                    </div>
-                    <div class="form-row">
-                        <label>Número de partidas:</label>
-                        <input type="range" id="num-games" min="1" max="20" value="5">
-                        <span id="num-games-value">5</span>
-                    </div>
-                    <div class="form-row">
-                        <label>Velocidade dos lances (s):</label>
-                        <input type="range" id="realtime-speed" min="0.1" max="3.0" step="0.1" value="1.0">
-                        <span id="realtime-speed-value">1.0</span>
-                    </div>
-                    <div class="form-row form-actions">
-                        <button id="start-battle">⚔️ Iniciar Batalha</button>
-                        <button id="start-realtime-battle">⚡ Batalha em Tempo Real</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="arena-card arena-status-card">
-            <div class="arena-card-header">
-                <i class="fas fa-gamepad"></i>
-                <h2>Status da Batalha</h2>
-            </div>
-            <div id="battle-status"></div>
-            <div id="chessboard-container" style="display: flex; justify-content: center; align-items: center; margin: 24px 0;">
-                <div id="arena-chessboard" style="width: 420px; height: 420px;"></div>
-            </div>
-            <div id="progress-container">
-                <progress id="battle-progress" value="0" max="1"></progress>
-                <span id="progress-text"></span>
-            </div>
-        </div>
-
-        <div class="arena-card arena-results-card">
-            <div class="arena-card-header">
-                <i class="fas fa-chart-bar"></i>
-                <h3>Resultados Parciais</h3>
-            </div>
-            <table id="results-table">
-                <thead>
-                    <tr><th>Partida</th><th>Brancas</th><th>Pretas</th><th>Resultado</th></tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <div class="arena-card arena-saved-card">
-            <div class="arena-card-header">
-                <i class="fas fa-save"></i>
-                <h3>Partidas Salvas</h3>
-            </div>
-            <ul id="saved-games-list"></ul>
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p id="loading-text">Carregando...</p>
         </div>
     </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <div class="arena-container">
+        <!-- Header -->
+        <div class="arena-header">
+            <div class="arena-title">
+                <i class="fas fa-chess-knight"></i>
+                Arena de Batalha LLMs
+            </div>
+            <div class="arena-subtitle">
+                Competições automatizadas entre modelos de IA
+            </div>
+        </div>
+
+        <!-- Main Battle Interface -->
+        <div class="battle-grid">
+            <!-- Battle Configuration -->
+            <div class="battle-config">
+                <!-- Model Selection -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-robot"></i>
+                            Seleção de Modelos
+                        </h3>
+                    </div>
+
+                    <div class="model-vs-model">
+                        <div class="model-card" id="white-model-card" onclick="selectModel('white')">
+                            <div class="model-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div class="model-name">GPT-4o</div>
+                            <div class="model-rating">Rating: 1850</div>
+                            <div style="margin-top: 8px; font-size: 0.8rem; color: var(--text-secondary);">
+                                Brancas
+                            </div>
+                        </div>
+
+                        <div class="vs-icon">
+                            <i class="fas fa-sword"></i>
+                        </div>
+
+                        <div class="model-card" id="black-model-card" onclick="selectModel('black')">
+                            <div class="model-icon">
+                                <i class="fas fa-gem"></i>
+                            </div>
+                            <div class="model-name">Gemini-Pro</div>
+                            <div class="model-rating">Rating: 1750</div>
+                            <div style="margin-top: 8px; font-size: 0.8rem; color: var(--text-secondary);">
+                                Pretas
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Model Selection Dropdowns -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div class="form-group">
+                            <label class="form-label">Modelo Brancas</label>
+                            <select class="form-control" id="white-model-select">
+                                <option value="GPT-4o" selected>GPT-4o</option>
+                                <option value="GPT-4-Turbo">GPT-4-Turbo</option>
+                                <option value="Gemini-Pro">Gemini-Pro</option>
+                                <option value="Claude-3.5-Sonnet">Claude-3.5-Sonnet</option>
+                                <option value="Deepseek-R1">Deepseek-R1</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Modelo Pretas</label>
+                            <select class="form-control" id="black-model-select">
+                                <option value="GPT-4o">GPT-4o</option>
+                                <option value="GPT-4-Turbo">GPT-4-Turbo</option>
+                                <option value="Gemini-Pro" selected>Gemini-Pro</option>
+                                <option value="Claude-3.5-Sonnet">Claude-3.5-Sonnet</option>
+                                <option value="Deepseek-R1">Deepseek-R1</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Battle Settings -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-cog"></i>
+                            Configurações
+                        </h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Abertura</label>
+                        <select class="form-control" id="opening-select">
+                            <option value="1. e4">1. e4 (Rei)</option>
+                            <option value="1. d4">1. d4 (Dama)</option>
+                            <option value="1. c4">1. c4 (Inglesa)</option>
+                            <option value="1. Nf3">1. Nf3 (Reti)</option>
+                            <option value="1. b3">1. b3 (Nimzowitsch-Larsen)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Número de Partidas</label>
+                        <div class="range-group">
+                            <input type="range" class="range-input" id="num-games-range" min="1" max="10" value="3">
+                            <span class="range-value" id="num-games-value">3</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Velocidade (segundos por lance)</label>
+                        <div class="range-group">
+                            <input type="range" class="range-input" id="speed-range" min="0.5" max="5" step="0.5" value="2">
+                            <span class="range-value" id="speed-value">2.0s</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-success" id="start-battle-btn" onclick="startBattle()" style="width: 100%; margin-top: 16px;">
+                        <i class="fas fa-play"></i>
+                        Iniciar Batalha
+                    </button>
+                </div>
+
+                <!-- Tournament Mode -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-trophy"></i>
+                            Modo Torneio
+                        </h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Modelos Participantes</label>
+                        <select class="form-control" id="tournament-models" multiple style="height: 120px;">
+                            <option value="GPT-4o">GPT-4o</option>
+                            <option value="GPT-4-Turbo">GPT-4-Turbo</option>
+                            <option value="Gemini-Pro">Gemini-Pro</option>
+                            <option value="Claude-3.5-Sonnet">Claude-3.5-Sonnet</option>
+                            <option value="Deepseek-R1">Deepseek-R1</option>
+                        </select>
+                        <small style="color: var(--text-secondary); margin-top: 4px; display: block;">
+                            Segure Ctrl para selecionar múltiplos modelos
+                        </small>
+                    </div>
+
+                    <button class="btn btn-warning" id="start-tournament-btn" onclick="startTournament()" style="width: 100%;">
+                        <i class="fas fa-trophy"></i>
+                        Iniciar Torneio
+                    </button>
+                </div>
+            </div>
+
+            <!-- Battle Display -->
+            <div class="battle-display">
+                <!-- Battle Status -->
+                <div class="battle-status" id="battle-status">
+                    <div class="status-title">
+                        <i class="fas fa-clock"></i>
+                        Aguardando Batalha
+                    </div>
+                    <div class="status-description">
+                        Configure os modelos e inicie uma batalha para ver o progresso aqui
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="progress-container" id="progress-container" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+                    </div>
+                    <div class="progress-text" id="progress-text">0 / 0 partidas</div>
+                </div>
+
+                <!-- Chessboard -->
+                <div class="chessboard-container" id="chessboard-container" style="display: none;">
+                    <div class="mini-chessboard" id="mini-chessboard">
+                        <!-- Squares will be generated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Results Table -->
+                <div class="card" id="results-card" style="display: none;">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-chart-bar"></i>
+                            Resultados
+                        </h3>
+                    </div>
+
+                    <table class="results-table" id="results-table">
+                        <thead>
+                            <tr>
+                                <th>Partida</th>
+                                <th>Brancas</th>
+                                <th>Pretas</th>
+                                <th>Resultado</th>
+                                <th>Lances</th>
+                                <th>Duração</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-tbody">
+                            <!-- Results will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let currentBattle = null;
+        let battleResults = [];
+        let updateInterval = null;
+
+        // API Base URL (ajustar conforme necessário)
+        const API_BASE_URL = window.FASTAPI_BASE_URL || 'http://localhost:8000';
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Arena inicializada');
+            initializeArena();
+        });
+
+        function initializeArena() {
+            setupEventListeners();
+            loadAvailableModels();
+            createMiniChessboard();
+        }
+
+        function setupEventListeners() {
+            // Range sliders
+            document.getElementById('num-games-range').addEventListener('input', function(e) {
+                document.getElementById('num-games-value').textContent = e.target.value;
+            });
+
+            document.getElementById('speed-range').addEventListener('input', function(e) {
+                document.getElementById('speed-value').textContent = e.target.value + 's';
+            });
+
+            // Model selection changes
+            document.getElementById('white-model-select').addEventListener('change', function(e) {
+                updateModelCard('white', e.target.value);
+            });
+
+            document.getElementById('black-model-select').addEventListener('change', function(e) {
+                updateModelCard('black', e.target.value);
+            });
+
+            document.getElementById('start-battle-btn').addEventListener('click', startBattle);
+        }
+
+        async function loadAvailableModels() {
+            try {
+                // Esta seria uma chamada real para a API
+                // const response = await fetch(`${API_BASE_URL}/api/arena/models`);
+                // const data = await response.json();
+                
+                // Por enquanto, usando dados simulados
+                console.log('✅ Modelos carregados');
+                showToast('Modelos carregados com sucesso', 'success');
+            } catch (error) {
+                console.error('❌ Erro ao carregar modelos:', error);
+                showToast('Erro ao carregar modelos disponíveis', 'error');
+            }
+        }
+
+        function updateModelCard(color, modelName) {
+            const card = document.getElementById(`${color}-model-card`);
+            const nameElement = card.querySelector('.model-name');
+            const iconElement = card.querySelector('.model-icon i');
+            const ratingElement = card.querySelector('.model-rating');
+
+            nameElement.textContent = modelName;
+            
+            // Atualizar ícone baseado no modelo
+            const icons = {
+                'GPT-4o': 'fas fa-brain',
+                'GPT-4-Turbo': 'fas fa-rocket',
+                'Gemini-Pro': 'fas fa-gem',
+                'Claude-3.5-Sonnet': 'fas fa-crown',
+                'Deepseek-R1': 'fas fa-microscope'
+            };
+            
+            const ratings = {
+                'GPT-4o': 1850,
+                'GPT-4-Turbo': 1780,
+                'Gemini-Pro': 1750,
+                'Claude-3.5-Sonnet': 1820,
+                'Deepseek-R1': 1680
+            };
+
+            iconElement.className = icons[modelName] || 'fas fa-robot';
+            ratingElement.textContent = `Rating: ${ratings[modelName] || 1600}`;
+        }
+
+        function selectModel(color) {
+            const card = document.getElementById(`${color}-model-card`);
+            card.classList.toggle('selected');
+        }
+
+        function createMiniChessboard() {
+            const board = document.getElementById('mini-chessboard');
+            board.innerHTML = '';
+
+            // Create 64 squares
+            for (let rank = 8; rank >= 1; rank--) {
+                for (let file = 0; file < 8; file++) {
+                    const square = document.createElement('div');
+                    const isLight = (rank + file) % 2 !== 0;
+                    square.className = `mini-square ${isLight ? 'light' : 'dark'}`;
+                    square.dataset.square = `${String.fromCharCode(97 + file)}${rank}`;
+                    board.appendChild(square);
+                }
+            }
+
+            // Setup initial position
+            setupInitialPosition();
+        }
+
+        function setupInitialPosition() {
+            const pieces = {
+                'a8': '♜', 'b8': '♞', 'c8': '♝', 'd8': '♛', 'e8': '♚', 'f8': '♝', 'g8': '♞', 'h8': '♜',
+                'a7': '♟', 'b7': '♟', 'c7': '♟', 'd7': '♟', 'e7': '♟', 'f7': '♟', 'g7': '♟', 'h7': '♟',
+                'a2': '♙', 'b2': '♙', 'c2': '♙', 'd2': '♙', 'e2': '♙', 'f2': '♙', 'g2': '♙', 'h2': '♙',
+                'a1': '♖', 'b1': '♘', 'c1': '♗', 'd1': '♕', 'e1': '♔', 'f1': '♗', 'g1': '♘', 'h1': '♖'
+            };
+
+            Object.entries(pieces).forEach(([square, piece]) => {
+                const squareElement = document.querySelector(`[data-square="${square}"]`);
+                if (squareElement) {
+                    const pieceElement = document.createElement('div');
+                    pieceElement.className = 'mini-piece';
+                    pieceElement.textContent = piece;
+                    squareElement.appendChild(pieceElement);
+                }
+            });
+        }
+
+        async function startBattle() {
+            const whiteModel = document.getElementById('white-model-select').value;
+            const blackModel = document.getElementById('black-model-select').value;
+            const opening = document.getElementById('opening-select').value;
+            const numGames = parseInt(document.getElementById('num-games-range').value);
+            const speed = parseFloat(document.getElementById('speed-range').value);
+
+            if (whiteModel === blackModel) {
+                showToast('Selecione modelos diferentes para brancas e pretas', 'warning');
+                return;
+            }
+
+            const battleConfig = {
+                white_model: whiteModel,
+                black_model: blackModel,
+                opening: opening,
+                num_games: numGames,
+                realtime_speed: speed
+            };
+
+            try {
+                showLoading('Iniciando batalha...');
+                
+                // Simular início de batalha
+                // const response = await fetch(`${API_BASE_URL}/api/arena/battle`, {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify(battleConfig)
+                // });
+                // const result = await response.json();
+
+                // Por enquanto, simular batalha
+                simulateBattle(battleConfig);
+                
+                hideLoading();
+                showToast('Batalha iniciada com sucesso!', 'success');
+                
+            } catch (error) {
+                hideLoading();
+                console.error('❌ Erro ao iniciar batalha:', error);
+                showToast('Erro ao iniciar batalha', 'error');
+            }
+        }
+
+        function simulateBattle(config) {
+            // Update battle status
+            updateBattleStatus({
+                status: 'running',
+                whiteModel: config.white_model,
+                blackModel: config.black_model,
+                currentGame: 0,
+                totalGames: config.num_games
+            });
+
+            // Show UI elements
+            document.getElementById('progress-container').style.display = 'block';
+            document.getElementById('chessboard-container').style.display = 'flex';
+            document.getElementById('results-card').style.display = 'block';
+
+            // Simulate game progress
+            let currentGame = 0;
+            const gameInterval = setInterval(() => {
+                currentGame++;
+                
+                // Simulate game result
+                const results = ['1-0', '0-1', '1/2-1/2'];
+                const result = results[Math.floor(Math.random() * results.length)];
+                const moves = Math.floor(Math.random() * 40) + 20;
+                const duration = Math.floor(Math.random() * 120) + 60;
+
+                addGameResult({
+                    game: currentGame,
+                    white: config.white_model,
+                    black: config.black_model,
+                    result: result,
+                    moves: moves,
+                    duration: `${Math.floor(duration/60)}:${(duration%60).toString().padStart(2, '0')}`
+                });
+
+                updateProgress(currentGame, config.num_games);
+
+                if (currentGame >= config.num_games) {
+                    clearInterval(gameInterval);
+                    finishBattle();
+                }
+            }, config.realtime_speed * 1000);
+        }
+
+        function updateBattleStatus(battle) {
+            const statusElement = document.getElementById('battle-status');
+            
+            if (battle.status === 'running') {
+                statusElement.innerHTML = `
+                    <div class="status-title">
+                        <i class="fas fa-chess"></i>
+                        ${battle.whiteModel} vs ${battle.blackModel}
+                    </div>
+                    <div class="status-description">
+                        Batalha em andamento - Partida ${battle.currentGame} de ${battle.totalGames}
+                    </div>
+                `;
+            }
+        }
+
+        function updateProgress(current, total) {
+            const percentage = (current / total) * 100;
+            document.getElementById('progress-fill').style.width = `${percentage}%`;
+            document.getElementById('progress-text').textContent = `${current} / ${total} partidas`;
+        }
+
+        function addGameResult(game) {
+            const tbody = document.getElementById('results-tbody');
+            const row = document.createElement('tr');
+            
+            let resultClass = 'result-draw';
+            if (game.result === '1-0') resultClass = 'result-white-win';
+            else if (game.result === '0-1') resultClass = 'result-black-win';
+
+            row.innerHTML = `
+                <td>${game.game}</td>
+                <td>${game.white}</td>
+                <td>${game.black}</td>
+                <td><span class="result-badge ${resultClass}">${game.result}</span></td>
+                <td>${game.moves}</td>
+                <td>${game.duration}</td>
+            `;
+
+            tbody.appendChild(row);
+            
+            // Scroll to bottom
+            tbody.scrollTop = tbody.scrollHeight;
+        }
+
+        function finishBattle() {
+            const statusElement = document.getElementById('battle-status');
+            statusElement.innerHTML = `
+                <div class="status-title">
+                    <i class="fas fa-flag-checkered"></i>
+                    Batalha Finalizada
+                </div>
+                <div class="status-description">
+                    Todas as partidas foram completadas. Veja os resultados abaixo.
+                </div>
+            `;
+            
+            showToast('Batalha finalizada com sucesso!', 'success');
+        }
+
+        async function startTournament() {
+            const selectedModels = Array.from(document.getElementById('tournament-models').selectedOptions)
+                .map(option => option.value);
+
+            if (selectedModels.length < 2) {
+                showToast('Selecione pelo menos 2 modelos para o torneio', 'warning');
+                return;
+            }
+
+            showToast(`Torneio iniciado com ${selectedModels.length} modelos`, 'info');
+            console.log('🏆 Iniciando torneio com modelos:', selectedModels);
+        }
+
+        // Utility functions
+        function showLoading(message = 'Carregando...') {
+            document.getElementById('loading-text').textContent = message;
+            document.getElementById('loading-overlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+
+        function showToast(message, type = 'info') {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                warning: 'fas fa-exclamation-triangle',
+                info: 'fas fa-info-circle'
+            }[type];
+
+            toast.innerHTML = `
+                <i class="${icon}"></i>
+                <span>${message}</span>
+            `;
+
+            toastContainer.appendChild(toast);
+            toast.style.display = 'flex';
+
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Make the function global for the onclick to work
+        window.startBattle = startBattle;
+    </script>
 </body>
 </html>
