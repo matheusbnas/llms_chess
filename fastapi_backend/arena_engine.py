@@ -8,8 +8,8 @@ import sqlite3
 import json
 import os
 
-DB_PATH = os.path.abspath(os.path.join(os.path.dirname(
-    __file__), "..", "test_streamlit", "llm_chess_arena", "chess_arena.db"))
+DB_PATH = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', 'chess_arena.db'))
 
 
 def save_game_to_db(game_data):

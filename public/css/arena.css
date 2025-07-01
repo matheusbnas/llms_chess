@@ -1,4 +1,165 @@
 /* ♟️ LLM Chess Arena - Arena Specific Styles */
+/* ==========================================
+   CORREÇÕES MÍNIMAS PARA O TABULEIRO
+   ========================================== */
+
+/* Garantir que o container do tabuleiro seja visível quando necessário */
+.chessboard-container-arena {
+    display: flex !important; /* Mudança: remover display: none */
+    justify-content: center;
+    margin: 24px 0;
+}
+
+.arena-board-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--border-color);
+}
+
+.arena-chessboard-container {
+    position: relative;
+    display: inline-block;
+    padding: 25px;
+    background: var(--bg-primary);
+    border-radius: 8px;
+    border: 2px solid var(--board-border);
+}
+
+/* Garantir que o tabuleiro renderize corretamente */
+.arena-chessboard {
+    width: 400px !important;
+    height: 400px !important;
+    display: grid !important;
+    grid-template-columns: repeat(8, 1fr) !important;
+    grid-template-rows: repeat(8, 1fr) !important;
+    border: 2px solid var(--board-border);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+    position: relative;
+    background: #8b7355; /* Adicionar fundo padrão */
+}
+
+/* Garantir que as casas sejam renderizadas corretamente */
+.arena-chessboard .square {
+    width: 50px !important;
+    height: 50px !important;
+    position: relative !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: default;
+    transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+    user-select: none;
+    border: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Cores das casas do tabuleiro */
+.arena-chessboard .square.light {
+    background-color: #f0d9b5;
+}
+
+.arena-chessboard .square.dark {
+    background-color: #b58863;
+}
+
+/* Garantir que as peças sejam visíveis */
+.arena-chessboard .piece {
+    font-size: 38px !important;
+    line-height: 1 !important;
+    cursor: default;
+    transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+    z-index: 10;
+    position: relative;
+    font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', serif !important;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    user-select: none !important;
+    margin: 0;
+    padding: 0;
+}
+
+/* Destacar último lance */
+.arena-chessboard .square.last-move {
+    box-shadow: inset 0 0 0 3px #f4f669 !important;
+    animation: moveHighlight 1s ease-out;
+}
+
+@keyframes moveHighlight {
+    0% { 
+        box-shadow: inset 0 0 0 3px #f4f669 !important;
+        transform: scale(1);
+    }
+    50% { 
+        box-shadow: inset 0 0 0 4px #f4f669 !important;
+        transform: scale(1.02);
+    }
+    100% { 
+        box-shadow: inset 0 0 0 3px #f4f669 !important;
+        transform: scale(1);
+    }
+}
+
+/* Garantir que a lista de lances seja visível quando necessário */
+.arena-move-list {
+    display: block !important; /* Mudança: garantir visibilidade */
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    margin-top: 16px;
+}
+
+/* Coordenadas do tabuleiro */
+.coordinates-external {
+    display: flex;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.coord-files-top,
+.coord-files-bottom {
+    width: 400px;
+    justify-content: space-around;
+    align-items: center;
+    height: 20px;
+}
+
+.coord-ranks-left,
+.coord-ranks-right {
+    flex-direction: column;
+    width: 20px;
+    height: 400px;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.coord-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    min-height: 20px;
+}
+
+/* ==========================================
+   RESTO DO CSS ORIGINAL MANTIDO IGUAL
+   ========================================== */
 
 /* ==========================================
    ARENA LAYOUT
@@ -243,85 +404,6 @@
 }
 
 /* ==========================================
-   ARENA CHESSBOARD
-   ========================================== */
-
-.chessboard-container-arena {
-    display: none;
-    justify-content: center;
-    margin: 24px 0;
-}
-
-.arena-board-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    background: var(--bg-secondary);
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--border-color);
-}
-
-.arena-chessboard-container {
-    position: relative;
-    display: inline-block;
-    padding: 25px;
-    background: var(--bg-primary);
-    border-radius: 8px;
-    border: 2px solid var(--board-border);
-}
-
-.arena-chessboard {
-    width: 400px !important;
-    height: 400px !important;
-    display: grid !important;
-    grid-template-columns: repeat(8, 1fr) !important;
-    grid-template-rows: repeat(8, 1fr) !important;
-    border: 2px solid var(--board-border);
-    border-radius: 4px;
-    overflow: hidden;
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
-    position: relative;
-}
-
-.arena-chessboard .square {
-    width: 50px !important;
-    height: 50px !important;
-    position: relative !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    cursor: default;
-    transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
-    user-select: none;
-    border: none;
-    margin: 0;
-    padding: 0;
-}
-
-.arena-chessboard .piece {
-    font-size: 38px !important;
-    line-height: 1 !important;
-    cursor: default;
-    transition: all 0.15s cubic-bezier(0.23, 1, 0.32, 1);
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
-    z-index: 10;
-    position: relative;
-    font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', serif !important;
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
-    user-select: none !important;
-    margin: 0;
-    padding: 0;
-}
-
-/* ==========================================
    MODEL INFO DISPLAY
    ========================================== */
 
@@ -385,15 +467,6 @@
 /* ==========================================
    MOVE LIST
    ========================================== */
-
-.arena-move-list {
-    display: none;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
 
 .move-list-header {
     background: var(--bg-tertiary);
@@ -607,6 +680,16 @@
     .battle-config {
         grid-template-columns: 1fr;
     }
+    
+    .coord-files-top,
+    .coord-files-bottom {
+        width: 320px;
+    }
+    
+    .coord-ranks-left,
+    .coord-ranks-right {
+        height: 320px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -712,26 +795,6 @@
 
 .battle-active .model-card {
     animation: battlePulse 2s ease-in-out infinite;
-}
-
-.arena-chessboard .square.last-move {
-    box-shadow: inset 0 0 0 3px #f4f669 !important;
-    animation: moveHighlight 1s ease-out;
-}
-
-@keyframes moveHighlight {
-    0% { 
-        box-shadow: inset 0 0 0 3px #f4f669 !important;
-        transform: scale(1);
-    }
-    50% { 
-        box-shadow: inset 0 0 0 4px #f4f669 !important;
-        transform: scale(1.02);
-    }
-    100% { 
-        box-shadow: inset 0 0 0 3px #f4f669 !important;
-        transform: scale(1);
-    }
 }
 
 /* ==========================================

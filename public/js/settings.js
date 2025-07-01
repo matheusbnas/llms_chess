@@ -671,8 +671,8 @@ async function importPgns() {
   setLoading(true);
   try {
     const result = await api.importPgns();
-    showSuccess(`${result.count} partidas importadas!`);
-    renderSampleGame(result.sample);
+    showSuccess(`${result.imported_games} partidas importadas!`);
+    // Se quiser mostrar uma amostra, adicione aqui
   } catch (error) {
     showError("Erro ao importar PGNs: " + error.message);
   } finally {

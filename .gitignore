@@ -120,4 +120,5 @@ cython_debug/
 
 #pastas
 images/
-tests/
+tests
+tests_streamlit/*

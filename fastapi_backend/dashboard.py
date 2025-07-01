@@ -1,6 +1,12 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pathlib import Path
 import re
+import sqlite3
+from io import StringIO
+import chess.pgn
+import time
+import os
+from fastapi_backend.database import GameDatabase
 
 router = APIRouter()
 
@@ -107,14 +113,30 @@ def parse_matchup_stats():
 @router.get("/api/data/dashboard")
 def get_dashboard_data():
     try:
-        model_stats = parse_pgn_stats()
-        matchup_stats = parse_matchup_stats()
-        total_games = sum(m["total"] for m in model_stats) // 2
+        db = GameDatabase()
+        stats = db.get_database_stats()
+        model_stats = []
+        # Buscar estatísticas dos modelos
+        with sqlite3.connect(db.db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute(
+                "SELECT model_name, games_played, wins, draws, losses, current_elo, avg_accuracy FROM model_stats")
+            for row in cursor.fetchall():
+                model_stats.append({
+                    "model": row[0],
+                    "games_played": row[1],
+                    "wins": row[2],
+                    "draws": row[3],
+                    "losses": row[4],
+                    "elo": row[5],
+                    "avg_accuracy": row[6],
+                })
+        recent_games = db.get_recent_games(10)
         return {
-            "totalGames": total_games,
+            "totalGames": stats['total_games'],
             "modelStats": model_stats,
-            "recentGames": [],
-            "matchupStats": matchup_stats
+            "recentGames": recent_games,
+            "matchupStats": []  # Pode ser implementado depois
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

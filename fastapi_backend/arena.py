@@ -11,7 +11,7 @@ import sqlite3
 import threading
 from enum import Enum
 from pathlib import Path
-from pgn_utils import parse_pgn
+from fastapi_backend.pgn_utils import parse_pgn
 
 router = APIRouter(prefix="/api/arena", tags=["arena"])
 
@@ -632,9 +632,7 @@ def save_game_to_db(game: GameState):
     """Salva uma partida no banco de dados"""
 
     DB_PATH = os.path.abspath(os.path.join(
-        os.path.dirname(
-            __file__), "..", "test_streamlit", "llm_chess_arena", "chess_arena.db"
-    ))
+        os.path.dirname(__file__), '..', 'chess_arena.db'))
 
     try:
         with sqlite3.connect(DB_PATH) as conn:
@@ -684,9 +682,7 @@ def get_total_games_from_db() -> int:
     """Obtém o total de partidas do banco"""
 
     DB_PATH = os.path.abspath(os.path.join(
-        os.path.dirname(
-            __file__), "..", "test_streamlit", "llm_chess_arena", "chess_arena.db"
-    ))
+        os.path.dirname(__file__), '..', 'chess_arena.db'))
 
     try:
         with sqlite3.connect(DB_PATH) as conn:
@@ -701,9 +697,7 @@ def get_model_stats_from_db() -> Dict[str, Dict[str, int]]:
     """Obtém estatísticas dos modelos do banco"""
 
     DB_PATH = os.path.abspath(os.path.join(
-        os.path.dirname(
-            __file__), "..", "test_streamlit", "llm_chess_arena", "chess_arena.db"
-    ))
+        os.path.dirname(__file__), '..', 'chess_arena.db'))
 
     try:
         with sqlite3.connect(DB_PATH) as conn:

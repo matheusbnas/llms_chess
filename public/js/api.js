@@ -189,7 +189,7 @@ class Api {
   }
 
   async importPgns() {
-    return this.post("/api/import-pgns");
+    return this.post("/api/data/import-pgns");
   }
 
   async getImportedGames() {

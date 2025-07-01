@@ -1,639 +1,981 @@
-// Arena.js - Lógica para a página de visualização de partidas
+console.log("Testando arena.js");
 
-import { Api } from "./api.js";
+// ♟️ Arena.js - Lógica corrigida para a página de arena de batalhas
 
-document.addEventListener("DOMContentLoaded", () => {
-  // Early exit if required elements are not on the page
-  if (!document.getElementById("arena-matchup-select")) {
-    return;
+// Garantir que a API esteja disponível
+if (!window.api) {
+  window.api = new Api();
+}
+
+class ArenaManager {
+  constructor() {
+    this.api = window.api;
+    this.currentBattle = null;
+    this.battleInterval = null;
+    this.chessboard = null;
+    this.elements = {
+      // Model selectors
+      whiteModel: document.getElementById("white-model"),
+      blackModel: document.getElementById("black-model"),
+
+      // Battle controls
+      startBattleBtn: document.getElementById("start-battle"),
+
+      // Configuration
+      opening: document.getElementById("opening"),
+      numGames: document.getElementById("num-games"),
+      numGamesValue: document.getElementById("num-games-value"),
+      realtimeSpeed: document.getElementById("realtime-speed"),
+      realtimeSpeedValue: document.getElementById("realtime-speed-value"),
+
+      // Battle status
+      battleStatus: document.getElementById("battle-status"),
+      progressContainer: document.getElementById("progress-container"),
+      progressFill: document.getElementById("progress-fill"),
+      progressText: document.getElementById("progress-text"),
+
+      // Chessboard
+      arenaChessboard: document.getElementById("arena-chessboard"),
+      topModelName: document.getElementById("top-model-name"),
+      bottomModelName: document.getElementById("bottom-model-name"),
+
+      // Move list
+      moveListContent: document.getElementById("move-list-content"),
+
+      // Results
+      resultsCard: document.getElementById("results-card"),
+      resultsTable: document.getElementById("results-table"),
+      resultsTbody: document.getElementById("results-tbody"),
+    };
+
+    console.log("Construtor ArenaManager chamado");
+    this.init();
   }
 
-  const arena = {
-    api: new Api(),
-    pgnViewer: null,
-    elements: {
-      matchupSelect: document.getElementById("arena-matchup-select"),
-      gameSelect: document.getElementById("arena-game-select"),
-      loadGameBtn: document.getElementById("arena-load-game-btn"),
-      mainContent: document.getElementById("arena-main-content"),
-      loadingOverlay: document.getElementById("arena-loading-overlay"),
-      whitePlayerName: document.getElementById("white-player-name"),
-      blackPlayerName: document.getElementById("black-player-name"),
-      gameResult: document.getElementById("game-result-display"),
-      chessboard: document.getElementById("arena-chessboard"),
-      movesList: document.getElementById("arena-moves-list"),
-      gameDetailsList: document.getElementById("game-details-list"),
-      positionSlider: document.getElementById("arena-position-slider"),
-      currentPositionDisplay: document.getElementById(
-        "current-position-display"
-      ),
-    },
-    state: {
-      matchups: [],
-      games: [],
-      currentPgn: null,
-      isLoading: false,
-    },
-  };
+  init() {
+    console.log("🏁 Inicializando Arena Manager...");
+    this.setupEventListeners();
+    this.loadAvailableModels();
+    this.initializeChessboard();
+    this.updateSliderValues();
+    this.updateModelCards();
+    console.log("✅ Arena Manager inicializado");
+  }
 
-  initializeArena(arena);
+  setupEventListeners() {
+    // Sliders para mostrar valores
+    if (this.elements.numGames) {
+      this.elements.numGames.addEventListener("input", () => {
+        if (this.elements.numGamesValue) {
+          this.elements.numGamesValue.textContent =
+            this.elements.numGames.value;
+        }
+      });
+    }
 
-  const startBattleBtn = document.getElementById("start-battle");
-  if (startBattleBtn) {
-    startBattleBtn.addEventListener("click", async () => {
-      const whiteModel = document.getElementById("white-model");
-      const blackModel = document.getElementById("black-model");
-      const opening = document.getElementById("opening");
-      const numGames = document.getElementById("num-games");
-      const realtimeSpeed = document.getElementById("realtime-speed");
-      console.log("whiteModel", whiteModel, "value", whiteModel?.value);
-      console.log("blackModel", blackModel, "value", blackModel?.value);
-      // ... repita para os outros
+    if (this.elements.realtimeSpeed) {
+      this.elements.realtimeSpeed.addEventListener("input", () => {
+        if (this.elements.realtimeSpeedValue) {
+          this.elements.realtimeSpeedValue.textContent =
+            this.elements.realtimeSpeed.value + "s";
+        }
+      });
+    }
+
+    // Botão de iniciar batalha
+    if (this.elements.startBattleBtn) {
+      this.elements.startBattleBtn.addEventListener("click", () => {
+        console.log(
+          "[ArenaManager] Clique no botão Iniciar Batalha (listener)"
+        );
+        this.showToast("Iniciando batalha...", "info");
+        this.startBattle();
+      });
+    }
+
+    // Botão de torneio
+    if (this.elements.startTournamentBtn) {
+      this.elements.startTournamentBtn.addEventListener("click", () => {
+        console.log(
+          "[ArenaManager] Clique no botão Iniciar Torneio (listener)"
+        );
+        this.showToast("Iniciando torneio...", "info");
+        this.startTournament();
+      });
+    }
+
+    // Seleção de modelos
+    if (this.elements.whiteModel && this.elements.blackModel) {
+      this.elements.whiteModel.addEventListener("change", () => {
+        console.log("[ArenaManager] Troca de modelo das brancas");
+        this.updateModelCards();
+      });
+      this.elements.blackModel.addEventListener("change", () => {
+        console.log("[ArenaManager] Troca de modelo das pretas");
+        this.updateModelCards();
+      });
+    }
+  }
+
+  updateSliderValues() {
+    // Atualizar valores iniciais dos sliders
+    if (this.elements.numGames && this.elements.numGamesValue) {
+      this.elements.numGamesValue.textContent = this.elements.numGames.value;
+    }
+    if (this.elements.realtimeSpeed && this.elements.realtimeSpeedValue) {
+      this.elements.realtimeSpeedValue.textContent =
+        this.elements.realtimeSpeed.value + "s";
+    }
+  }
+
+  async loadAvailableModels() {
+    try {
+      console.log("📥 Carregando modelos disponíveis...");
+      const response = await this.api.get("/api/arena/models");
+      const models = response.models || {};
+
+      this.populateModelSelectors(models);
+      this.updateModelCards();
+      console.log("✅ Modelos carregados:", Object.keys(models));
+    } catch (error) {
+      console.error("❌ Erro ao carregar modelos:", error);
+      this.showError("Erro ao carregar modelos disponíveis");
+    }
+  }
+
+  populateModelSelectors(models) {
+    const modelList = Object.keys(models).filter((model) => models[model]);
+
+    // Popular selector das brancas
+    if (this.elements.whiteModel) {
+      this.elements.whiteModel.innerHTML = "";
+      modelList.forEach((model) => {
+        const option = document.createElement("option");
+        option.value = model;
+        option.textContent = model;
+        this.elements.whiteModel.appendChild(option);
+      });
+    }
+
+    // Popular selector das pretas
+    if (this.elements.blackModel) {
+      this.elements.blackModel.innerHTML = "";
+      modelList.forEach((model) => {
+        const option = document.createElement("option");
+        option.value = model;
+        option.textContent = model;
+        this.elements.blackModel.appendChild(option);
+      });
+
+      // Selecionar modelo diferente para as pretas
+      if (modelList.length > 1) {
+        this.elements.blackModel.selectedIndex = 1;
+      }
+    }
+
+
+  updateModelCards() {
+    console.log("[ArenaManager] updateModelCards chamado");
+    const whiteModelCard = document.getElementById("white-model-card");
+    const blackModelCard = document.getElementById("black-model-card");
+
+    if (whiteModelCard && this.elements.whiteModel) {
+      const modelName = this.elements.whiteModel.value;
+      console.log(
+        "[ArenaManager] Atualizando card das brancas para:",
+        modelName
+      );
+      whiteModelCard.querySelector(".model-name").textContent = modelName;
+    }
+
+    if (blackModelCard && this.elements.blackModel) {
+      const modelName = this.elements.blackModel.value;
+      console.log(
+        "[ArenaManager] Atualizando card das pretas para:",
+        modelName
+      );
+      blackModelCard.querySelector(".model-name").textContent = modelName;
+    }
+
+    // Atualizar nomes no tabuleiro
+    if (this.elements.topModelName && this.elements.blackModel) {
+      this.elements.topModelName.textContent = this.elements.blackModel.value;
+    }
+    if (this.elements.bottomModelName && this.elements.whiteModel) {
+      this.elements.bottomModelName.textContent =
+        this.elements.whiteModel.value;
+    }
+  }
+
+  initializeChessboard() {
+    if (!this.elements.arenaChessboard) {
+      console.warn("⚠️ Elemento do tabuleiro não encontrado");
+      return;
+    }
+
+    try {
+      // Criar as 64 casas do tabuleiro
+      this.elements.arenaChessboard.innerHTML = "";
+
+      for (let rank = 8; rank >= 1; rank--) {
+        for (let file = 0; file < 8; file++) {
+          const square = document.createElement("div");
+          const fileChar = String.fromCharCode(97 + file); // a-h
+          const squareId = `${fileChar}${rank}`;
+
+          const isLight = (rank + file) % 2 !== 0;
+          square.className = `square ${isLight ? "light" : "dark"}`;
+          square.dataset.square = squareId;
+
+          this.elements.arenaChessboard.appendChild(square);
+        }
+      }
+
+      this.setupInitialPosition();
+      console.log("✅ Tabuleiro inicializado");
+    } catch (error) {
+      console.error("❌ Erro ao inicializar tabuleiro:", error);
+    }
+  }
+
+  setupInitialPosition() {
+    const initialPosition = {
+      a8: "♜",
+      b8: "♞",
+      c8: "♝",
+      d8: "♛",
+      e8: "♚",
+      f8: "♝",
+      g8: "♞",
+      h8: "♜",
+      a7: "♟",
+      b7: "♟",
+      c7: "♟",
+      d7: "♟",
+      e7: "♟",
+      f7: "♟",
+      g7: "♟",
+      h7: "♟",
+      a2: "♙",
+      b2: "♙",
+      c2: "♙",
+      d2: "♙",
+      e2: "♙",
+      f2: "♙",
+      g2: "♙",
+      h2: "♙",
+      a1: "♖",
+      b1: "♘",
+      c1: "♗",
+      d1: "♕",
+      e1: "♔",
+      f1: "♗",
+      g1: "♘",
+      h1: "♖",
+    };
+
+    Object.entries(initialPosition).forEach(([square, piece]) => {
+      this.placePiece(square, piece);
     });
+  }
+
+  placePiece(squareId, piece) {
+    const square = this.elements.arenaChessboard.querySelector(
+      `[data-square="${squareId}"]`
+    );
+    if (square) {
+      square.innerHTML = `<div class="piece">${piece}</div>`;
+    }
+  }
+
+  async startBattle() {
+    console.log("Método startBattle chamado");
+    const whiteModel = this.elements.whiteModel?.value;
+    const blackModel = this.elements.blackModel?.value;
+    const opening = this.elements.opening?.value || "1. e4";
+    const numGames = parseInt(this.elements.numGames?.value || "1");
+    const realtimeSpeed = parseFloat(
+      this.elements.realtimeSpeed?.value || "1.0"
+    );
+
+    // Validações
+    if (!whiteModel || !blackModel) {
+      this.showError("Selecione ambos os modelos");
+      return;
+    }
+
+    if (whiteModel === blackModel) {
+      this.showError("Os modelos devem ser diferentes");
+      return;
+    }
+
+    try {
+      this.showLoading("Iniciando batalha...");
+
+      const battleConfig = {
+        white_model: whiteModel,
+        black_model: blackModel,
+        opening: opening,
+        num_games: numGames,
+        realtime_speed: realtimeSpeed,
+      };
+
+      console.log(
+        "[ArenaManager] Enviando requisição para iniciar batalha:",
+        battleConfig
+      );
+
+      const response = await this.api.post("/api/arena/battle", battleConfig);
+
+      console.log("[ArenaManager] Resposta do backend:", response);
+
+      if (response.battle_id) {
+        this.currentBattle = {
+          id: response.battle_id,
+          whiteModel: whiteModel,
+          blackModel: blackModel,
+          numGames: numGames,
+          currentGame: 0,
+        };
+
+        this.showBattleStatus();
+        this.startBattlePolling();
+        this.showSuccess("Batalha iniciada!");
+      } else {
+        throw new Error("Resposta inválida do servidor");
+      }
+    } catch (error) {
+      console.error("[ArenaManager] Erro ao iniciar batalha:", error);
+      this.showError("Erro ao iniciar batalha: " + error.message);
+    } finally {
+      this.hideLoading();
+    }
+  }
+
+
+  startBattlePolling() {
+    if (this.battleInterval) {
+      clearInterval(this.battleInterval);
+    }
+
+    this.battleInterval = setInterval(async () => {
+      if (!this.currentBattle) {
+        clearInterval(this.battleInterval);
+        return;
+      }
+
+      try {
+        const status = await this.api.get("/api/arena/status", {
+          battle_id: this.currentBattle.id,
+        });
+
+        this.updateBattleStatus(status);
+
+        if (status.status === "finished" || status.status === "error") {
+          clearInterval(this.battleInterval);
+          this.currentBattle = null;
+        }
+      } catch (error) {
+        console.error("❌ Erro ao verificar status:", error);
+        clearInterval(this.battleInterval);
+      }
+    }, 2000);
+  }
+
+  startTournamentPolling() {
+    if (this.battleInterval) {
+      clearInterval(this.battleInterval);
+    }
+
+    this.battleInterval = setInterval(async () => {
+      if (!this.currentBattle) {
+        clearInterval(this.battleInterval);
+        return;
+      }
+
+      try {
+        const status = await this.api.get("/api/arena/status", {
+        });
+
+        this.updateTournamentStatus(status);
+
+        if (status.status === "finished" || status.status === "error") {
+          clearInterval(this.battleInterval);
+          this.currentBattle = null;
+        }
+      } catch (error) {
+        console.error("❌ Erro ao verificar status do torneio:", error);
+        clearInterval(this.battleInterval);
+      }
+    }, 3000);
+  }
+
+  updateBattleStatus(status) {
+    if (!status) return;
+
+    // Atualizar barra de progresso
+    if (this.elements.progressContainer && this.elements.progressFill) {
+      this.elements.progressContainer.style.display = "block";
+      const progress =
+        status.total_games > 0
+          ? (status.current_game / status.total_games) * 100
+          : 0;
+      this.elements.progressFill.style.width = `${progress}%`;
+    }
+
+    if (this.elements.progressText) {
+      this.elements.progressText.textContent = `${status.current_game || 0} / ${
+        status.total_games || 0
+      } partidas`;
+    }
+
+    // Atualizar status da batalha
+    if (this.elements.battleStatus) {
+      const statusContent = `
+              <div class="status-icon">
+                  <i class="fas fa-chess"></i>
+              </div>
+              <div class="status-content">
+                  <div class="status-title">
+                      Batalha em Andamento
+                  </div>
+                  <div class="status-description">
+                      ${status.white || "Brancas"} vs ${
+        status.black || "Pretas"
+      }
+                  </div>
+              </div>
+          `;
+      this.elements.battleStatus.innerHTML = statusContent;
+    }
+
+    // Atualizar tabuleiro se houver posição atual
+    if (status.current_board) {
+      this.updateChessboardFromFEN(status.current_board);
+    }
+
+    // Atualizar lista de lances
+    if (status.current_moves && this.elements.moveListContent) {
+      this.updateMoveList(status.current_moves);
+    }
+
+    // Atualizar resultados
+    if (status.results && this.elements.resultsTbody) {
+      this.updateResultsTable(status.results);
+      if (this.elements.resultsCard) {
+        this.elements.resultsCard.style.display = "block";
+      }
+    }
+  }
+
+  updateTournamentStatus(status) {
+    if (!status) return;
+
+    // Atualizar progresso do torneio
+    if (this.elements.progressContainer && this.elements.progressFill) {
+      this.elements.progressContainer.style.display = "block";
+      const progress =
+        status.total_matches > 0
+          ? (status.current_match / status.total_matches) * 100
+          : 0;
+      this.elements.progressFill.style.width = `${progress}%`;
+    }
+
+    if (this.elements.progressText) {
+      this.elements.progressText.textContent = `${
+        status.current_match || 0
+      } / ${status.total_matches || 0} confrontos`;
+    }
+
+    // Atualizar status
+    if (this.elements.battleStatus) {
+      const statusContent = `
+              <div class="status-icon">
+                  <i class="fas fa-trophy"></i>
+              </div>
+              <div class="status-content">
+                  <div class="status-title">
+                      Torneio em Andamento
+                  </div>
+                  <div class="status-description">
+                      ${
+                        status.models
+                          ? status.models.join(" vs ")
+                          : "Todos vs Todos"
+                      }
+                  </div>
+              </div>
+          `;
+      this.elements.battleStatus.innerHTML = statusContent;
+    }
+
+    // Atualizar resultados do torneio
+    if (status.results && this.elements.resultsTbody) {
+      this.updateResultsTable(status.results);
+      if (this.elements.resultsCard) {
+        this.elements.resultsCard.style.display = "block";
+      }
+    }
+  }
+
+  updateChessboardFromFEN(fen) {
+    // Implementação simplificada para atualizar o tabuleiro baseado no FEN
+    // Em uma implementação completa, você usaria uma biblioteca como chess.js
+    console.log("🏁 Atualizando tabuleiro com FEN:", fen);
+  }
+
+  updateMoveList(moves) {
+    if (!moves || !this.elements.moveListContent) return;
+
+    if (moves.length === 0) {
+      this.elements.moveListContent.innerHTML = `
+              <div class="empty-moves">
+                  <i class="fas fa-chess-pawn"></i>
+                  <p>Aguardando lances</p>
+              </div>
+          `;
+      return;
+    }
+
+    let html = "";
+    for (let i = 0; i < moves.length; i += 2) {
+      const moveNumber = Math.floor(i / 2) + 1;
+      const whiteMove = moves[i] || "";
+      const blackMove = moves[i + 1] || "";
+
+      html += `
+              <div class="move-pair">
+                  <span class="move-number">${moveNumber}.</span>
+                  <span class="white-move">${whiteMove}</span>
+                  <span class="black-move">${blackMove}</span>
+              </div>
+          `;
+    }
+
+    this.elements.moveListContent.innerHTML = html;
+  }
+
+  updateResultsTable(results) {
+    if (!results || !this.elements.resultsTbody) return;
+
+    this.elements.resultsTbody.innerHTML = "";
+
+    results.forEach((result, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+              <td>${index + 1}</td>
+              <td>${result.white || "-"}</td>
+              <td>${result.black || "-"}</td>
+              <td>
+                  <span class="result-badge ${this.getResultClass(
+                    result.result
+                  )}">
+                      ${result.result || "-"}
+                  </span>
+              </td>
+              <td>${result.moves || "-"}</td>
+              <td>${result.duration || "-"}</td>
+          `;
+      this.elements.resultsTbody.appendChild(row);
+    });
+  }
+
+  getResultClass(result) {
+    if (result === "1-0") return "result-white-win";
+    if (result === "0-1") return "result-black-win";
+    if (result === "1/2-1/2") return "result-draw";
+    return "";
+  }
+
+  showBattleStatus() {
+    if (this.elements.battleStatus) {
+      this.elements.battleStatus.style.display = "block";
+    }
+    if (this.elements.progressContainer) {
+      this.elements.progressContainer.style.display = "block";
+    }
+  }
+
+  showLoading(message) {
+    console.log("⏳", message);
+    // Adicionar indicador visual de loading se necessário
+  }
+
+  hideLoading() {
+    console.log("✅ Loading finalizado");
+    // Remover indicador visual de loading se necessário
+  }
+
+  showSuccess(message) {
+    console.log("✅", message);
+    this.showToast(message, "success");
+  }
+
+  showError(message) {
+    console.error("❌", message);
+    this.showToast(message, "error");
+  }
+
+  showToast(message, type = "info") {
+    // Implementação simples de toast
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+    toast.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          padding: 12px 20px;
+          border-radius: 8px;
+          color: white;
+          font-weight: 500;
+          z-index: 1000;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+      `;
+
+    if (type === "success") {
+      toast.style.backgroundColor = "#10b981";
+    } else if (type === "error") {
+      toast.style.backgroundColor = "#ef4444";
+    } else {
+      toast.style.backgroundColor = "#3b82f6";
+    }
+
+    document.body.appendChild(toast);
+
+    // Fade in
+    setTimeout(() => {
+      toast.style.opacity = "1";
+    }, 100);
+
+    // Fade out e remover
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
+    }, 3000);
+  }
+}
+
+// Inicializar quando o DOM estiver pronto
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("Arena.js carregado!");
+  if (document.getElementById("start-battle")) {
+    window.arenaManager = new ArenaManager();
+    console.log("ArenaManager inicializado!");
   }
 });
 
-async function initializeArena(arena) {
-  console.log("⚔️ Initializing Arena...");
-  setupEventListeners(arena);
-
-  try {
-    const res = await arena.api.get("/api/arena/matchups");
-    arena.state.matchups = res.matchups || [];
-    populateMatchupSelector(arena);
-    console.log("✅ Matchups loaded");
-  } catch (error) {
-    console.error("❌ Failed to load matchups", error);
-    arena.elements.matchupSelect.innerHTML =
-      "<option>Erro ao carregar</option>";
+// Compatibilidade com o código legado
+window.startBattle = () => {
+  if (window.arenaManager) {
+    window.arenaManager.startBattle();
   }
-}
+};
 
-function setupEventListeners(arena) {
-  const { elements } = arena;
+window.startTournament = () => {
+  if (window.arenaManager) {
+    window.arenaManager.startTournament();
+  }
+};
 
-  elements.matchupSelect.addEventListener("change", () =>
-    handleMatchupChange(arena)
+// ♟️ Complemento JavaScript para Arena - Garantir que o tabuleiro apareça
+// Adicionar este código no final do arena.js existente ou como arquivo separado
+
+// Função para forçar a exibição do tabuleiro quando uma batalha começar
+function showChessboard() {
+  const chessboardContainer = document.getElementById(
+    "arena-chessboard-container"
   );
-  elements.gameSelect.addEventListener("change", () => handleGameChange(arena));
-  elements.loadGameBtn.addEventListener("click", () => loadSelectedGame(arena));
+  const moveList = document.getElementById("arena-move-list");
 
-  // PGN navigation controls
-  document
-    .getElementById("arena-pgn-start")
-    ?.addEventListener("click", () => arena.pgnViewer?.goToMove(0));
-  document
-    .getElementById("arena-pgn-back")
-    ?.addEventListener("click", () => arena.pgnViewer?.previousMove());
-  document
-    .getElementById("arena-pgn-next")
-    ?.addEventListener("click", () => arena.pgnViewer?.nextMove());
-  document
-    .getElementById("arena-pgn-end")
-    ?.addEventListener("click", () => arena.pgnViewer?.goToMove("end"));
-  document
-    .getElementById("arena-pgn-flip")
-    ?.addEventListener("click", () => arena.pgnViewer?.flipBoard());
-
-  const playBtn = document.getElementById("arena-pgn-play");
-  if (playBtn) {
-    playBtn.addEventListener("click", () => {
-      const isPlaying = arena.pgnViewer?.toggleAutoPlay(3000);
-      playBtn.innerHTML = isPlaying
-        ? '<i class="fas fa-pause"></i>'
-        : '<i class="fas fa-play"></i>';
-    });
+  if (chessboardContainer) {
+    chessboardContainer.style.display = "flex";
+    console.log("✅ Tabuleiro exibido");
   }
 
-  elements.positionSlider.addEventListener("input", (e) => {
-    arena.pgnViewer?.goToMove(parseInt(e.target.value, 10));
-  });
+  if (moveList) {
+    moveList.style.display = "block";
+    console.log("✅ Lista de lances exibida");
+  }
 }
 
-function populateMatchupSelector(arena) {
-  const { matchupSelect } = arena.elements;
-  matchupSelect.innerHTML = '<option value="">Selecione um confronto</option>';
-  arena.state.matchups.forEach((matchup) => {
-    const option = new Option(matchup.replace(/ vs /g, " vs. "), matchup);
-    matchupSelect.add(option);
-  });
+// Função para ocultar o tabuleiro quando não há batalha
+function hideChessboard() {
+  const chessboardContainer = document.getElementById(
+    "arena-chessboard-container"
+  );
+  const moveList = document.getElementById("arena-move-list");
+
+  if (chessboardContainer) {
+    chessboardContainer.style.display = "none";
+  }
+
+  if (moveList) {
+    moveList.style.display = "none";
+  }
 }
 
-async function handleMatchupChange(arena) {
-  const { matchupSelect, gameSelect, loadGameBtn } = arena.elements;
-  const selectedMatchup = matchupSelect.value;
-
-  gameSelect.innerHTML = '<option value="">Carregando partidas...</option>';
-  gameSelect.disabled = true;
-  loadGameBtn.disabled = true;
-
-  if (!selectedMatchup) {
-    gameSelect.innerHTML = '<option value="">Selecione um confronto</option>';
+// Garantir que o tabuleiro seja inicializado corretamente
+document.addEventListener("DOMContentLoaded", function () {
+  // Verificar se estamos na página da arena
+  if (!document.getElementById("start-battle")) {
     return;
   }
 
-  try {
-    const res = await arena.api.get(
-      `/api/arena/matchups/${selectedMatchup}/games`
-    );
-    const games = res.games || [];
-    arena.state.games = games;
+  console.log("🏁 Inicializando complemento da arena...");
 
-    gameSelect.innerHTML = '<option value="">Selecione uma partida</option>';
-    games.forEach((game, index) => {
-      const gameName = `Partida ${index + 1} (${game.replace(".pgn", "")})`;
-      const option = new Option(gameName, game);
-      gameSelect.add(option);
-    });
+  // Mostrar tabuleiro por padrão para teste
+  setTimeout(() => {
+    showChessboard();
+  }, 1000);
 
-    gameSelect.disabled = false;
-  } catch (error) {
-    console.error(`❌ Failed to load games for ${selectedMatchup}`, error);
-    gameSelect.innerHTML = "<option>Erro ao carregar</option>";
+  // Sobrescrever a função startBattle se o ArenaManager não estiver disponível
+  if (!window.arenaManager && !window.startBattle) {
+    window.startBattle = function () {
+      console.log("🚀 Iniciando batalha (fallback)...");
+
+      const whiteModel =
+        document.getElementById("white-model")?.value || "GPT-4o";
+      const blackModel =
+        document.getElementById("black-model")?.value || "Gemini-Pro";
+
+      if (whiteModel === blackModel) {
+        alert("Os modelos devem ser diferentes!");
+        return;
+      }
+
+      // Mostrar status de batalha
+      updateBattleStatus("Batalha iniciada!", `${whiteModel} vs ${blackModel}`);
+
+      // Mostrar tabuleiro
+      showChessboard();
+
+      // Simular uma partida para teste
+      simulateGameForTesting(whiteModel, blackModel);
+    };
+  }
+});
+
+// Função para atualizar o status da batalha
+function updateBattleStatus(title, description) {
+  const battleStatus = document.getElementById("battle-status");
+  if (battleStatus) {
+    battleStatus.innerHTML = `
+          <div class="status-icon">
+              <i class="fas fa-chess"></i>
+          </div>
+          <div class="status-content">
+              <div class="status-title">${title}</div>
+              <div class="status-description">${description}</div>
+          </div>
+      `;
+    battleStatus.style.display = "flex";
   }
 }
 
-function handleGameChange(arena) {
-  const { gameSelect, loadGameBtn } = arena.elements;
-  if (gameSelect.value) {
-    loadGameBtn.disabled = false;
-  } else {
-    loadGameBtn.disabled = true;
+// Função para atualizar os nomes dos modelos no tabuleiro
+function updateModelNames(whiteModel, blackModel) {
+  const topModelName = document.getElementById("top-model-name");
+  const bottomModelName = document.getElementById("bottom-model-name");
+
+  if (topModelName) {
+    topModelName.textContent = blackModel; // Pretas ficam em cima
+  }
+
+  if (bottomModelName) {
+    bottomModelName.textContent = whiteModel; // Brancas ficam em baixo
   }
 }
 
-function setLoadingState(arena, isLoading) {
-  arena.state.isLoading = isLoading;
-  arena.elements.loadingOverlay.style.display = isLoading ? "flex" : "none";
-  arena.elements.loadGameBtn.disabled = isLoading;
-}
-
-async function loadSelectedGame(arena) {
-  const { matchupSelect, gameSelect } = arena.elements;
-  const matchup = matchupSelect.value;
-  const gameFile = gameSelect.value;
-
-  if (!matchup || !gameFile || arena.state.isLoading) return;
-
-  setLoadingState(arena, true);
-
-  try {
-    const pgnData = await arena.api.get(
-      `/api/arena/matchups/${matchup}/games/${gameFile}`
-    );
-    if (!pgnData || !pgnData.pgn) {
-      throw new Error("Dados da partida inválidos.");
-    }
-    arena.state.currentPgn = pgnData;
-
-    renderGame(arena);
-  } catch (error) {
-    console.error("❌ Failed to load PGN data", error);
-    alert(
-      "Erro ao carregar a partida. Verifique o console para mais detalhes."
-    );
-  } finally {
-    setLoadingState(arena, false);
+// Função para colocar uma peça no tabuleiro
+function placePieceOnBoard(square, piece) {
+  const squareElement = document.querySelector(`[data-square="${square}"]`);
+  if (squareElement) {
+    squareElement.innerHTML = `<div class="piece">${piece}</div>`;
   }
 }
 
-function renderGame(arena) {
-  const { elements, state } = arena;
-  const { headers, moves, pgn } = state.currentPgn;
-
-  // Show main content
-  elements.mainContent.style.display = "block";
-
-  // Update player names and result
-  elements.whitePlayerName.textContent = headers.White || "Brancas";
-  elements.blackPlayerName.textContent = headers.Black || "Pretas";
-  elements.gameResult.textContent = headers.Result || "*";
-
-  // Initialize PGN Viewer
-  if (!arena.pgnViewer) {
-    arena.pgnViewer = new PgnViewer({
-      element: elements.chessboard,
-      pgn: pgn,
-      movesElement: elements.movesList,
-      showCoordinates: true,
-      showFEN: false,
-    });
-  } else {
-    arena.pgnViewer.loadPgn(pgn);
-  }
-  // Exibir descrições dos lances (se houver)
-  if (moves && elements.movesList) {
-    elements.movesList.innerHTML = moves
-      .map(
-        (m, i) =>
-          `<li><b>${i + 1}.</b> ${m.move} <span style='color:#aaa'>${
-            m.description || ""
-          }</span></li>`
-      )
-      .join("");
-  }
-
-  // Update UI based on viewer state
-  updateOnMove(arena);
-
-  // Attach listener for move changes
-  arena.pgnViewer.on("move", () => updateOnMove(arena));
-
-  // Update game details panel
-  renderGameDetails(arena);
+// Função para limpar o tabuleiro
+function clearBoard() {
+  const squares = document.querySelectorAll(".arena-chessboard .square");
+  squares.forEach((square) => {
+    square.innerHTML = "";
+    square.classList.remove("last-move");
+  });
 }
 
-function updateOnMove(arena) {
-  const { pgnViewer, elements } = arena;
-  const { positionSlider, currentPositionDisplay } = elements;
+// Função para configurar posição inicial do tabuleiro
+function setupInitialPosition() {
+  console.log("🏁 Configurando posição inicial do tabuleiro...");
 
-  const currentMove = pgnViewer.getCurrentMoveNumber();
-  const totalMoves = pgnViewer.getTotalMoves();
-
-  positionSlider.max = totalMoves;
-  positionSlider.value = currentMove;
-  currentPositionDisplay.textContent = `Lance ${currentMove} / ${totalMoves}`;
-}
-
-function renderGameDetails(arena) {
-  const { gameDetailsList } = arena.elements;
-  const { headers } = arena.state.currentPgn;
-
-  gameDetailsList.innerHTML = ""; // Clear previous details
-
-  const details = {
-    Evento: headers.Event || "N/A",
-    Site: headers.Site || "N/A",
-    Data: headers.Date || "N/A",
-    Rodada: headers.Round || "N/A",
-    Abertura: headers.Opening || "Desconhecida",
-    ECO: headers.ECO || "N/A",
+  const initialPosition = {
+    a8: "♜",
+    b8: "♞",
+    c8: "♝",
+    d8: "♛",
+    e8: "♚",
+    f8: "♝",
+    g8: "♞",
+    h8: "♜",
+    a7: "♟",
+    b7: "♟",
+    c7: "♟",
+    d7: "♟",
+    e7: "♟",
+    f7: "♟",
+    g7: "♟",
+    h7: "♟",
+    a2: "♙",
+    b2: "♙",
+    c2: "♙",
+    d2: "♙",
+    e2: "♙",
+    f2: "♙",
+    g2: "♙",
+    h2: "♙",
+    a1: "♖",
+    b1: "♘",
+    c1: "♗",
+    d1: "♕",
+    e1: "♔",
+    f1: "♗",
+    g1: "♘",
+    h1: "♖",
   };
 
-  for (const [key, value] of Object.entries(details)) {
-    if (value && value !== "N/A" && value !== "?") {
-      const item = document.createElement("div");
-      item.className = "detail-item";
-      item.innerHTML = `<span class="detail-label">${key}:</span> <span class="detail-value">${value}</span>`;
-      gameDetailsList.appendChild(item);
-    }
-  }
+  // Limpar tabuleiro primeiro
+  clearBoard();
+
+  // Colocar peças
+  Object.entries(initialPosition).forEach(([square, piece]) => {
+    placePieceOnBoard(square, piece);
+  });
+
+  console.log("✅ Posição inicial configurada");
 }
 
-async function loadArenaConfig() {
-  const models = await api.getAvailableModels();
-  renderModelSelectors(models);
-}
+// Função para simular uma partida (apenas para teste)
+function simulateGameForTesting(whiteModel, blackModel) {
+  console.log("🎮 Simulando partida para teste...");
 
-async function startBattle(config) {
-  setLoading(true);
-  try {
-    const result = await api.playGameRealtime(config);
-    renderBattleResult(result);
-  } catch (error) {
-    showError("Erro ao iniciar batalha: " + error.message);
-  } finally {
-    setLoading(false);
-  }
-}
+  updateModelNames(whiteModel, blackModel);
+  setupInitialPosition();
 
-// ♟️ Arena de Batalha LLMs - JS
-// Requer que o arquivo api.js já esteja carregado e a classe Api disponível
+  // Simular alguns lances
+  const sampleMoves = [
+    { from: "e2", to: "e4", piece: "♙" },
+    { from: "e7", to: "e5", piece: "♟" },
+    { from: "g1", to: "f3", piece: "♘" },
+    { from: "b8", to: "c6", piece: "♞" },
+  ];
 
-(function () {
-  // Instância da API
-  const api = window.api || new Api();
-
-  // Elementos DOM
-  const whiteModelSelect = document.getElementById("white-model");
-  const blackModelSelect = document.getElementById("black-model");
-  const openingSelect = document.getElementById("opening");
-  const numGamesSlider = document.getElementById("num-games");
-  const numGamesValue = document.getElementById("num-games-value");
-  const realtimeSpeedSlider = document.getElementById("realtime-speed");
-  const realtimeSpeedValue = document.getElementById("realtime-speed-value");
-  const startBattleBtn = document.getElementById("start-battle");
-  const startRealtimeBattleBtn = document.getElementById(
-    "start-realtime-battle"
-  );
-  const tournamentModeCheckbox = document.getElementById("tournament-mode");
-  const tournamentConfig = document.getElementById("tournament-config");
-  const battleConfig = document.getElementById("battle-config");
-  const tournamentModelsSelect = document.getElementById("tournament-models");
-  const gamesPerPairSlider = document.getElementById("games-per-pair");
-  const gamesPerPairValue = document.getElementById("games-per-pair-value");
-  const startTournamentBtn = document.getElementById("start-tournament-btn");
-  const battleStatusDiv = document.getElementById("battle-status");
-  const progressBar = document.getElementById("battle-progress");
-  const progressText = document.getElementById("progress-text");
-  const resultsTableBody = document.querySelector("#results-table tbody");
-  const savedGamesList = document.getElementById("saved-games-list");
-
-  // Atualiza valores dos sliders
-  numGamesSlider.addEventListener("input", () => {
-    numGamesValue.textContent = numGamesSlider.value;
-  });
-  realtimeSpeedSlider.addEventListener("input", () => {
-    realtimeSpeedValue.textContent = realtimeSpeedSlider.value;
-  });
-  gamesPerPairSlider.addEventListener("input", () => {
-    gamesPerPairValue.textContent = gamesPerPairSlider.value;
-  });
-
-  // Alterna entre modo torneio e individual
-  tournamentModeCheckbox.addEventListener("change", () => {
-    if (tournamentModeCheckbox.checked) {
-      tournamentConfig.style.display = "block";
-      battleConfig.style.display = "none";
-    } else {
-      tournamentConfig.style.display = "none";
-      battleConfig.style.display = "block";
-    }
-  });
-
-  // Popular dropdowns de modelos
-  async function loadModels() {
-    try {
-      const data = await api.get("/api/arena/models/static");
-      const models = data.models || [];
-      // Limpa e popula selects individuais
-      [whiteModelSelect, blackModelSelect].forEach((select) => {
-        select.innerHTML = "";
-        models.forEach((model) => {
-          const opt = document.createElement("option");
-          opt.value = model;
-          opt.textContent = model;
-          select.appendChild(opt);
-        });
-      });
-      // Torneio (multiselect)
-      tournamentModelsSelect.innerHTML = "";
-      models.forEach((model) => {
-        const opt = document.createElement("option");
-        opt.value = model;
-        opt.textContent = model;
-        tournamentModelsSelect.appendChild(opt);
-      });
-    } catch (err) {
-      alert("Erro ao carregar modelos disponíveis.");
-    }
-  }
-
-  // Iniciar batalha individual
-  startBattleBtn.addEventListener("click", async () => {
-    const white_model = whiteModelSelect.value;
-    const black_model = blackModelSelect.value;
-    const opening = openingSelect.value;
-    const num_games = parseInt(numGamesSlider.value);
-    const realtime_speed = parseFloat(realtimeSpeedSlider.value);
-    if (!white_model || !black_model || white_model === black_model) {
-      alert("Selecione modelos diferentes para brancas e pretas.");
+  let moveIndex = 0;
+  const moveInterval = setInterval(() => {
+    if (moveIndex >= sampleMoves.length) {
+      clearInterval(moveInterval);
+      updateBattleStatus("Partida Finalizada", "Resultado: 1-0 (teste)");
       return;
     }
-    try {
-      const res = await api.startArenaBattle({
-        white_model,
-        black_model,
-        opening,
-        num_games,
-        realtime_speed,
-      });
-      if (res.battle_id) {
-        loadBattleStatus(res.battle_id);
-      }
-    } catch (err) {
-      alert("Erro ao iniciar batalha.");
+
+    const move = sampleMoves[moveIndex];
+
+    // Remover peça da casa de origem
+    const fromSquare = document.querySelector(`[data-square="${move.from}"]`);
+    if (fromSquare) {
+      fromSquare.innerHTML = "";
     }
-  });
 
-  // Iniciar batalha em tempo real
-  startRealtimeBattleBtn.addEventListener("click", async () => {
-    // Pode ser igual ao startBattleBtn, mas pode ser customizado se necessário
-    startBattleBtn.click();
-  });
+    // Colocar peça na casa de destino
+    placePieceOnBoard(move.to, move.piece);
 
-  // Iniciar torneio
-  startTournamentBtn.addEventListener("click", async () => {
-    const selected = Array.from(tournamentModelsSelect.selectedOptions).map(
-      (opt) => opt.value
-    );
-    const games_per_pair = parseInt(gamesPerPairSlider.value);
-    if (selected.length < 2) {
-      alert("Selecione pelo menos dois modelos para o torneio.");
-      return;
-    }
-    try {
-      const res = await api.startArenaTournament({
-        models: selected,
-        games_per_pair,
-      });
-      if (res.tournament_id) {
-        loadBattleStatus(null, res.tournament_id);
-      }
-    } catch (err) {
-      alert("Erro ao iniciar torneio.");
-    }
-  });
-
-  // Carregar status da batalha/torneio
-  async function loadBattleStatus(battle_id = null, tournament_id = null) {
-    try {
-      const params = {};
-      if (battle_id) params.battle_id = battle_id;
-      if (tournament_id) params.tournament_id = tournament_id;
-      const status = await api.getArenaStatus(params);
-      // Atualiza status
-      battleStatusDiv.innerHTML = `🎮 ${status.white} vs ${status.black} | Partida ${status.current_game}/${status.total_games}`;
-      progressBar.value = status.current_game / status.total_games;
-      progressText.textContent = `Progresso: ${status.current_game} de ${status.total_games}`;
-      // Atualiza resultados
-      resultsTableBody.innerHTML = "";
-      (status.results || []).forEach((r) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${r.game}</td><td>${r.white}</td><td>${r.black}</td><td>${r.result}</td>`;
-        resultsTableBody.appendChild(tr);
-      });
-      // Atualiza tabuleiro (se houver FEN)
-      if (status.current_board) {
-        renderChessboard(status.current_board);
-      }
-    } catch (err) {
-      battleStatusDiv.innerHTML = "Erro ao carregar status da batalha.";
-    }
-  }
-
-  // Carregar partidas salvas
-  async function loadSavedGames() {
-    try {
-      const games = await api.getArenaSavedGames();
-      savedGamesList.innerHTML = "";
-      games.forEach((g) => {
-        const li = document.createElement("li");
-        li.textContent = `${g.white} vs ${g.black} (${g.date})`;
-        li.addEventListener("click", () => loadSavedGame(g.id));
-        savedGamesList.appendChild(li);
-      });
-    } catch (err) {
-      savedGamesList.innerHTML = "<li>Erro ao carregar partidas salvas.</li>";
-    }
-  }
-
-  // Carregar partida salva
-  async function loadSavedGame(gameId) {
-    try {
-      const game = await api.getArenaGame(gameId);
-      // Exibir detalhes, lances, etc.
-      alert(`Partida carregada: ${game.pgn}`);
-      // TODO: Integrar com visualizador de tabuleiro/lances
-    } catch (err) {
-      alert("Erro ao carregar partida.");
-    }
-  }
-
-  // Inicialização
-  loadModels();
-  loadSavedGames();
-  // Pode-se chamar loadBattleStatus() se quiser mostrar status ao abrir
-
-  // Expor funções para debug (opcional)
-  window.arenaPage = {
-    loadModels,
-    loadSavedGames,
-    loadBattleStatus,
-  };
-})();
-
-// Integração com chessboard.js
-let board = null;
-
-function renderChessboard(fen = "start") {
-  if (!window.Chessboard) {
-    console.error("Chessboard.js não carregado!");
-    return;
-  }
-  if (board) {
-    board.position(fen);
-  } else {
-    board = Chessboard("chessboard-container", {
-      position: fen,
-      draggable: false,
-      pieceTheme:
-        "https://cdn.jsdelivr.net/npm/chessboardjs@1.0.0/dist/img/chesspieces/wikipedia/{piece}.png",
+    // Destacar último lance
+    document.querySelectorAll(".arena-chessboard .square").forEach((sq) => {
+      sq.classList.remove("last-move");
     });
-  }
+    const fromEl = document.querySelector(`[data-square="${move.from}"]`);
+    const toEl = document.querySelector(`[data-square="${move.to}"]`);
+    if (fromEl) fromEl.classList.add("last-move");
+    if (toEl) toEl.classList.add("last-move");
+
+    // Atualizar lista de lances
+    updateMoveList(moveIndex + 1, sampleMoves.slice(0, moveIndex + 1));
+
+    moveIndex++;
+  }, 2000);
 }
 
-// Inicializar tabuleiro ao carregar a página
-renderChessboard();
+// Função para atualizar a lista de lances
+function updateMoveList(currentMove, moves) {
+  const moveListContent = document.getElementById("move-list-content");
+  if (!moveListContent) return;
 
-// Adicionar integração para iniciar batalhas e polling de status
+  let html = "";
+  for (let i = 0; i < moves.length; i += 2) {
+    const moveNumber = Math.floor(i / 2) + 1;
+    const whiteMove = moves[i] ? `${moves[i].from}-${moves[i].to}` : "";
+    const blackMove = moves[i + 1]
+      ? `${moves[i + 1].from}-${moves[i + 1].to}`
+      : "";
 
-// Função para iniciar batalha individual
-async function startBattle() {
-  const whiteModel = document.getElementById("white-model").value;
-  const blackModel = document.getElementById("black-model").value;
-  const opening = document.getElementById("opening").value;
-  const numGames = parseInt(document.getElementById("num-games").value, 10);
-  const realtimeSpeed = parseFloat(
-    document.getElementById("realtime-speed").value
-  );
-
-  const config = {
-    white_model: whiteModel,
-    black_model: blackModel,
-    opening,
-    num_games: numGames,
-    realtime_speed: realtimeSpeed,
-  };
-
-  try {
-    const res = await arena.api.post("/api/arena/battle", config);
-    if (res.battle_id) {
-      pollBattleStatus(res.battle_id);
-    } else {
-      alert("Erro ao iniciar batalha");
-    }
-  } catch (e) {
-    alert("Erro ao iniciar batalha: " + e.message);
+    html += `
+          <div class="move-pair">
+              <span class="move-number">${moveNumber}.</span>
+              <span class="move white">${whiteMove}</span>
+              <span class="move black">${blackMove}</span>
+          </div>
+      `;
   }
+
+  moveListContent.innerHTML = html;
 }
 
-// Função para iniciar torneio
-async function startTournament() {
-  const models = Array.from(
-    document.getElementById("tournament-models").selectedOptions
-  ).map((opt) => opt.value);
-  const gamesPerPair = parseInt(
-    document.getElementById("games-per-pair").value,
-    10
-  );
-  const config = { models, games_per_pair: gamesPerPair };
-  try {
-    const res = await arena.api.post("/api/arena/tournament", config);
-    if (res.tournament_id) {
-      pollBattleStatus(null, res.tournament_id);
-    } else {
-      alert("Erro ao iniciar torneio");
-    }
-  } catch (e) {
-    alert("Erro ao iniciar torneio: " + e.message);
+// Garantir que o tabuleiro seja criado se não existir
+function ensureChessboardExists() {
+  const chessboard = document.getElementById("arena-chessboard");
+  if (!chessboard) {
+    console.warn("⚠️ Tabuleiro não encontrado no DOM");
+    return false;
   }
-}
 
-// Polling de status da batalha/torneio
-let battleStatusInterval = null;
-function pollBattleStatus(battleId, tournamentId) {
-  clearInterval(battleStatusInterval);
-  async function fetchStatus() {
-    try {
-      const params = {};
-      if (battleId) params.battle_id = battleId;
-      if (tournamentId) params.tournament_id = tournamentId;
-      const status = await arena.api.get("/api/arena/status", params);
-      renderBattleStatus(status);
-      if (status.status === "finished" || status.status === "error") {
-        clearInterval(battleStatusInterval);
+  // Verificar se o tabuleiro tem as 64 casas
+  const squares = chessboard.querySelectorAll(".square");
+  if (squares.length !== 64) {
+    console.log("🔧 Criando casas do tabuleiro...");
+
+    chessboard.innerHTML = "";
+
+    // Criar as 64 casas
+    for (let rank = 8; rank >= 1; rank--) {
+      for (let file = 0; file < 8; file++) {
+        const square = document.createElement("div");
+        const fileChar = String.fromCharCode(97 + file); // a-h
+        const squareId = `${fileChar}${rank}`;
+
+        const isLight = (rank + file) % 2 !== 0;
+        square.className = `square ${isLight ? "light" : "dark"}`;
+        square.dataset.square = squareId;
+
+        chessboard.appendChild(square);
       }
-    } catch (e) {
-      clearInterval(battleStatusInterval);
-      alert("Erro ao buscar status da batalha: " + e.message);
     }
+
+    console.log("✅ Tabuleiro criado com 64 casas");
   }
-  fetchStatus();
-  battleStatusInterval = setInterval(fetchStatus, 2000);
+
+  return true;
 }
 
-// Renderizar status da batalha na interface
-function renderBattleStatus(status) {
-  const battleStatusDiv = document.getElementById("battle-status");
-  const progressBar = document.getElementById("battle-progress");
-  const progressText = document.getElementById("progress-text");
-  const resultsTableBody = document.querySelector("#results-table tbody");
-  if (!status) return;
-  battleStatusDiv.innerHTML = `🎮 Batalha em Andamento<br>${status.white} vs ${status.black}<br>Partida ${status.current_game}/${status.total_games}`;
-  progressBar.value = status.current_game / status.total_games;
-  progressText.textContent = `${status.current_game} / ${status.total_games}`;
-  // Resultados parciais
-  if (status.results && Array.isArray(status.results)) {
-    resultsTableBody.innerHTML = status.results
-      .map(
-        (r) =>
-          `<tr><td>${r.game}</td><td>${r.white}</td><td>${r.black}</td><td>${r.result}</td></tr>`
-      )
-      .join("");
-  }
-}
-
-// Adicionar listeners aos botões
-if (document.getElementById("start-battle")) {
-  document
-    .getElementById("start-battle")
-    .addEventListener("click", startBattle);
-}
-if (document.getElementById("start-tournament-btn")) {
-  document
-    .getElementById("start-tournament-btn")
-    .addEventListener("click", startTournament);
-}
-
-window.startTournament = startTournament;
+// Expor funções globalmente para debug
+window.arenaDebug = {
+  showChessboard,
+  hideChessboard,
+  setupInitialPosition,
+  clearBoard,
+  simulateGameForTesting,
+  ensureChessboardExists,
+};
