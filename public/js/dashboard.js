@@ -200,6 +200,15 @@ function updateRecentGames(dashboard, recentGames) {
       resultHtml = `<span class="result-win">${game.black}</span> venceu`;
     }
 
+    let dateStr = "Data desconhecida";
+    if (game.date && typeof game.date === "string") {
+      try {
+        dateStr = new Date(game.date.replace(/\./g, "-")).toLocaleDateString();
+      } catch (e) {
+        dateStr = game.date;
+      }
+    }
+
     li.innerHTML = `
             <div class="game-matchup">
                 <span class="player">${game.white}</span>
@@ -210,7 +219,7 @@ function updateRecentGames(dashboard, recentGames) {
                 ${resultHtml}
             </div>
             <div class="game-date">
-                ${new Date(game.date.replace(/\./g, "-")).toLocaleDateString()}
+                ${dateStr}
             </div>
         `;
     recentGamesList.appendChild(li);

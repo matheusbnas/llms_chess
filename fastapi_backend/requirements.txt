@@ -1,3 +1,12 @@
 fastapi
 uvicorn
 python-chess 
+langchain-openai
+langchain-google-genai
+langchain-groq
+langchain-anthropic
+langchain-core
+langchain-community
+langchain-experimental
+langchain-huggingface
+langchain-ollama

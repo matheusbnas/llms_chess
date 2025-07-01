@@ -21,16 +21,14 @@ class GameEngine:
 
     def _initialize_judge(self):
         """Initialize the judge model for move validation"""
-        available_models = self.model_manager.list_models()
-        # Prefer Llama3-70B or Mixtral-8x7B if available
+        available_models = self.model_manager.get_available_models()
         for preferred in ["Llama3-70B", "Mixtral-8x7B"]:
             if preferred in available_models:
                 self.judge_model = self.model_manager.get_model(preferred)
                 return
-        # Fallback to any available model
         if available_models:
             self.judge_model = self.model_manager.get_model(
-                available_models[0])
+                list(available_models.keys())[0])
 
     def get_ai_move(self, board: chess.Board, model_name: str, last_move: str = None, max_retries: int = 3):
         """Get a move and explanation from an AI model (stub for backend)"""
@@ -38,10 +36,30 @@ class GameEngine:
         if not model:
             return None, None
         color = "white" if board.turn == chess.WHITE else "black"
-        # Aqui deveria chamar o modelo LLM real, mas como stub:
+        prompt = self.model_manager.get_chess_prompt(color)
+        if not prompt:
+            legal_moves = list(board.legal_moves)
+            if legal_moves:
+                return legal_moves[0], "(Fallback: lance aleatório)"
+            return None, None
+        game_context = self._prepare_game_context(board, last_move)
+        for attempt in range(max_retries):
+            try:
+                response = model.invoke(
+                    prompt.format_messages(input=game_context))
+                resposta_texto = response.content.strip() if hasattr(
+                    response, 'content') else str(response)
+                move = self._extract_move_from_response(resposta_texto, board)
+                explicacao = self._extract_explanation_from_response(
+                    resposta_texto)
+                if move:
+                    return move, explicacao
+            except Exception as e:
+                print(f"Error getting move from {model_name}: {e}")
+                continue
         legal_moves = list(board.legal_moves)
         if legal_moves:
-            return legal_moves[0], "(Stub: lance aleatório)"
+            return legal_moves[0], "(Fallback: lance aleatório)"
         return None, None
 
     def _extract_move_from_response(self, resposta, board):
@@ -53,6 +71,16 @@ class GameEngine:
             except Exception:
                 return None
         return None
+
+    def _extract_explanation_from_response(self, resposta):
+        match = re.search(
+            r'Explica[cç][aã]o:?[\n\s\-]*([\s\S]+)', resposta, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+        parts = resposta.split('My move:')
+        if len(parts) > 1:
+            return parts[1].strip()
+        return resposta.strip()
 
     def _prepare_game_context(self, board: chess.Board, last_move: str = None) -> str:
         game_temp = chess.pgn.Game.from_board(board)

@@ -8,6 +8,7 @@ from fastapi_backend.analysis import GameAnalyzer
 from fastapi_backend.lichess_api import LichessAPI
 from fastapi_backend.pgn_importer import PGNImporter
 from fastapi_backend.human_game_utils import HumanGameUtils
+from fastapi_backend.analysis import router as analysis_router
 
 app = FastAPI()
 
@@ -22,6 +23,7 @@ app.add_middleware(
 app.include_router(dashboard_router)
 app.include_router(arena_router)
 app.include_router(settings_router)
+app.include_router(analysis_router)
 
 model_manager = ModelManager()
 game_analyzer = GameAnalyzer()

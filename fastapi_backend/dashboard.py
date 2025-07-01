@@ -135,13 +135,15 @@ def get_dashboard_data():
                     "losses": row[4],
                     "elo": row[5],
                     "avg_accuracy": row[6],
+                    "total": row[1],
                 })
         recent_games = db.get_recent_games(10)
+        matchup_stats = parse_matchup_stats()  # Preenche resultados por confronto
         return {
             "totalGames": stats['total_games'],
             "modelStats": model_stats,
             "recentGames": recent_games,
-            "matchupStats": []  # Pode ser implementado depois
+            "matchupStats": matchup_stats
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
