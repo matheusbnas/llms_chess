@@ -93,17 +93,6 @@ class ArenaManager {
       });
     }
 
-    // Botão de torneio
-    if (this.elements.startTournamentBtn) {
-      this.elements.startTournamentBtn.addEventListener("click", () => {
-        console.log(
-          "[ArenaManager] Clique no botão Iniciar Torneio (listener)"
-        );
-        this.showToast("Iniciando torneio...", "info");
-        this.startTournament();
-      });
-    }
-
     // Seleção de modelos
     if (this.elements.whiteModel && this.elements.blackModel) {
       this.elements.whiteModel.addEventListener("change", () => {
@@ -172,7 +161,7 @@ class ArenaManager {
         this.elements.blackModel.selectedIndex = 1;
       }
     }
-
+  }
 
   updateModelCards() {
     console.log("[ArenaManager] updateModelCards chamado");
@@ -352,25 +341,19 @@ class ArenaManager {
     }
   }
 
-
   startBattlePolling() {
     if (this.battleInterval) {
       clearInterval(this.battleInterval);
     }
-
     this.battleInterval = setInterval(async () => {
       if (!this.currentBattle) {
         clearInterval(this.battleInterval);
         return;
       }
-
       try {
-        const status = await this.api.get("/api/arena/status", {
-          battle_id: this.currentBattle.id,
-        });
-
+        // Usar endpoint correto para status da batalha
+        const status = await this.api.getBattleStatus(this.currentBattle.id);
         this.updateBattleStatus(status);
-
         if (status.status === "finished" || status.status === "error") {
           clearInterval(this.battleInterval);
           this.currentBattle = null;
@@ -380,34 +363,6 @@ class ArenaManager {
         clearInterval(this.battleInterval);
       }
     }, 2000);
-  }
-
-  startTournamentPolling() {
-    if (this.battleInterval) {
-      clearInterval(this.battleInterval);
-    }
-
-    this.battleInterval = setInterval(async () => {
-      if (!this.currentBattle) {
-        clearInterval(this.battleInterval);
-        return;
-      }
-
-      try {
-        const status = await this.api.get("/api/arena/status", {
-        });
-
-        this.updateTournamentStatus(status);
-
-        if (status.status === "finished" || status.status === "error") {
-          clearInterval(this.battleInterval);
-          this.currentBattle = null;
-        }
-      } catch (error) {
-        console.error("❌ Erro ao verificar status do torneio:", error);
-        clearInterval(this.battleInterval);
-      }
-    }, 3000);
   }
 
   updateBattleStatus(status) {
@@ -468,60 +423,13 @@ class ArenaManager {
     }
   }
 
-  updateTournamentStatus(status) {
-    if (!status) return;
-
-    // Atualizar progresso do torneio
-    if (this.elements.progressContainer && this.elements.progressFill) {
-      this.elements.progressContainer.style.display = "block";
-      const progress =
-        status.total_matches > 0
-          ? (status.current_match / status.total_matches) * 100
-          : 0;
-      this.elements.progressFill.style.width = `${progress}%`;
-    }
-
-    if (this.elements.progressText) {
-      this.elements.progressText.textContent = `${
-        status.current_match || 0
-      } / ${status.total_matches || 0} confrontos`;
-    }
-
-    // Atualizar status
-    if (this.elements.battleStatus) {
-      const statusContent = `
-              <div class="status-icon">
-                  <i class="fas fa-trophy"></i>
-              </div>
-              <div class="status-content">
-                  <div class="status-title">
-                      Torneio em Andamento
-                  </div>
-                  <div class="status-description">
-                      ${
-                        status.models
-                          ? status.models.join(" vs ")
-                          : "Todos vs Todos"
-                      }
-                  </div>
-              </div>
-          `;
-      this.elements.battleStatus.innerHTML = statusContent;
-    }
-
-    // Atualizar resultados do torneio
-    if (status.results && this.elements.resultsTbody) {
-      this.updateResultsTable(status.results);
-      if (this.elements.resultsCard) {
-        this.elements.resultsCard.style.display = "block";
-      }
-    }
-  }
-
   updateChessboardFromFEN(fen) {
-    // Implementação simplificada para atualizar o tabuleiro baseado no FEN
-    // Em uma implementação completa, você usaria uma biblioteca como chess.js
-    console.log("🏁 Atualizando tabuleiro com FEN:", fen);
+    if (!fen || !this.elements.arenaChessboard) return;
+    // Usar a classe Chessboard para renderizar o tabuleiro a partir do FEN
+    if (!this.chessboardInstance) {
+      this.chessboardInstance = new Chessboard('arena-chessboard', { interactive: false });
+    }
+    this.chessboardInstance.setPositionFromFEN(fen);
   }
 
   updateMoveList(moves) {
@@ -677,12 +585,6 @@ window.startBattle = () => {
   }
 };
 
-window.startTournament = () => {
-  if (window.arenaManager) {
-    window.arenaManager.startTournament();
-  }
-};
-
 // ♟️ Complemento JavaScript para Arena - Garantir que o tabuleiro apareça
 // Adicionar este código no final do arena.js existente ou como arquivo separado
 
@@ -794,188 +696,4 @@ function updateModelNames(whiteModel, blackModel) {
 
 // Função para colocar uma peça no tabuleiro
 function placePieceOnBoard(square, piece) {
-  const squareElement = document.querySelector(`[data-square="${square}"]`);
-  if (squareElement) {
-    squareElement.innerHTML = `<div class="piece">${piece}</div>`;
-  }
-}
-
-// Função para limpar o tabuleiro
-function clearBoard() {
-  const squares = document.querySelectorAll(".arena-chessboard .square");
-  squares.forEach((square) => {
-    square.innerHTML = "";
-    square.classList.remove("last-move");
-  });
-}
-
-// Função para configurar posição inicial do tabuleiro
-function setupInitialPosition() {
-  console.log("🏁 Configurando posição inicial do tabuleiro...");
-
-  const initialPosition = {
-    a8: "♜",
-    b8: "♞",
-    c8: "♝",
-    d8: "♛",
-    e8: "♚",
-    f8: "♝",
-    g8: "♞",
-    h8: "♜",
-    a7: "♟",
-    b7: "♟",
-    c7: "♟",
-    d7: "♟",
-    e7: "♟",
-    f7: "♟",
-    g7: "♟",
-    h7: "♟",
-    a2: "♙",
-    b2: "♙",
-    c2: "♙",
-    d2: "♙",
-    e2: "♙",
-    f2: "♙",
-    g2: "♙",
-    h2: "♙",
-    a1: "♖",
-    b1: "♘",
-    c1: "♗",
-    d1: "♕",
-    e1: "♔",
-    f1: "♗",
-    g1: "♘",
-    h1: "♖",
-  };
-
-  // Limpar tabuleiro primeiro
-  clearBoard();
-
-  // Colocar peças
-  Object.entries(initialPosition).forEach(([square, piece]) => {
-    placePieceOnBoard(square, piece);
-  });
-
-  console.log("✅ Posição inicial configurada");
-}
-
-// Função para simular uma partida (apenas para teste)
-function simulateGameForTesting(whiteModel, blackModel) {
-  console.log("🎮 Simulando partida para teste...");
-
-  updateModelNames(whiteModel, blackModel);
-  setupInitialPosition();
-
-  // Simular alguns lances
-  const sampleMoves = [
-    { from: "e2", to: "e4", piece: "♙" },
-    { from: "e7", to: "e5", piece: "♟" },
-    { from: "g1", to: "f3", piece: "♘" },
-    { from: "b8", to: "c6", piece: "♞" },
-  ];
-
-  let moveIndex = 0;
-  const moveInterval = setInterval(() => {
-    if (moveIndex >= sampleMoves.length) {
-      clearInterval(moveInterval);
-      updateBattleStatus("Partida Finalizada", "Resultado: 1-0 (teste)");
-      return;
-    }
-
-    const move = sampleMoves[moveIndex];
-
-    // Remover peça da casa de origem
-    const fromSquare = document.querySelector(`[data-square="${move.from}"]`);
-    if (fromSquare) {
-      fromSquare.innerHTML = "";
-    }
-
-    // Colocar peça na casa de destino
-    placePieceOnBoard(move.to, move.piece);
-
-    // Destacar último lance
-    document.querySelectorAll(".arena-chessboard .square").forEach((sq) => {
-      sq.classList.remove("last-move");
-    });
-    const fromEl = document.querySelector(`[data-square="${move.from}"]`);
-    const toEl = document.querySelector(`[data-square="${move.to}"]`);
-    if (fromEl) fromEl.classList.add("last-move");
-    if (toEl) toEl.classList.add("last-move");
-
-    // Atualizar lista de lances
-    updateMoveList(moveIndex + 1, sampleMoves.slice(0, moveIndex + 1));
-
-    moveIndex++;
-  }, 2000);
-}
-
-// Função para atualizar a lista de lances
-function updateMoveList(currentMove, moves) {
-  const moveListContent = document.getElementById("move-list-content");
-  if (!moveListContent) return;
-
-  let html = "";
-  for (let i = 0; i < moves.length; i += 2) {
-    const moveNumber = Math.floor(i / 2) + 1;
-    const whiteMove = moves[i] ? `${moves[i].from}-${moves[i].to}` : "";
-    const blackMove = moves[i + 1]
-      ? `${moves[i + 1].from}-${moves[i + 1].to}`
-      : "";
-
-    html += `
-          <div class="move-pair">
-              <span class="move-number">${moveNumber}.</span>
-              <span class="move white">${whiteMove}</span>
-              <span class="move black">${blackMove}</span>
-          </div>
-      `;
-  }
-
-  moveListContent.innerHTML = html;
-}
-
-// Garantir que o tabuleiro seja criado se não existir
-function ensureChessboardExists() {
-  const chessboard = document.getElementById("arena-chessboard");
-  if (!chessboard) {
-    console.warn("⚠️ Tabuleiro não encontrado no DOM");
-    return false;
-  }
-
-  // Verificar se o tabuleiro tem as 64 casas
-  const squares = chessboard.querySelectorAll(".square");
-  if (squares.length !== 64) {
-    console.log("🔧 Criando casas do tabuleiro...");
-
-    chessboard.innerHTML = "";
-
-    // Criar as 64 casas
-    for (let rank = 8; rank >= 1; rank--) {
-      for (let file = 0; file < 8; file++) {
-        const square = document.createElement("div");
-        const fileChar = String.fromCharCode(97 + file); // a-h
-        const squareId = `${fileChar}${rank}`;
-
-        const isLight = (rank + file) % 2 !== 0;
-        square.className = `square ${isLight ? "light" : "dark"}`;
-        square.dataset.square = squareId;
-
-        chessboard.appendChild(square);
-      }
-    }
-
-    console.log("✅ Tabuleiro criado com 64 casas");
-  }
-
-  return true;
-}
-
-// Expor funções globalmente para debug
-window.arenaDebug = {
-  showChessboard,
-  hideChessboard,
-  setupInitialPosition,
-  clearBoard,
-  simulateGameForTesting,
-  ensureChessboardExists,
-};
+  const squareElement = document.querySelector(`

@@ -219,6 +219,52 @@ class Api {
   async getArenaGame(gameId) {
     return this.get(`/api/arena/game/${gameId}`);
   }
+
+  // --- FASTAPI Arena Endpoints ---
+
+  /**
+   * Cria uma nova partida humano vs IA
+   * @param {Object} data {opponent_model, player_color, ...}
+   */
+  async createHumanGame(data) {
+    return this.post("/api/arena/games/human", data);
+  }
+
+  /**
+   * Envia um lance do humano para o backend
+   * @param {string} gameId
+   * @param {string} move
+   */
+  async makeHumanMove(gameId, move) {
+    return this.post(`/api/arena/games/${gameId}/move`, {
+      game_id: gameId,
+      move,
+    });
+  }
+
+  /**
+   * Busca o estado atual de uma partida
+   * @param {string} gameId
+   */
+  async getGameState(gameId) {
+    return this.get(`/api/arena/games/${gameId}`);
+  }
+
+  /**
+   * Inicia uma batalha automática entre LLMs
+   * @param {Object} data {white_model, black_model, opening, num_games, realtime_speed}
+   */
+  async startBattleLLMs(data) {
+    return this.post("/api/arena/battle", data);
+  }
+
+  /**
+   * Busca o status de uma batalha
+   * @param {string} battleId
+   */
+  async getBattleStatus(battleId) {
+    return this.get(`/api/arena/battle/${battleId}/status`);
+  }
 }
 
 window.Api = Api;

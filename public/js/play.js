@@ -147,21 +147,13 @@ class Play {
       }
 
       const gameConfig = {
-        opponentModel,
-        playerColor,
+        opponent_model: opponentModel,
+        player_color: playerColor,
         difficulty,
-        timeControl,
+        time_control: timeControl,
       };
 
-      const response = await fetch("/api/games/human", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(gameConfig),
-      });
-
-      const result = await response.json();
+      const result = await this.api.createHumanGame(gameConfig);
 
       if (result.success) {
         this.currentGame = result.game;
@@ -171,7 +163,7 @@ class Play {
         // Set initial board position
         if (this.gameBoard) {
           this.gameBoard.setPositionFromFen(
-            result.game.fen ||
+            result.game.current_fen ||
               "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
           );
           if (playerColor === "black") {
@@ -278,28 +270,16 @@ class Play {
 
     try {
       const move = `${from}${to}`; // Simple algebraic notation
-
-      const response = await fetch(
-        `/api/games/human/${this.currentGame.id}/move`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ move }),
-        }
-      );
-
-      const result = await response.json();
+      const result = await this.api.makeHumanMove(this.currentGame.id, move);
 
       if (result.success) {
         // Update board
         if (this.gameBoard) {
-          this.gameBoard.setPositionFromFen(result.fen);
+          this.gameBoard.setPositionFromFen(result.game_state.current_fen);
         }
 
         // Update move history
-        this.updateMoveHistory(result.history);
+        this.updateMoveHistory(result.game_state.move_history);
 
         // Switch turns
         this.isPlayerTurn = false;
@@ -309,8 +289,8 @@ class Play {
         }
 
         // Check if game is over
-        if (result.gameOver) {
-          this.endGame(result.result);
+        if (result.game_state.status === "finished") {
+          this.endGame(result.game_state.result);
         } else {
           // Wait for AI move
           this.waitForAIMove();

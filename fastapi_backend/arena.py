@@ -12,6 +12,12 @@ import threading
 from enum import Enum
 from pathlib import Path
 from fastapi_backend.pgn_utils import parse_pgn
+from fastapi_backend.models_manager import ModelManager
+from fastapi_backend.analysis import GameAnalyzer
+from fastapi_backend.lichess_api import LichessAPI
+from fastapi_backend.pgn_importer import PGNImporter
+from fastapi_backend.human_game_utils import HumanGameUtils
+from fastapi_backend.game_engine import GameEngine
 
 router = APIRouter(prefix="/api/arena", tags=["arena"])
 
@@ -34,13 +40,6 @@ class BattleRequest(BaseModel):
     num_games: int = Field(1, ge=1, le=20, description="Número de partidas")
     realtime_speed: float = Field(
         1.0, ge=0.1, le=10.0, description="Velocidade em segundos por lance")
-
-
-class TournamentRequest(BaseModel):
-    models: List[str] = Field(..., min_items=2,
-                              description="Lista de modelos participantes")
-    games_per_pair: int = Field(
-        2, ge=1, le=10, description="Partidas por confronto")
 
 
 class HumanGameRequest(BaseModel):
@@ -257,45 +256,6 @@ async def start_battle(request: BattleRequest):
     }
 
 
-@router.post("/tournament")
-async def start_tournament(request: TournamentRequest):
-    """Inicia um torneio round-robin"""
-
-    # Validar modelos
-    for model in request.models:
-        if model not in AVAILABLE_MODELS:
-            raise HTTPException(
-                status_code=400,
-                detail=f"Modelo '{model}' não disponível"
-            )
-
-    tournament_id = str(uuid.uuid4())
-
-    # Criar todas as combinações de confrontos
-    battles = []
-    for i, model1 in enumerate(request.models):
-        for j, model2 in enumerate(request.models):
-            if i != j:  # Evitar auto-confronto
-                for game_num in range(request.games_per_pair):
-                    battle_config = BattleRequest(
-                        white_model=model1,
-                        black_model=model2,
-                        num_games=1,
-                        realtime_speed=1.0
-                    )
-                    battles.append(battle_config)
-
-    # Processar torneio em background
-    asyncio.create_task(process_tournament(tournament_id, battles))
-
-    return {
-        "tournament_id": tournament_id,
-        "status": "started",
-        "total_battles": len(battles),
-        "participants": request.models
-    }
-
-
 @router.get("/battle/{battle_id}/status")
 async def get_battle_status(battle_id: str):
     """Obtém o status de uma batalha específica"""
@@ -459,45 +419,39 @@ async def get_arena_stats():
 # --- Funções auxiliares ---
 
 
+game_engine = GameEngine()
+
+
 async def process_battle(battle: BattleState):
-    """Processa uma batalha em background"""
-
+    """Processa uma batalha em background usando a engine real"""
     battle.status = GameStatus.PLAYING
-
     try:
         for game_num in range(battle.config.num_games):
             battle.current_game = game_num + 1
-
-            # Simular partida (aqui você integraria com os LLMs)
+            # Rodar partida real usando GameEngine
             game_result = await simulate_game(
                 battle.config.white_model,
                 battle.config.black_model,
                 battle.config.opening,
                 battle.config.realtime_speed
             )
-
             battle.results.append(game_result)
             battle.updated_at = datetime.now()
-
             # Broadcast update
             await broadcast_update({
                 "type": "battle_update",
                 "battle_id": battle.id,
-                "battle_state": battle.to_dict()
+                "battle_state": battle.to_dict(),
+                "current_board": game_result.get("fen"),
+                "current_moves": game_result.get("move_history"),
             })
-
-            # Pausa entre partidas
             await asyncio.sleep(1)
-
         battle.status = GameStatus.FINISHED
-
-        # Broadcast final result
         await broadcast_update({
             "type": "battle_finished",
             "battle_id": battle.id,
             "battle_state": battle.to_dict()
         })
-
     except Exception as e:
         battle.status = GameStatus.ERROR
         await broadcast_update({
@@ -508,124 +462,20 @@ async def process_battle(battle: BattleState):
 
 
 async def simulate_game(white_model: str, black_model: str, opening: str, speed: float):
-    """Simula uma partida entre dois modelos"""
-
-    # Esta é uma simulação simples
-    # Na implementação real, você integraria com os LLMs
-
-    import random
-
-    # Simular duração da partida
-    moves = random.randint(20, 80)
-    duration = moves * speed
-
-    # Simular resultado
-    results = ["1-0", "0-1", "1/2-1/2"]
-    weights = [0.4, 0.4, 0.2]  # Probabilidades
-    result = random.choices(results, weights=weights)[0]
-
-    # Simular alguns lances
-    sample_moves = ["e4", "e5", "Nf3", "Nc6", "Bb5", "a6", "Ba4", "Nf6"]
-    move_history = sample_moves[:min(len(sample_moves), moves)]
-
+    """Executa uma partida real entre dois modelos usando GameEngine"""
+    # Chama a engine real (sincronamente, pois não há await)
+    result = game_engine.play_game(white_model, black_model, opening)
+    # Adiciona delay para simular tempo real
+    await asyncio.sleep(speed)
     return {
         "white": white_model,
         "black": black_model,
-        "result": result,
-        "moves": moves,
-        "duration": f"{int(duration//60)}:{int(duration % 60):02d}",
-        "move_history": move_history,
+        "result": result["result"],
+        "moves": result["moves"],
+        "fen": result["fen"],
+        "move_history": result["pgn"].split(),
         "opening": opening
     }
-
-
-async def process_tournament(tournament_id: str, battles: List[BattleRequest]):
-    """Processa um torneio em background"""
-
-    results = []
-
-    for i, battle_config in enumerate(battles):
-        # Criar e processar batalha
-        battle_id = str(uuid.uuid4())
-        battle = BattleState(battle_id, battle_config)
-
-        await process_battle(battle)
-
-        # Coletar resultados
-        with battles_lock:
-            if battle_id in active_battles:
-                results.extend(active_battles[battle_id].results)
-                del active_battles[battle_id]
-
-        # Broadcast progresso do torneio
-        await broadcast_update({
-            "type": "tournament_progress",
-            "tournament_id": tournament_id,
-            "completed_battles": i + 1,
-            "total_battles": len(battles),
-            "current_results": results
-        })
-
-    # Calcular classificação final
-    final_standings = calculate_tournament_standings(results)
-
-    await broadcast_update({
-        "type": "tournament_finished",
-        "tournament_id": tournament_id,
-        "final_standings": final_standings,
-        "all_results": results
-    })
-
-
-def calculate_tournament_standings(results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Calcula a classificação final do torneio"""
-
-    standings = {}
-
-    for result in results:
-        white = result["white"]
-        black = result["black"]
-        game_result = result["result"]
-
-        # Inicializar se não existir
-        if white not in standings:
-            standings[white] = {"wins": 0,
-                                "draws": 0, "losses": 0, "points": 0}
-        if black not in standings:
-            standings[black] = {"wins": 0,
-                                "draws": 0, "losses": 0, "points": 0}
-
-        # Atualizar estatísticas
-        if game_result == "1-0":
-            standings[white]["wins"] += 1
-            standings[white]["points"] += 1
-            standings[black]["losses"] += 1
-        elif game_result == "0-1":
-            standings[black]["wins"] += 1
-            standings[black]["points"] += 1
-            standings[white]["losses"] += 1
-        else:  # Empate
-            standings[white]["draws"] += 1
-            standings[white]["points"] += 0.5
-            standings[black]["draws"] += 1
-            standings[black]["points"] += 0.5
-
-    # Converter para lista ordenada por pontos
-    final_standings = []
-    for model, stats in standings.items():
-        final_standings.append({
-            "model": model,
-            "points": stats["points"],
-            "wins": stats["wins"],
-            "draws": stats["draws"],
-            "losses": stats["losses"],
-            "games": stats["wins"] + stats["draws"] + stats["losses"]
-        })
-
-    # Ordenar por pontos (decrescente)
-    final_standings.sort(key=lambda x: x["points"], reverse=True)
-
-    return final_standings
 
 
 def save_game_to_db(game: GameState):
@@ -649,7 +499,6 @@ def save_game_to_db(game: GameState):
                     moves INTEGER,
                     opening TEXT,
                     date TEXT,
-                    tournament_id TEXT,
                     analysis_data TEXT
                 )
             """)
@@ -657,8 +506,8 @@ def save_game_to_db(game: GameState):
             # Inserir partida
             cursor.execute("""
                 INSERT OR REPLACE INTO games 
-                (id, white, black, result, pgn, moves, opening, date, tournament_id, analysis_data)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (id, white, black, result, pgn, moves, opening, date, analysis_data)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
                 game.id,
                 game.white_player,
@@ -668,7 +517,6 @@ def save_game_to_db(game: GameState):
                 len(game.move_history),
                 "",  # Abertura
                 game.created_at.isoformat(),
-                None,  # tournament_id
                 json.dumps({})  # analysis_data
             ))
 
@@ -815,8 +663,8 @@ async def get_pgn_for_game(matchup: str, game_file: str):
 
 
 @router.get("/status")
-async def get_status(battle_id: Optional[str] = None, tournament_id: Optional[str] = None):
-    """Obtém o status de uma batalha ou torneio, conforme o parâmetro passado."""
+async def get_status(battle_id: Optional[str] = None):
+    """Obtém o status de uma batalha, conforme o parâmetro passado."""
     if battle_id:
         with battles_lock:
             battle = active_battles.get(battle_id)
@@ -824,30 +672,12 @@ async def get_status(battle_id: Optional[str] = None, tournament_id: Optional[st
             raise HTTPException(
                 status_code=404, detail="Batalha não encontrada")
         return battle.to_dict()
-    elif tournament_id:
-        # Exemplo: buscar status do torneio (ajuste conforme sua lógica de torneio)
-        # Aqui, apenas retorna um placeholder, pois a lógica real depende de como os torneios são armazenados
-        # Se você tiver um dicionário active_tournaments, use-o aqui
-        try:
-            from arena_engine import _tournaments, _tournaments_lock
-        except ImportError:
-            raise HTTPException(
-                status_code=501, detail="Suporte a torneio não implementado")
-        with _tournaments_lock:
-            tournament = _tournaments.get(tournament_id)
-        if not tournament:
-            raise HTTPException(
-                status_code=404, detail="Torneio não encontrado")
-        # Montar resposta compatível com o frontend
-        return {
-            "tournament_id": tournament.id,
-            "models": tournament.models,
-            "games_per_pair": tournament.games_per_pair,
-            "current_match": tournament.current_match,
-            "total_matches": tournament.total_matches,
-            "results": tournament.results,
-            "status": tournament.status
-        }
     else:
         raise HTTPException(
-            status_code=400, detail="É necessário informar battle_id ou tournament_id")
+            status_code=400, detail="É necessário informar battle_id")
+
+model_manager = ModelManager()
+game_analyzer = GameAnalyzer()
+lichess_api = LichessAPI()
+pgn_importer = PGNImporter()
+human_game_utils = HumanGameUtils()

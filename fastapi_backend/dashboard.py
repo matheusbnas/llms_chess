@@ -7,6 +7,8 @@ import chess.pgn
 import time
 import os
 from fastapi_backend.database import GameDatabase
+from fastapi_backend.models_manager import ModelManager
+from fastapi_backend.analysis import GameAnalyzer
 
 router = APIRouter()
 
@@ -16,6 +18,9 @@ PGN_DIRS = [
     "GPT-4o vs Gemini-Pro"
 ]
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+model_manager = ModelManager()
+game_analyzer = GameAnalyzer()
 
 
 def parse_pgn_stats():
