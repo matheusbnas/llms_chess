@@ -10,12 +10,13 @@ PGN_FOLDERS = [
     "GPT-4o vs Gemini-Pro"
 ]
 
-PGN_BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+PGN_BASE_PATH = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), "..", "games"))
 
 
 def list_matchups() -> List[str]:
-    """Lista os confrontos disponíveis (pastas de PGN)."""
-    return [folder for folder in PGN_FOLDERS if os.path.isdir(os.path.join(PGN_BASE_PATH, folder))]
+    """Lista os confrontos disponíveis (pastas de PGN na pasta games)."""
+    return [folder for folder in os.listdir(PGN_BASE_PATH) if os.path.isdir(os.path.join(PGN_BASE_PATH, folder))]
 
 
 def list_games_in_matchup(matchup: str) -> List[str]:

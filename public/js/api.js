@@ -1,11 +1,13 @@
-// ♟️ LLM Chess Arena - API Management
+// ♟️ LLM Chess Arena - API Management for FastAPI Backend
 
 class Api {
   constructor() {
-    this.baseURL = window.FASTAPI_BASE_URL || "";
-    this.timeout = 30000;
+    this.baseURL = window.FASTAPI_BASE_URL || "http://localhost:8000";
+    this.timeout = window.API_TIMEOUT || 30000;
     this.retryAttempts = 3;
     this.retryDelay = 1000;
+
+    console.log(`🔌 API initialized with base URL: ${this.baseURL}`);
   }
 
   async request(endpoint, options = {}) {
@@ -14,6 +16,7 @@ class Api {
       timeout: this.timeout,
       headers: {
         "Content-Type": "application/json",
+        Accept: "application/json",
         ...options.headers,
       },
       ...options,
@@ -34,19 +37,38 @@ class Api {
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          const errorText = await response.text();
+          throw new Error(
+            `HTTP ${response.status}: ${response.statusText} - ${errorText}`
+          );
         }
 
-        return await response.json();
+        const result = await response.json();
+
+        if (attempt > 0) {
+          console.log(`✅ API request succeeded on attempt ${attempt + 1}`);
+        }
+
+        return result;
       } catch (error) {
         lastError = error;
-        console.warn(`API request attempt ${attempt + 1} failed:`, error);
+        console.warn(
+          `⚠️ API request attempt ${attempt + 1} failed for ${endpoint}:`,
+          error.message
+        );
+
         if (attempt < this.retryAttempts - 1) {
-          await this.sleep(this.retryDelay * Math.pow(2, attempt));
+          const delay = this.retryDelay * Math.pow(2, attempt);
+          console.log(`⏳ Retrying in ${delay}ms...`);
+          await this.sleep(delay);
         }
       }
     }
 
+    console.error(
+      `❌ API request failed after ${this.retryAttempts} attempts:`,
+      lastError
+    );
     throw lastError || new Error("API request failed after all retries");
   }
 
@@ -63,65 +85,110 @@ class Api {
     });
   }
 
+  async put(endpoint, data = {}) {
+    return this.request(endpoint, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async delete(endpoint) {
+    return this.request(endpoint, { method: "DELETE" });
+  }
+
   sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
-  // API Endpoints
+  // ==========================================
+  // DASHBOARD ENDPOINTS
+  // ==========================================
+
   async getDashboardData() {
-    return this.get("/api/data/dashboard");
+    try {
+      return await this.get("/api/data/dashboard");
+    } catch (error) {
+      console.warn("Dashboard data not available, using fallback");
+      return this._getFallbackDashboardData();
+    }
   }
+
+  _getFallbackDashboardData() {
+    return {
+      totalGames: 0,
+      modelStats: [],
+      recentGames: [],
+      matchupStats: [],
+    };
+  }
+
+  // ==========================================
+  // ARENA ENDPOINTS (FastAPI)
+  // ==========================================
 
   async getAvailableModels() {
-    return this.get("/api/models/available");
+    return this.get("/api/arena/models");
   }
 
-  async getRecentGames(limit = 10) {
-    return this.get("/api/data/recent-games", { limit });
+  async getActiveModels() {
+    return this.get("/api/arena/models/active");
   }
 
-  async getStats() {
-    return this.get("/api/data/stats");
+  async startBattle(battleConfig) {
+    console.log("🚀 Starting battle with config:", battleConfig);
+    return this.post("/api/arena/battle", battleConfig);
   }
 
-  async getSettings() {
-    return this.get("/api/settings");
+  async getBattleStatus(battleId) {
+    return this.get(`/api/arena/battle/${battleId}/status`);
   }
 
-  async getDatabaseStats() {
-    return this.get("/api/data/database-stats");
+  async getActiveBattles() {
+    return this.get("/api/arena/battles/active");
   }
 
-  async getGlobalStats() {
-    return this.get("/api/data/global-stats");
+  // ==========================================
+  // HUMAN VS AI GAME ENDPOINTS
+  // ==========================================
+
+  async createHumanGame(gameConfig) {
+    console.log("🎮 Creating human vs AI game:", gameConfig);
+    return this.post("/api/arena/games/human", gameConfig);
   }
 
-  async getResultsByModel() {
-    return this.get("/api/data/results-by-model");
+  async makeHumanMove(gameId, move) {
+    console.log(`♟️ Making move ${move} in game ${gameId}`);
+    return this.post(`/api/arena/games/${gameId}/move`, {
+      game_id: gameId,
+      move: move,
+    });
   }
 
-  async getWinrateData() {
-    return this.get("/api/data/winrate");
+  async getGameState(gameId) {
+    return this.get(`/api/arena/games/${gameId}`);
   }
 
-  async playGameRealtime(data) {
-    return this.post("/api/arena/play-realtime", data);
+  async getActiveGames() {
+    return this.get("/api/arena/games/active");
   }
 
-  async saveGame(data) {
-    return this.post("/api/games/save", data);
+  async endGame(gameId) {
+    return this.delete(`/api/arena/games/${gameId}`);
   }
 
-  async getCurrentBattle() {
-    return this.get("/api/arena/current-battle");
+  // ==========================================
+  // ANALYSIS ENDPOINTS
+  // ==========================================
+
+  async analyzeGame(gameId) {
+    return this.get(`/api/analysis/game/${gameId}`);
   }
 
-  async getBattleResults() {
-    return this.get("/api/arena/battle-results");
-  }
-
-  async getAllGames() {
-    return this.get("/api/games/all");
+  async compareModels(model1, model2) {
+    return this.post("/api/analysis/compare-models", {
+      model1: model1,
+      model2: model2,
+    });
   }
 
   async getEloRankings() {
@@ -133,147 +200,248 @@ class Api {
   }
 
   async getModelStats(model) {
-    return this.get("/api/analysis/model-stats", { model });
+    return this.get("/api/analysis/model-stats", { model: model });
   }
 
   async getOpeningStats() {
     return this.get("/api/analysis/opening-stats");
   }
 
-  async testModel(model) {
-    return this.post("/api/models/test", { model });
+  // ==========================================
+  // ARENA STATS ENDPOINTS
+  // ==========================================
+
+  async getArenaStats() {
+    return this.get("/api/arena/stats");
   }
 
-  async exportData() {
-    return this.get("/api/data/export");
+  // ==========================================
+  // SETTINGS ENDPOINTS
+  // ==========================================
+
+  async getSettings() {
+    try {
+      return await this.get("/api/settings");
+    } catch (error) {
+      console.warn("Settings not available, using defaults");
+      return this._getDefaultSettings();
+    }
   }
 
-  async importData(data) {
-    return this.post("/api/data/import", data);
+  _getDefaultSettings() {
+    return {
+      modelParams: {
+        temperature: 0.7,
+        maxTokens: 1024,
+        thinkingTime: 5,
+      },
+      gameSettings: {
+        defaultTimeControl: "blitz",
+        autoSaveGames: true,
+        showCoordinates: true,
+        highlightLastMove: true,
+        autoAnalysis: false,
+        analysisDepth: 10,
+        saveAnalysis: true,
+      },
+      server_info: {
+        version: "1.0.0",
+        environment: "dev",
+      },
+    };
   }
 
-  async deleteOldGames(days) {
-    return this.post("/api/data/delete-old-games", { days });
+  // ==========================================
+  // WEBSOCKET CONNECTION
+  // ==========================================
+
+  connectWebSocket() {
+    try {
+      const wsUrl = this.baseURL.replace("http", "ws") + "/api/arena/ws";
+      this.ws = new WebSocket(wsUrl);
+
+      this.ws.onopen = () => {
+        console.log("🔌 WebSocket connected");
+      };
+
+      this.ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          this.handleWebSocketMessage(data);
+        } catch (error) {
+          console.error("Error parsing WebSocket message:", error);
+        }
+      };
+
+      this.ws.onclose = () => {
+        console.log("🔌 WebSocket disconnected");
+        // Attempt to reconnect after 5 seconds
+        setTimeout(() => this.connectWebSocket(), 5000);
+      };
+
+      this.ws.onerror = (error) => {
+        console.error("🔌 WebSocket error:", error);
+      };
+    } catch (error) {
+      console.error("Failed to connect WebSocket:", error);
+    }
   }
 
-  async resetDatabase() {
-    return this.post("/api/data/reset-database");
+  handleWebSocketMessage(data) {
+    console.log("📨 WebSocket message received:", data);
+
+    switch (data.type) {
+      case "battle_update":
+        this.onBattleUpdate?.(data);
+        break;
+      case "move_made":
+        this.onMoveMade?.(data);
+        break;
+      case "battle_finished":
+        this.onBattleFinished?.(data);
+        break;
+      case "battle_error":
+        this.onBattleError?.(data);
+        break;
+      default:
+        console.log("Unknown WebSocket message type:", data.type);
+    }
   }
 
-  async testLichessConnection(token) {
-    return this.post("/api/lichess/test-connection", { token });
+  // WebSocket event handlers (can be overridden)
+  onBattleUpdate(data) {
+    console.log("Battle update:", data);
   }
 
-  async getGamePgn(id) {
-    return this.get(`/api/games/pgn/${id}`);
+  onMoveMade(data) {
+    console.log("Move made:", data);
   }
 
-  async analyzeGame(id) {
-    return this.get(`/api/analysis/game/${id}`);
+  onBattleFinished(data) {
+    console.log("Battle finished:", data);
   }
 
-  async compareModels(model1, model2) {
-    return this.post("/api/analysis/compare-models", { model1, model2 });
+  onBattleError(data) {
+    console.error("Battle error:", data);
   }
 
-  async importLichessGames(username, max_games) {
-    return this.post("/api/lichess/import-games", { username, max_games });
+  // ==========================================
+  // HEALTH CHECK
+  // ==========================================
+
+  async checkHealth() {
+    try {
+      const response = await fetch(`${this.baseURL}/health`, {
+        method: "GET",
+        timeout: 5000,
+      });
+
+      if (response.ok) {
+        console.log("✅ Backend is healthy");
+        return true;
+      } else {
+        console.warn("⚠️ Backend health check failed");
+        return false;
+      }
+    } catch (error) {
+      console.error("❌ Backend health check error:", error);
+      return false;
+    }
   }
 
-  async processLichessGames(games) {
-    return this.post("/api/analysis/process-lichess-games", { games });
+  // ==========================================
+  // UTILITY METHODS
+  // ==========================================
+
+  async testConnection() {
+    console.log("🔍 Testing API connection...");
+
+    try {
+      const isHealthy = await this.checkHealth();
+      if (isHealthy) {
+        console.log("✅ API connection successful");
+        return { success: true, message: "Connected to FastAPI backend" };
+      } else {
+        throw new Error("Health check failed");
+      }
+    } catch (error) {
+      console.error("❌ API connection failed:", error);
+      return {
+        success: false,
+        message: `Failed to connect to FastAPI backend: ${error.message}`,
+        baseURL: this.baseURL,
+      };
+    }
   }
 
-  async applyRagImprovements() {
-    return this.post("/api/analysis/apply-rag-improvements");
+  // Legacy compatibility methods (for existing code)
+  async getRecentGames(limit = 10) {
+    try {
+      const data = await this.getDashboardData();
+      return data.recentGames?.slice(0, limit) || [];
+    } catch (error) {
+      console.warn("Recent games not available");
+      return [];
+    }
   }
 
-  async importPgns() {
-    return this.post("/api/data/import-pgns");
+  async getStats() {
+    try {
+      return await this.getArenaStats();
+    } catch (error) {
+      console.warn("Stats not available");
+      return { total_games: 0, active_models: 0 };
+    }
   }
 
-  async getImportedGames() {
-    return this.get("/api/imported-games");
+  async getGlobalStats() {
+    return this.getStats();
   }
 
-  async getArenaModels() {
-    return this.get("/api/arena/models");
+  async getResultsByModel() {
+    try {
+      const data = await this.getDashboardData();
+      return data.modelStats || [];
+    } catch (error) {
+      return [];
+    }
   }
 
-  async startArenaBattle(data) {
-    return this.post("/api/arena/battle", data);
-  }
-
-  async startArenaTournament(data) {
-    return this.post("/api/arena/tournament", data);
-  }
-
-  async getArenaStatus(params) {
-    return this.get("/api/arena/status", params);
-  }
-
-  async getArenaSavedGames() {
-    return this.get("/api/arena/saved_games");
-  }
-
-  async getArenaGame(gameId) {
-    return this.get(`/api/arena/game/${gameId}`);
-  }
-
-  // --- FASTAPI Arena Endpoints ---
-
-  /**
-   * Cria uma nova partida humano vs IA
-   * @param {Object} data {opponent_model, player_color, ...}
-   */
-  async createHumanGame(data) {
-    return this.post("/api/arena/games/human", data);
-  }
-
-  /**
-   * Envia um lance do humano para o backend
-   * @param {string} gameId
-   * @param {string} move
-   */
-  async makeHumanMove(gameId, move) {
-    return this.post(`/api/arena/games/${gameId}/move`, {
-      game_id: gameId,
-      move,
-    });
-  }
-
-  /**
-   * Busca o estado atual de uma partida
-   * @param {string} gameId
-   */
-  async getGameState(gameId) {
-    return this.get(`/api/arena/games/${gameId}`);
-  }
-
-  /**
-   * Inicia uma batalha automática entre LLMs
-   * @param {Object} data {white_model, black_model, opening, num_games, realtime_speed}
-   */
-  async startBattleLLMs(data) {
-    return this.post("/api/arena/battle", data);
-  }
-
-  /**
-   * Busca o status de uma batalha
-   * @param {string} battleId
-   */
-  async getBattleStatus(battleId) {
-    return this.get(`/api/arena/battle/${battleId}/status`);
+  async getWinrateData() {
+    try {
+      const data = await this.getDashboardData();
+      return data.winrateData || [];
+    } catch (error) {
+      return [];
+    }
   }
 }
 
+// Initialize global API instance
 window.Api = Api;
 window.api = new Api();
 
-async function loadDashboard() {
-  const data = await api.getDashboardData();
-  // ... renderize os dados
-}
+// Test connection on load
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("🔌 Testing API connection...");
 
-// Chame isso ao ativar a aba do dashboard
-loadDashboard();
+  const connectionTest = await window.api.testConnection();
+
+  if (connectionTest.success) {
+    console.log("✅ API ready");
+    // Connect WebSocket
+    window.api.connectWebSocket();
+  } else {
+    console.error("❌ API connection failed:", connectionTest.message);
+
+    // Show connection error toast
+    if (typeof showToast === "function") {
+      showToast(`Erro de conexão: ${connectionTest.message}`, "error", 10000);
+    }
+  }
+});
+
+// Export for modules
+if (typeof module !== "undefined" && module.exports) {
+  module.exports = Api;
+}

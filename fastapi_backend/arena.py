@@ -626,10 +626,10 @@ async def create_sample_data():
 @router.get("/matchups")
 async def list_matchups():
     """
-    Lista todos os confrontos disponíveis (pastas de PGN).
+    Lista todos os confrontos disponíveis (pastas de PGN na pasta games).
     """
-    base_dir = Path(__file__).resolve().parent.parent
-    pgn_dirs = [d for d in base_dir.iterdir() if d.is_dir() and "vs" in d.name]
+    base_dir = Path(__file__).resolve().parent.parent / "games"
+    pgn_dirs = [d for d in base_dir.iterdir() if d.is_dir()]
     matchups = [d.name for d in pgn_dirs]
     return {"matchups": matchups}
 
@@ -637,9 +637,9 @@ async def list_matchups():
 @router.get("/matchups/{matchup}/games")
 async def list_games_for_matchup(matchup: str):
     """
-    Lista todos os arquivos .pgn de um confronto.
+    Lista todos os arquivos .pgn de um confronto na pasta games.
     """
-    base_dir = Path(__file__).resolve().parent.parent
+    base_dir = Path(__file__).resolve().parent.parent / "games"
     matchup_dir = base_dir / matchup
     if not matchup_dir.exists() or not matchup_dir.is_dir():
         return {"games": []}
@@ -650,9 +650,9 @@ async def list_games_for_matchup(matchup: str):
 @router.get("/matchups/{matchup}/games/{game_file}")
 async def get_pgn_for_game(matchup: str, game_file: str):
     """
-    Retorna o conteúdo do PGN de um jogo específico.
+    Retorna o conteúdo do PGN de um jogo específico na pasta games.
     """
-    base_dir = Path(__file__).resolve().parent.parent
+    base_dir = Path(__file__).resolve().parent.parent / "games"
     game_path = base_dir / matchup / game_file
     if not game_path.exists():
         return {"error": "Arquivo não encontrado"}

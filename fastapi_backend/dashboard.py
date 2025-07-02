@@ -12,11 +12,7 @@ from fastapi_backend.analysis import GameAnalyzer
 
 router = APIRouter()
 
-PGN_DIRS = [
-    "Gemini-Pro vs GPT-4o",
-    "gpt-4 vs Deepseek",
-    "GPT-4o vs Gemini-Pro"
-]
+GAMES_DIR = Path(__file__).resolve().parent.parent / "games"
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 model_manager = ModelManager()
@@ -25,9 +21,8 @@ game_analyzer = GameAnalyzer()
 
 def parse_pgn_stats():
     stats = {}
-    for dir_name in PGN_DIRS:
-        dir_path = BASE_DIR / dir_name
-        if not dir_path.exists():
+    for dir_path in GAMES_DIR.iterdir():
+        if not dir_path.is_dir():
             continue
         for file in dir_path.glob("*.pgn"):
             try:
@@ -63,10 +58,10 @@ def parse_pgn_stats():
 
 def parse_matchup_stats():
     matchup_stats = []
-    for dir_name in PGN_DIRS:
-        dir_path = BASE_DIR / dir_name
-        if not dir_path.exists():
+    for dir_path in GAMES_DIR.iterdir():
+        if not dir_path.is_dir():
             continue
+        dir_name = dir_path.name
         if ' vs ' in dir_name:
             p1, p2 = dir_name.split(' vs ', 1)
         else:

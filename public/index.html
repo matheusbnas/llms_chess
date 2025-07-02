@@ -11,6 +11,21 @@
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- Chessboard.js CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    
+    <!-- jQuery (required for chessboard.js) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Chessboard.js -->
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    
+    <!-- Chess.js for game logic -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    
+    <!-- Chart.js for analytics -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
     <!-- Main CSS -->
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/responsive.css">
@@ -90,9 +105,125 @@
         .page.active {
             display: block;
         }
+
+        /* Header dinâmico */
+        .header {
+            background: linear-gradient(135deg, #8b4513, #b8860b);
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .nav-btn.active {
+            background: rgba(255,255,255,0.2);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .main {
+            min-height: calc(100vh - 80px);
+            padding: 2rem;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transform: translateX(100%);
+            animation: slideIn 0.3s ease forwards;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 300px;
+        }
+
+        .toast.success {
+            background: #10b981;
+        }
+
+        .toast.error {
+            background: #ef4444;
+        }
+
+        .toast.warning {
+            background: #f59e0b;
+        }
+
+        .toast.info {
+            background: #3b82f6;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); }
+            to { transform: translateX(100%); }
+        }
     </style>
+    
     <script>
+        // Configuração global da API
         window.FASTAPI_BASE_URL = 'http://localhost:8000';
+        window.API_TIMEOUT = 30000;
     </script>
 </head>
 <body>
@@ -104,38 +235,38 @@
             <div class="loading-progress-bar"></div>
         </div>
         <div style="font-size: 14px; color: #999; margin-top: 10px;">
-            Carregando tabuleiro profissional...
+            Inicializando tabuleiro profissional...
         </div>
     </div>
 
-    <!-- Header -->
-    <div class="header">
+    <!-- Dynamic Header -->
+    <div id="app-header" class="header">
         <div class="header-content">
-            <a href="/" class="logo">
+            <a href="#" class="logo" onclick="showPage('dashboard')">
                 ♟️ LLM Chess Arena
             </a>
             <nav class="nav">
-                <button class="nav-btn active" data-page="dashboard">
+                <button class="nav-btn active" data-page="dashboard" onclick="showPage('dashboard')">
                     <i class="fas fa-chart-bar"></i>
                     <span>Dashboard</span>
                 </button>
-                <button class="nav-btn" data-page="arena">
+                <button class="nav-btn" data-page="arena" onclick="showPage('arena')">
                     <i class="fas fa-swords"></i>
                     <span>Arena</span>
                 </button>
-                <button class="nav-btn" data-page="play">
+                <button class="nav-btn" data-page="play" onclick="showPage('play')">
                     <i class="fas fa-gamepad"></i>
                     <span>Jogar</span>
                 </button>
-                <button class="nav-btn" data-page="lichess">
+                <button class="nav-btn" data-page="lichess" onclick="showPage('lichess')">
                     <i class="fas fa-chess-board"></i>
                     <span>Lichess</span>
                 </button>
-                <button class="nav-btn" data-page="rankings">
+                <button class="nav-btn" data-page="rankings" onclick="showPage('rankings')">
                     <i class="fas fa-crown"></i>
                     <span>Rankings</span>
                 </button>
-                <button class="nav-btn" data-page="settings">
+                <button class="nav-btn" data-page="settings" onclick="showPage('settings')">
                     <i class="fas fa-cog"></i>
                     <span>Config</span>
                 </button>
@@ -147,32 +278,44 @@
     <div class="main">
         <!-- Dashboard Page -->
         <div id="dashboard-page" class="page active">
-            <!-- Dashboard content will be loaded here -->
+            <div id="dashboard-content">
+                <!-- Dashboard content will be loaded here -->
+            </div>
         </div>
 
         <!-- Arena Page -->
         <div id="arena-page" class="page">
-            <!-- Arena content will be loaded here -->
+            <div id="arena-content">
+                <!-- Arena content will be loaded here -->
+            </div>
         </div>
 
         <!-- Play Page -->
         <div id="play-page" class="page">
-            <!-- Play content will be loaded here -->
+            <div id="play-content">
+                <!-- Play content will be loaded here -->
+            </div>
         </div>
 
         <!-- Lichess Page -->
         <div id="lichess-page" class="page">
-            <!-- Lichess content will be loaded here -->
+            <div id="lichess-content">
+                <!-- Lichess content will be loaded here -->
+            </div>
         </div>
 
         <!-- Rankings Page -->
         <div id="rankings-page" class="page">
-            <!-- Rankings content will be loaded here -->
+            <div id="rankings-content">
+                <!-- Rankings content will be loaded here -->
+            </div>
         </div>
 
         <!-- Settings Page -->
         <div id="settings-page" class="page">
-            <!-- Settings content will be loaded here -->
+            <div id="settings-content">
+                <!-- Settings content will be loaded here -->
+            </div>
         </div>
     </div>
 
@@ -213,16 +356,11 @@
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
     
-    <!-- External Dependencies -->
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-
     <!-- Core Application Scripts -->
     <script src="/js/utils.js"></script>
     <script src="/js/api.js"></script>
-    <script src="/js/charts.js"></script>
     <script src="/js/chessboard.js"></script>
+    <script src="/js/charts.js"></script>
     <script src="/js/pgn_viewer.js"></script>
     
     <!-- Page-specific Scripts -->
@@ -232,21 +370,184 @@
     <script src="/js/rankings.js"></script>
     <script src="/js/settings.js"></script>
     
-    <!-- Chess Arena Manager -->
-    <script src="/js/chess_arena_manager.js"></script>
-    
     <!-- Main Application -->
-    <script type="module" src="/js/app.js"></script>
+    <script src="/js/app.js"></script>
     
     <script>
+        // Global navigation function
+        function showPage(pageName) {
+            console.log(`🔄 Switching to page: ${pageName}`);
+            
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // Update navigation
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show target page
+            const targetPage = document.getElementById(`${pageName}-page`);
+            if (targetPage) {
+                targetPage.classList.add('active');
+
+                const activeBtn = document.querySelector(`.nav-btn[data-page="${pageName}"]`);
+                if (activeBtn) {
+                    activeBtn.classList.add('active');
+                }
+
+                // Load page content
+                loadPageContent(pageName);
+            }
+        }
+
+        // Load page content dynamically
+        async function loadPageContent(pageName) {
+            const contentDiv = document.getElementById(`${pageName}-content`);
+            if (!contentDiv) return;
+
+            try {
+                showToast(`Carregando ${pageName}...`, 'info');
+                
+                const response = await fetch(`/pages/${pageName}.html`);
+                if (!response.ok) {
+                    throw new Error(`Failed to load page: ${pageName}`);
+                }
+                
+                const content = await response.text();
+                contentDiv.innerHTML = content;
+                
+                // Initialize page-specific functionality
+                initializePage(pageName);
+                
+                hideToast();
+                
+            } catch (error) {
+                console.error(`Error loading page ${pageName}:`, error);
+                contentDiv.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #ef4444;">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                        <h3>Erro ao carregar página</h3>
+                        <p>Não foi possível carregar a página ${pageName}</p>
+                        <button onclick="location.reload()" class="btn btn-primary">
+                            <i class="fas fa-refresh"></i> Recarregar
+                        </button>
+                    </div>
+                `;
+                showToast(`Erro ao carregar ${pageName}`, 'error');
+            }
+        }
+
+        // Initialize page-specific functionality
+        function initializePage(pageName) {
+            switch (pageName) {
+                case 'dashboard':
+                    if (typeof initializeDashboard === 'function') {
+                        initializeDashboard();
+                    }
+                    break;
+                case 'arena':
+                    if (typeof initializeArena === 'function') {
+                        initializeArena();
+                    }
+                    break;
+                case 'play':
+                    if (typeof initializePlay === 'function') {
+                        initializePlay();
+                    }
+                    break;
+                case 'rankings':
+                    if (typeof initializeRankings === 'function') {
+                        initializeRankings();
+                    }
+                    break;
+                case 'settings':
+                    if (typeof initializeSettings === 'function') {
+                        initializeSettings();
+                    }
+                    break;
+            }
+        }
+
+        // Toast notification system
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toast-container');
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icon = getToastIcon(type);
+            toast.innerHTML = `
+                <i class="fas fa-${icon}"></i>
+                <span>${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Auto remove
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, duration);
+        }
+
+        function hideToast() {
+            // Hide loading toast if exists
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(toast => {
+                if (toast.textContent.includes('Carregando')) {
+                    toast.remove();
+                }
+            });
+        }
+
+        function getToastIcon(type) {
+            const icons = {
+                success: 'check-circle',
+                error: 'exclamation-circle',
+                warning: 'exclamation-triangle',
+                info: 'info-circle'
+            };
+            return icons[type] || 'info-circle';
+        }
+
         // Global error handling
         window.addEventListener('error', function(e) {
             console.error('❌ Global error:', e.error);
+            showToast('Erro na aplicação', 'error');
         });
 
         window.addEventListener('unhandledrejection', function(e) {
             console.error('❌ Unhandled promise rejection:', e.reason);
+            showToast('Erro de rede', 'error');
             e.preventDefault();
+        });
+
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 LLM Chess Arena initializing...');
+            
+            // Hide loading screen
+            setTimeout(() => {
+                const loadingScreen = document.getElementById('loading-screen');
+                if (loadingScreen) {
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        loadingScreen.style.display = 'none';
+                    }, 500);
+                }
+            }, 2000);
+
+            // Load initial page
+            loadPageContent('dashboard');
+            
+            console.log('✅ LLM Chess Arena initialized');
         });
 
         // Service Worker registration
